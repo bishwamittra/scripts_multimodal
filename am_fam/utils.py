@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-# plt.style.use('ggplot')
 import pandas as pd
 import numpy as np
 pd.set_option('display.max_columns', 500)
@@ -11,8 +10,64 @@ from itertools import cycle
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..')))
 from sklearn.metrics import classification_report
 from imblearn.metrics import specificity_score
+import logging
 import warnings
 warnings.filterwarnings('ignore')
+
+
+def get_logger(logger_path):
+    logging.basicConfig(
+        filename=logger_path,
+        # filename='/home/qinbin/test.log',
+        format='[%(asctime)s] %(levelname)s: %(message)s',
+        datefmt='%m-%d %H:%M', 
+        level=logging.DEBUG, 
+        filemode='w'
+    )
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    ch = logging.StreamHandler()
+    logger.addHandler(ch)
+
+    return logger 
+
+def set_path(args):
+    if not os.path.exists(args.save_root):
+        os.makedirs(args.save_root)
+
+    # prepare the save path
+    save_tag = f'multimodal_seven_point_dataset_seed_{args.seed}-ep{args.epoch}-bs{args.batch_size}-lr{args.lr}' 
+
+    # if args.save_results or args.save_curves:
+    exp_seq_path = os.path.join(args.save_root, 'exp_seq.txt')
+    if not os.path.exists(exp_seq_path):
+        file = open(exp_seq_path, 'w')
+        exp_seq=0
+        exp_seq = str(exp_seq)
+        file.write(exp_seq)
+        file.close
+        save_tag = 'exp_' + exp_seq + '_' + save_tag
+    else:
+        file = open(exp_seq_path, 'r')
+        exp_seq = int(file.read())
+        exp_seq += 1
+        exp_seq = str(exp_seq)
+        save_tag = 'exp_' + exp_seq + '_' + save_tag
+        file = open(exp_seq_path, 'w')
+        file.write(exp_seq)
+        file.close()
+    args.exp_seq = exp_seq
+    args.save_path = os.path.join(args.save_root, save_tag)
+
+    if not os.path.exists(args.save_path):
+        os.makedirs(args.save_path)
+
+    args.config_path = os.path.join(args.save_path, 'config.json')
+    args.logger_path = os.path.join(args.save_path, 'exp_log.log')   
+   
+    return args
+
 
 
 def cal_auc(pre, true, show = False):
