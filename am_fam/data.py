@@ -97,8 +97,8 @@ for index, row in meta_df.iterrows():
     b_w_v = row[8]
     v_s = row[9]
     point_criteria = [p_n, s_t_r, p_i_g, r_s, d_a_g, b_w_v, v_s]
-    if d_img == 'FCl/Fcl068.jpg':
-        d_img = 'FCL/Fcl068.jpg'
+    # if d_img == 'FCl/Fcl068.jpg':
+    #     d_img = 'FCL/Fcl068.jpg'
 
     if index in train_indexes:        
         clinic_train.append(img_path + c_img)

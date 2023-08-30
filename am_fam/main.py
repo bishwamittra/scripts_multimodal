@@ -139,7 +139,7 @@ def main(args, logger):
             
 
 
-    trainloader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
+    trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
     record_acc = 0.
     record_auc = 0.
 
