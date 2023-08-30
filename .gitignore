@@ -1,0 +1,5 @@
+data/*
+am_fam/checkpoint/*
+fusionm4net/multimodal_FusionM4Net*/*
+fusionm4net/__pycache__/
+fusionm4net/*.npy
