@@ -4,3 +4,6 @@ fusionm4net/multimodal_FusionM4Net*/*
 fusionm4net/__pycache__/
 fusionm4net/*.npy
 am_fam/results/*
+__pycache__/*
+*/__pycache__/*
+*/*/__pycache__/*

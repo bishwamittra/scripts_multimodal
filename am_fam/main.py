@@ -140,9 +140,11 @@ def main(args, logger):
 
 
     trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
+    validloader = torch.utils.data.DataLoader(validate_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
+
+
     record_acc = 0.
     record_auc = 0.
-
     total_time_train = 0
     for i in range(args.epoch):
             # training
@@ -167,23 +169,51 @@ def main(args, logger):
             con_metric = get_confusion_matrix(pred_all_train, label_true_train) # compute recall and precision
             specificity = get_specificity(pred_all_train, label_true_train)
             # sens, spec, prec = get_confusion_matrix(con_all_test)
-            # print(avg_acc, avg_auc)
-            # if i % 10 == 0 or i == (epochs - 1):
-            if (record_acc+record_auc) <= (avg_acc + avg_auc):
+
+            if (True):
                 record_acc = avg_acc
                 record_auc = avg_auc
                 logger.info(f"auc all train: {auc_all_train}")
                 logger.info(f"acc all train: {acc_all_train}")
-                logger.info("Current best average ACC: {:.4f}".format(avg_acc))
-                logger.info("Current average AUC: {:.4f}".format(avg_auc))
+                logger.info("train average ACC: {:.4f}".format(avg_acc))
+                logger.info("train average AUC: {:.4f}".format(avg_auc))
                 
             logger.info("")
-
 
             end_time_epoch_train = time()
             epoch_time_train = end_time_epoch_train - start_time_epoch_train
             total_time_train += epoch_time_train
 
+
+            # validation
+            logger.info("Epoch {} begin validating...".format(i))
+            pred_all_valid, label_true_valid = test_func(validloader,
+                                    cnn_c, 
+                                    cnn_d, 
+                                    concate_net, 
+                                    reconstruct_net_c, 
+                                    reconstruct_net_d, 
+                                    criterion,
+                                    device,
+                                    i)
+            auc_all_valid, acc_all_valid, con_all_valid = metric(pred_all_valid, label_true_valid, show=False)
+            avg_acc = get_average_acc(acc_all_valid)# get the average acc
+            avg_auc = get_average_auc(auc_all_valid)
+            con_metric = get_confusion_matrix(pred_all_valid, label_true_valid) # compute recall and precision
+            specificity = get_specificity(pred_all_valid, label_true_valid)
+            # sens, spec, prec = get_confusion_matrix(con_all_test)
+            # if i % 10 == 0 or i == (epochs - 1):
+            if (record_acc+record_auc) <= (avg_acc + avg_auc):
+                record_acc = avg_acc
+                record_auc = avg_auc
+                logger.info(f"auc all valid: {auc_all_valid}")
+                logger.info(f"acc all valid: {acc_all_valid}")
+                logger.info("Current best average ACC: {:.4f}".format(avg_acc))
+                logger.info("Current average AUC: {:.4f}".format(avg_auc))
+
+            logger.info("")
+
+            
 
 
 
