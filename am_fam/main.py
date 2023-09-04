@@ -39,15 +39,19 @@ from itertools import chain
 
 from utils import \
     (
-        train_func,
-        test_func,
+        train_fun,
+        test_fun,
+        validate_fun,
         metric,
         get_average_acc,
         get_average_auc,
         get_confusion_matrix,
         get_specificity,
         set_path,
-        get_logger
+        get_logger,
+        MultiFocalLoss,
+        get_scheduler,
+
     )
 
 
@@ -85,6 +89,12 @@ def main(args, logger):
     # print(len(clinic_train), len(clinic_validate), len(clinic_test))
     # print(clinic_train)
 
+    class_sample_count = np.array([len(np.where(label_train_diag == t)[0]) for t in np.unique(label_train_diag)])
+    weight = 1. / class_sample_count
+    samples_weight = np.array([weight[t] for t in label_train_diag])
+
+    samples_weight = torch.from_numpy(samples_weight)
+    samples_weight = samples_weight.double()
 
     train_transforms = transforms.Compose([transforms.Resize([299, 299]),
                                         # transforms.Pad(padding=10, fill=(255, 176, 145)),
@@ -125,148 +135,245 @@ def main(args, logger):
 
 
 
+    learning_rate = 1e-5
+    learning_rate_re = 1e-5
     criterion = nn.CrossEntropyLoss()
+    criterion1 = MultiFocalLoss(num_class = 2, gamma=2)# nn.CrossEntropyLoss()
+    criterion2 = MultiFocalLoss(num_class = 3, gamma=2)# nn.CrossEntropyLoss()
+    criterion3 = MultiFocalLoss(num_class = 5, gamma=2)# nn.CrossEntropyLoss()
     opt_list = chain(cnn_c.parameters(), cnn_d.parameters(), concate_net.parameters(), reconstruct_net_c.parameters(), reconstruct_net_d.parameters(), discriminator.parameters())
-    # optimizer = optim.Adam(chain(reconstruct_net_c.parameters(), reconstruct_net_d.parameters(), concate_net.parameters(), cnn_c.parameters(), cnn_d.parameters()), lr=args.lr , weight_decay=0.0001) #
-    optimizer = optim.Adam(opt_list, lr=args.lr, weight_decay=0.0001) # , weight_decay=0.0001
-    # optimizer_con = optim.Adam(chain(concate_net.parameters(), discriminator.parameters()), lr=args.lr) # , weight_decay=0.0001
-    # optimizer_re = optim.Adam(chain(reconstruct_net_c.parameters(), reconstruct_net_d.parameters()), lr=args.lr_re) # , weight_decay=0.0001
+    # optimizer = optim.Adam(chain(reconstruct_net_c.parameters(), reconstruct_net_d.parameters(), concate_net.parameters(), cnn_c.parameters(), cnn_d.parameters()), lr=learning_rate , weight_decay=0.0001) #
+    optimizer = optim.AdamW(opt_list, lr=learning_rate, weight_decay=0.0001) # , weight_decay=0.0001
+    # optimizer_con = optim.Adam(chain(concate_net.parameters(), discriminator.parameters()), lr=learning_rate) # , weight_decay=0.0001
+    # optimizer_re = optim.Adam(chain(reconstruct_net_c.parameters(), reconstruct_net_d.parameters()), lr=learning_rate_re) # , weight_decay=0.0001
     # criterion_recon = nn.MSELoss()
-    # criterion_recon = nn.MSELoss(reduction='none')
-    # criterion_l1 = nn.L1Loss(reduction='none')
+    scheduler = get_scheduler(optimizer, 'warmstart')
+    criterion_recon = nn.MSELoss(reduction='none')
+    criterion_l1 = nn.L1Loss(reduction='none')
 
 
+    epochs = 150
+    record_acc = 0.
+    record_auc = 0.
+
+    record_acc1 = 0.
+    record_auc1 = 0.
+
+    log_file = open('./log/log' + 'concate_reconstruct_attention_fusion_new' + '.txt', 'w', buffering = 1)
+    sampler = torch.utils.data.sampler.WeightedRandomSampler(samples_weight, len(samples_weight))
+
+    model_name_c = './checkpoint/feature_extraction_c_fusion_new.pth' # 27-3 ahieved the best performance # 0502-2 record result # 0502-3 best results
+    model_name_d = './checkpoint/feature_extraction_d_fusion_new.pth' #  1-8or9
+    model_name_concate = './checkpoint/concatenate_fusion_new.pth'
+    model_name_reconstruct_c = './checkpoint/reconstruct_c_fusion_new.pth'
+    model_name_reconstruct_d = './checkpoint/reconstruct_d_fusion_new.pth'
+    model_name_discriminator = './checkpoint/discriminator_fusion_new.pth'
+    for i in range(epochs):
+
+
+        trainloader = torch.utils.data.DataLoader(train_dataset, batch_size= 8,
+                                                    sampler=sampler, num_workers=4)
+        validateloader = torch.utils.data.DataLoader(validate_dataset, batch_size=48,
+                                                    shuffle=False, num_workers=4)
+        testloader = torch.utils.data.DataLoader(test_dataset, batch_size=48,
+                                                    shuffle=False, num_workers=4)
+        print("Epoch {} begin training...".format(i))
+        log_file.write("Epoch {} begin training...\n".format(i))
+        pred_all_train, label_true_train = train_fun(trainloader, cnn_c, cnn_d, concate_net, reconstruct_net_c, reconstruct_net_d, i) 
+        auc_all_train, acc_all_train, con_all_train = metric(pred_all_train, label_true_train, show=False) # auc_all, acc_all, con_all
+        avg_acc_train = get_average_acc(acc_all_train)# get the average acc
+        avg_auc_train = get_average_auc(auc_all_train)
+        print(avg_acc_train, avg_auc_train)
+        log_file.write("Current average ACC: {:.4f} \n".format(avg_acc_train))
+        log_file.write("Current average AUC: {:.4f} \n".format(avg_auc_train))
+    #     scheduler.step()
+        
+        print(scheduler.get_lr()[0])
+
+        print("Epoch {} begin validating...".format(i))
+        log_file.write("Epoch {} begin validating...\n".format(i))
+        pred_all_validate, label_true_validate = validate_fun(validateloader, cnn_c, cnn_d, concate_net, reconstruct_net_c, reconstruct_net_d, i)
+        auc_all_validate, acc_all_validate, con_all_validate = metric(pred_all_validate, label_true_validate, show=False)
+        avg_acc_validate = get_average_acc(acc_all_validate)# get the average acc
+        avg_auc_validate = get_average_auc(auc_all_validate)
+        print(avg_acc_validate, avg_auc_validate)
+        log_file.write("Current average ACC: {:.4f} \n".format(avg_acc_validate))
+        log_file.write("Current average AUC: {:.4f} \n".format(avg_auc_validate))
+
+        print("Epoch {} begin testing...".format(i))
+        log_file.write("Epoch {} begin testing...\n".format(i))
+        pred_all_test, label_true_test = test_fun(testloader, cnn_c, cnn_d, concate_net, reconstruct_net_c, reconstruct_net_d, i)
+        auc_all_test, acc_all_test, con_all_test = metric(pred_all_test, label_true_test, show=False)
+        avg_acc = get_average_acc(acc_all_test)# get the average acc
+        avg_auc = get_average_auc(auc_all_test)
+        con_metric = get_confusion_matrix(pred_all_test, label_true_test) # compute recall and precision
+        specificity = get_specificity(pred_all_test, label_true_test)
+        # sens, spec, prec = get_confusion_matrix(con_all_test)
+        # if i % 10 == 0 or i == (epochs - 1):
+        if (record_acc+record_auc) <= (avg_acc_validate + avg_auc_validate):
+            record_acc1 = avg_acc_validate
+            record_auc1 = avg_auc_validate
+            print("Best validate test metics on epoch {}:".format(i))
+            print(auc_all_test)
+            print(acc_all_test)
+            print(avg_acc)
+            print(avg_auc)
+            log_file.write("Best validate test metics on epoch {}:\n".format(i))
+            log_file.write(str(auc_all_test) + '\n')
+            log_file.write(str(acc_all_test) + '\n')
+            log_file.write('confusion_matrix' + str(con_metric) + '\n')
+            
+            torch.save(cnn_c.state_dict(), model_name_c)
+            torch.save(cnn_d.state_dict(), model_name_d)
+            torch.save(concate_net.state_dict(), model_name_concate)
+            torch.save(reconstruct_net_c.state_dict(), model_name_reconstruct_c)
+            torch.save(reconstruct_net_d.state_dict(), model_name_reconstruct_d)
+            torch.save(reconstruct_net_d.state_dict(), model_name_discriminator)
+            
+            print("Test metics on epoch {}:".format(i))
+            print(auc_all_test)
+            print(acc_all_test)
+            print(avg_acc)
+            print(avg_auc)
+            log_file.write("Test metics on epoch {}:\n".format(i))
+            log_file.write(str(auc_all_test) + '\n')
+            log_file.write(str(acc_all_test) + '\n')
+            log_file.write('confusion_matrix' + str(con_metric) + '\n')
+            log_file.write(str(avg_acc))
+            log_file.write(str(avg_auc))
+
+    log_file.close()
             
 
 
-    trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
-    validloader = torch.utils.data.DataLoader(validate_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
+    # trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
+    # validloader = torch.utils.data.DataLoader(validate_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
 
 
-    record_acc = 0.
-    record_auc = 0.
-    total_time_train = 0
-    for i in range(args.epoch):
-            # training
-            start_time_epoch_train = time()
+    # record_acc = 0.
+    # record_auc = 0.
+    # total_time_train = 0
+    # for i in range(args.epoch):
+    #         # training
+    #         start_time_epoch_train = time()
 
-            # print("Epoch {} begin train...".format(i))
-            logger.info("Epoch {} begin train...".format(i))
-            pred_all_train, label_true_train = train_func(trainloader, 
-                    cnn_c, 
-                    cnn_d, 
-                    concate_net, 
-                    reconstruct_net_c, 
-                    reconstruct_net_d, 
-                    optimizer, 
-                    criterion, 
-                    device, 
-                    i
-                )
-            auc_all_train, acc_all_train, con_all_train = metric(pred_all_train, label_true_train, show=False)
-            avg_acc = get_average_acc(acc_all_train)# get the average acc
-            avg_auc = get_average_auc(auc_all_train)
-            con_metric = get_confusion_matrix(pred_all_train, label_true_train) # compute recall and precision
-            specificity = get_specificity(pred_all_train, label_true_train)
-            # sens, spec, prec = get_confusion_matrix(con_all_test)
+    #         # print("Epoch {} begin train...".format(i))
+    #         logger.info("Epoch {} begin train...".format(i))
+    #         pred_all_train, label_true_train = train_func(trainloader, 
+    #                 cnn_c, 
+    #                 cnn_d, 
+    #                 concate_net, 
+    #                 reconstruct_net_c, 
+    #                 reconstruct_net_d, 
+    #                 optimizer, 
+    #                 criterion, 
+    #                 device, 
+    #                 i
+    #             )
+    #         auc_all_train, acc_all_train, con_all_train = metric(pred_all_train, label_true_train, show=False)
+    #         avg_acc = get_average_acc(acc_all_train)# get the average acc
+    #         avg_auc = get_average_auc(auc_all_train)
+    #         con_metric = get_confusion_matrix(pred_all_train, label_true_train) # compute recall and precision
+    #         specificity = get_specificity(pred_all_train, label_true_train)
+    #         # sens, spec, prec = get_confusion_matrix(con_all_test)
 
-            if (True):
-                record_acc = avg_acc
-                record_auc = avg_auc
-                logger.info(f"auc all train: {auc_all_train}")
-                logger.info(f"acc all train: {acc_all_train}")
-                logger.info("train average ACC: {:.4f}".format(avg_acc))
-                logger.info("train average AUC: {:.4f}".format(avg_auc))
+    #         if (True):
+    #             record_acc = avg_acc
+    #             record_auc = avg_auc
+    #             logger.info(f"auc all train: {auc_all_train}")
+    #             logger.info(f"acc all train: {acc_all_train}")
+    #             logger.info("train average ACC: {:.4f}".format(avg_acc))
+    #             logger.info("train average AUC: {:.4f}".format(avg_auc))
                 
-            logger.info("")
+    #         logger.info("")
 
-            end_time_epoch_train = time()
-            epoch_time_train = end_time_epoch_train - start_time_epoch_train
-            total_time_train += epoch_time_train
+    #         end_time_epoch_train = time()
+    #         epoch_time_train = end_time_epoch_train - start_time_epoch_train
+    #         total_time_train += epoch_time_train
 
 
-            # validation
-            logger.info("Epoch {} begin validating...".format(i))
-            pred_all_valid, label_true_valid = test_func(validloader,
-                                    cnn_c, 
-                                    cnn_d, 
-                                    concate_net, 
-                                    reconstruct_net_c, 
-                                    reconstruct_net_d, 
-                                    criterion,
-                                    device,
-                                    i)
-            auc_all_valid, acc_all_valid, con_all_valid = metric(pred_all_valid, label_true_valid, show=False)
-            avg_acc = get_average_acc(acc_all_valid)# get the average acc
-            avg_auc = get_average_auc(auc_all_valid)
-            con_metric = get_confusion_matrix(pred_all_valid, label_true_valid) # compute recall and precision
-            specificity = get_specificity(pred_all_valid, label_true_valid)
-            # sens, spec, prec = get_confusion_matrix(con_all_test)
-            # if i % 10 == 0 or i == (epochs - 1):
-            if (record_acc+record_auc) <= (avg_acc + avg_auc):
-                record_acc = avg_acc
-                record_auc = avg_auc
-                logger.info(f"auc all valid: {auc_all_valid}")
-                logger.info(f"acc all valid: {acc_all_valid}")
-                logger.info("Current best average ACC: {:.4f}".format(avg_acc))
-                logger.info("Current average AUC: {:.4f}".format(avg_auc))
+    #         # validation
+    #         logger.info("Epoch {} begin validating...".format(i))
+    #         pred_all_valid, label_true_valid = test_func(validloader,
+    #                                 cnn_c, 
+    #                                 cnn_d, 
+    #                                 concate_net, 
+    #                                 reconstruct_net_c, 
+    #                                 reconstruct_net_d, 
+    #                                 criterion,
+    #                                 device,
+    #                                 i)
+    #         auc_all_valid, acc_all_valid, con_all_valid = metric(pred_all_valid, label_true_valid, show=False)
+    #         avg_acc = get_average_acc(acc_all_valid)# get the average acc
+    #         avg_auc = get_average_auc(auc_all_valid)
+    #         con_metric = get_confusion_matrix(pred_all_valid, label_true_valid) # compute recall and precision
+    #         specificity = get_specificity(pred_all_valid, label_true_valid)
+    #         # sens, spec, prec = get_confusion_matrix(con_all_test)
+    #         # if i % 10 == 0 or i == (epochs - 1):
+    #         if (record_acc+record_auc) <= (avg_acc + avg_auc):
+    #             record_acc = avg_acc
+    #             record_auc = avg_auc
+    #             logger.info(f"auc all valid: {auc_all_valid}")
+    #             logger.info(f"acc all valid: {acc_all_valid}")
+    #             logger.info("Current best average ACC: {:.4f}".format(avg_acc))
+    #             logger.info("Current average AUC: {:.4f}".format(avg_auc))
 
-            logger.info("")
+    #         logger.info("")
 
             
 
 
 
 
-    record_acc = 0.
-    record_auc = 0.
+    # record_acc = 0.
+    # record_auc = 0.
 
-    # checkpoints
-    # model_name_c = './checkpoint/feature_extraction_c_fusion_9-12_21.pth'# './checkpoint/feature_extraction_concate_discrinimator_0713_c1_two_stream.pth' # 3 ahieved the best performance 
-    # model_name_d = './checkpoint/feature_extraction_d_fusion_9-12_21.pth' #'./checkpoint/feature_extraction_concate_discrinimator_0713_d1_two_stream.pth'
-    # model_name_concate = './checkpoint/concatenate_fusion_9-12_21.pth'# './checkpoint/concate_discrinimator_0713_concatenate1_two_stream.pth'
-    # model_name_dis_c = './checkpoint/discriminator_fusion_9-12_21.pth'# './checkpoint/reconstruct_concate_discrinimator_0713_c1_two_stream.pth'
-    # model_name_recon_c = './checkpoint/reconstruct_c_fusion_9-12_21.pth'# './checkpoint/feature_extraction_concate_recon_0713_c1_two_stream.pth' # 3 ahieved the best performance
-    # model_name_recon_d = './checkpoint/reconstruct_c_fusion_9-12_21.pth'# './checkpoint/feature_extraction_concate_recon_0713_d1_two_stream.pth'
+    # # checkpoints
+    # # model_name_c = './checkpoint/feature_extraction_c_fusion_9-12_21.pth'# './checkpoint/feature_extraction_concate_discrinimator_0713_c1_two_stream.pth' # 3 ahieved the best performance 
+    # # model_name_d = './checkpoint/feature_extraction_d_fusion_9-12_21.pth' #'./checkpoint/feature_extraction_concate_discrinimator_0713_d1_two_stream.pth'
+    # # model_name_concate = './checkpoint/concatenate_fusion_9-12_21.pth'# './checkpoint/concate_discrinimator_0713_concatenate1_two_stream.pth'
+    # # model_name_dis_c = './checkpoint/discriminator_fusion_9-12_21.pth'# './checkpoint/reconstruct_concate_discrinimator_0713_c1_two_stream.pth'
+    # # model_name_recon_c = './checkpoint/reconstruct_c_fusion_9-12_21.pth'# './checkpoint/feature_extraction_concate_recon_0713_c1_two_stream.pth' # 3 ahieved the best performance
+    # # model_name_recon_d = './checkpoint/reconstruct_c_fusion_9-12_21.pth'# './checkpoint/feature_extraction_concate_recon_0713_d1_two_stream.pth'
 
-    # checkpoint_c = torch.load(model_name_c)
-    # cnn_c.load_state_dict(checkpoint_c)
-    # checkpoint_d = torch.load(model_name_d)
-    # cnn_d.load_state_dict(checkpoint_d)
-    # checkpoint_concate_net = torch.load(model_name_concate)
-    # concate_net.load_state_dict(checkpoint_concate_net)
+    # # checkpoint_c = torch.load(model_name_c)
+    # # cnn_c.load_state_dict(checkpoint_c)
+    # # checkpoint_d = torch.load(model_name_d)
+    # # cnn_d.load_state_dict(checkpoint_d)
+    # # checkpoint_concate_net = torch.load(model_name_concate)
+    # # concate_net.load_state_dict(checkpoint_concate_net)
 
-    testloader = torch.utils.data.DataLoader(test_dataset, batch_size=48,
-                                                shuffle=False, num_workers=8)
+    # testloader = torch.utils.data.DataLoader(test_dataset, batch_size=48,
+    #                                             shuffle=False, num_workers=8)
 
-    # print("\n\n\n===========================================\n\n\n")
-    logger.info("\n\n\n===========================================\n\n\n")
-    i=1
-    logger.info("Epoch {} begin testing...".format(i))
-    pred_all_test, label_true_test = test_func(testloader, 
-                            cnn_c, 
-                            cnn_d, 
-                            concate_net, 
-                            reconstruct_net_c, 
-                            reconstruct_net_d, 
-                            criterion,
-                            device,
-                            i)
-    auc_all_test, acc_all_test, con_all_test = metric(pred_all_test, label_true_test, show=False)
-    avg_acc = get_average_acc(acc_all_test)# get the average acc
-    avg_auc = get_average_auc(auc_all_test)
-    con_metric = get_confusion_matrix(pred_all_test, label_true_test) # compute recall and precision
-    specificity = get_specificity(pred_all_test, label_true_test)
-    # sens, spec, prec = get_confusion_matrix(con_all_test)
-    # if i % 10 == 0 or i == (epochs - 1):
-    if (record_acc+record_auc) <= (avg_acc + avg_auc):
-        record_acc = avg_acc
-        record_auc = avg_auc
-        logger.info("Test metics on epoch {}:".format(i))
-        logger.info(f"auc all test: {auc_all_test}")
-        logger.info(f"acc all test: {acc_all_test}")
-        logger.info("Current best average ACC: {:.4f}".format(avg_acc))
-        logger.info("Current average AUC: {:.4f}".format(avg_auc))
+    # # print("\n\n\n===========================================\n\n\n")
+    # logger.info("\n\n\n===========================================\n\n\n")
+    # i=1
+    # logger.info("Epoch {} begin testing...".format(i))
+    # pred_all_test, label_true_test = test_func(testloader, 
+    #                         cnn_c, 
+    #                         cnn_d, 
+    #                         concate_net, 
+    #                         reconstruct_net_c, 
+    #                         reconstruct_net_d, 
+    #                         criterion,
+    #                         device,
+    #                         i)
+    # auc_all_test, acc_all_test, con_all_test = metric(pred_all_test, label_true_test, show=False)
+    # avg_acc = get_average_acc(acc_all_test)# get the average acc
+    # avg_auc = get_average_auc(auc_all_test)
+    # con_metric = get_confusion_matrix(pred_all_test, label_true_test) # compute recall and precision
+    # specificity = get_specificity(pred_all_test, label_true_test)
+    # # sens, spec, prec = get_confusion_matrix(con_all_test)
+    # # if i % 10 == 0 or i == (epochs - 1):
+    # if (record_acc+record_auc) <= (avg_acc + avg_auc):
+    #     record_acc = avg_acc
+    #     record_auc = avg_auc
+    #     logger.info("Test metics on epoch {}:".format(i))
+    #     logger.info(f"auc all test: {auc_all_test}")
+    #     logger.info(f"acc all test: {acc_all_test}")
+    #     logger.info("Current best average ACC: {:.4f}".format(avg_acc))
+    #     logger.info("Current average AUC: {:.4f}".format(avg_auc))
 
 
 

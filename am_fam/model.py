@@ -15,6 +15,8 @@ class CNN(nn.Module):
         
         x = self.resnet_layer(x)
         return x
+    
+
 class Concate(nn.Module): 
     def __init__(self):
         super(Concate, self).__init__()
@@ -94,6 +96,8 @@ class Discriminator(nn.Module):
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.dropout = nn.Dropout(p=0.5)
         self.relu = nn.ReLU()
+
+
     def forward(self, x_c, x_d):
         x = torch.cat((x_c, x_d), dim = 0)
         x = self.avg_pool(x).view(x.size()[0], -1)
@@ -118,6 +122,8 @@ def weights_init(m):
         nn.init.xavier_normal_(m.weight)
         if m.bias is not None:
             nn.init.constant_(m.bias, 0.01)
+
+
 class ReconstructionNet(nn.Module):
     def __init__(self, in_feature, output_size):
         super(ReconstructionNet, self).__init__()
@@ -166,7 +172,9 @@ class ReconstructionNet(nn.Module):
     ground_truth1 = pred.view(ground_truth.size()[0], -1)
     
     loss = crit(pred.view(pred.size()[0], -1),  ground_truth.view(ground_truth.size()[0], -1))
-    return loss '''
+    return loss'''
+
+
 def reconstruction_loss(pred=None, ground_truth=None, mask=None, crit=None):
     '''import pdb;
     pdb.set_trace()'''
