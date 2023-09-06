@@ -288,6 +288,7 @@ if __name__ == '__main__':
     batch_size = 32
     num_workers = 8
     data_mode = 'self_evaluated'
+    # data_mode = 'Normal'
     deterministic = True
     if deterministic:
         if data_mode == 'Normal':
@@ -296,8 +297,8 @@ if __name__ == '__main__':
           random_seeds = 183
     rounds = 1
     lr = 3e-5
-    epochs = 250
-    swa_epoch = 50
+    epochs = 50
+    swa_epoch = 20
 
     train_dataloader, val_dataloader = generate_dataloader(shape, batch_size, num_workers, data_mode)
     
