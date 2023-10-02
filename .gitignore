@@ -7,3 +7,4 @@ am_fam/results/*
 __pycache__/*
 */__pycache__/*
 */*/__pycache__/*
+fusionm4net/result_prev/

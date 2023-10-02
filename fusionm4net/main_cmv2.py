@@ -9,6 +9,7 @@ from dataloader import generate_dataloader
 import torch
 import numpy as np
 import torch.nn.functional as F
+import argparse
 
 
 def train(net,train_dataloader,model_name):
@@ -281,14 +282,17 @@ def run_train(model_name,mode,i):
         
 if __name__ == '__main__':
     # Hyperparameters
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_mode', type=str, default='Normal', help='Normal or self_evaluated', choices=['Normal', 'self_evaluated'])
+    args = parser.parse_args()
     
     mode = 'multimodal'
     model_name = 'FusionM4Net-FS'
     shape = (224, 224)
     batch_size = 32
     num_workers = 8
-    data_mode = 'self_evaluated'
-    # data_mode = 'Normal'
+    data_mode = args.data_mode
     deterministic = True
     if deterministic:
         if data_mode == 'Normal':
@@ -297,8 +301,8 @@ if __name__ == '__main__':
           random_seeds = 183
     rounds = 1
     lr = 3e-5
-    epochs = 50
-    swa_epoch = 20
+    epochs = 250
+    swa_epoch = 50
 
     train_dataloader, val_dataloader = generate_dataloader(shape, batch_size, num_workers, data_mode)
     
