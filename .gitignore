@@ -7,5 +7,6 @@ am_fam/results/*
 __pycache__/*
 */__pycache__/*
 */*/__pycache__/*
-fusionm4net/result_prev/
-split_learning/pytorch_resnet_cifar10/pretrained_models/
+fusionm4net/result_prev/*
+split_learning/pytorch_resnet_cifar10/pretrained_models/*
+split_learning/result/*
