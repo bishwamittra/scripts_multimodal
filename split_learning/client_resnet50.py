@@ -274,7 +274,7 @@ for epc in range(1):
                 'num_batch': len(test_loader),
                 'dataset_size': len(test_loader.dataset)
             }
-            print(msg)
+            # print(msg)
             send_msg(s1, msg) # 'num test batch' to server
             resnet_client.eval()
             with torch.no_grad():
@@ -289,7 +289,7 @@ for epc in range(1):
                     }
                     send_msg(s1, msg) # send label and output(feature) to server
 
-            break
+            # break
      
 s1.close()
 

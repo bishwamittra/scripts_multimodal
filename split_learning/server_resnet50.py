@@ -334,7 +334,7 @@ for epc in range(epoch):
                 test_auc = roc_auc_score(targets_all.numpy(), prob.numpy(), multi_class='ovr')
                 logger.info(f'Test Loss: {round(test_loss.item(), 2)} Test Accuracy: {round(test_acc, 2)} Test AUC: {round(test_auc, 2)} Test Balanced Accuracy: {round(test_bal_acc, 2)}')
 
-            break
+            # break
 
 logger.info(f'Contribution from {server_name} is done')
 logger.info(f'Contribution duration is: {time.time() - start_time} seconds')
