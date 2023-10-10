@@ -22,7 +22,7 @@ import torch.nn.init as init
 import copy
 
 # %%
-root_path = '../../models/cifar10_data'
+root_path = '../models/cifar10_data'
 
 # Setup cpu
 device = 'cpu'
