@@ -263,6 +263,8 @@ for epc in range(1):
         }
         send_msg(s1, msg) # send label and output(feature) to server
         
+        
+        
         client_grad = recv_msg(s1) # receive gradaint after the server has completed the back propagation.
 
         output.backward(client_grad) # continue back propagation for client side layers.

@@ -1,0 +1,69 @@
+Start training @  Mon Oct  9 13:10:24 2023
+Epoch: 1/1, Batch: 100/6250, Train Loss: 2.61 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 200/6250, Train Loss: 2.86 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 300/6250, Train Loss: 2.93 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 400/6250, Train Loss: 2.64 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 500/6250, Train Loss: 2.35 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 600/6250, Train Loss: 2.82 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 700/6250, Train Loss: 2.29 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 800/6250, Train Loss: 2.55 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 900/6250, Train Loss: 2.18 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 1000/6250, Train Loss: 2.09 Train Accuracy: 0.25
+                                           Test Loss: 2.46 Test Accuracy: 0.1 Test AUC: 0.62 Test Balanced Accuracy: 0.1
+Epoch: 1/1, Batch: 1100/6250, Train Loss: 2.1 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 1200/6250, Train Loss: 3.01 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 1300/6250, Train Loss: 2.83 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 1400/6250, Train Loss: 3.1 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 1500/6250, Train Loss: 2.24 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 1600/6250, Train Loss: 2.43 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 1700/6250, Train Loss: 2.08 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 1800/6250, Train Loss: 1.89 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 1900/6250, Train Loss: 2.0 Train Accuracy: 0.38
+Epoch: 1/1, Batch: 2000/6250, Train Loss: 1.99 Train Accuracy: 0.5
+                                           Test Loss: 2.36 Test Accuracy: 0.19 Test AUC: 0.69 Test Balanced Accuracy: 0.19
+Epoch: 1/1, Batch: 2100/6250, Train Loss: 2.34 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 2200/6250, Train Loss: 1.99 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 2300/6250, Train Loss: 2.13 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 2400/6250, Train Loss: 2.69 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 2500/6250, Train Loss: 2.17 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 2600/6250, Train Loss: 2.25 Train Accuracy: 0.38
+Epoch: 1/1, Batch: 2700/6250, Train Loss: 2.01 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 2800/6250, Train Loss: 1.91 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 2900/6250, Train Loss: 2.21 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 3000/6250, Train Loss: 2.16 Train Accuracy: 0.25
+                                           Test Loss: 2.12 Test Accuracy: 0.24 Test AUC: 0.76 Test Balanced Accuracy: 0.24
+Epoch: 1/1, Batch: 3100/6250, Train Loss: 1.88 Train Accuracy: 0.38
+Epoch: 1/1, Batch: 3200/6250, Train Loss: 1.93 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 3300/6250, Train Loss: 1.63 Train Accuracy: 0.38
+Epoch: 1/1, Batch: 3400/6250, Train Loss: 2.03 Train Accuracy: 0.38
+Epoch: 1/1, Batch: 3500/6250, Train Loss: 2.31 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 3600/6250, Train Loss: 1.82 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 3700/6250, Train Loss: 1.54 Train Accuracy: 0.62
+Epoch: 1/1, Batch: 3800/6250, Train Loss: 1.65 Train Accuracy: 0.5
+Epoch: 1/1, Batch: 3900/6250, Train Loss: 2.16 Train Accuracy: 0.38
+Epoch: 1/1, Batch: 4000/6250, Train Loss: 2.44 Train Accuracy: 0.25
+                                           Test Loss: 2.01 Test Accuracy: 0.26 Test AUC: 0.79 Test Balanced Accuracy: 0.26
+Epoch: 1/1, Batch: 4100/6250, Train Loss: 1.89 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 4200/6250, Train Loss: 1.73 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 4300/6250, Train Loss: 2.07 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 4400/6250, Train Loss: 1.73 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 4500/6250, Train Loss: 1.96 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 4600/6250, Train Loss: 1.93 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 4700/6250, Train Loss: 1.55 Train Accuracy: 0.5
+Epoch: 1/1, Batch: 4800/6250, Train Loss: 1.92 Train Accuracy: 0.12
+Epoch: 1/1, Batch: 4900/6250, Train Loss: 3.04 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 5000/6250, Train Loss: 2.41 Train Accuracy: 0.25
+                                           Test Loss: 1.79 Test Accuracy: 0.33 Test AUC: 0.82 Test Balanced Accuracy: 0.33
+Epoch: 1/1, Batch: 5100/6250, Train Loss: 1.45 Train Accuracy: 0.38
+Epoch: 1/1, Batch: 5200/6250, Train Loss: 2.57 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 5300/6250, Train Loss: 1.58 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 5400/6250, Train Loss: 1.57 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 5500/6250, Train Loss: 2.48 Train Accuracy: 0.0
+Epoch: 1/1, Batch: 5600/6250, Train Loss: 1.52 Train Accuracy: 0.5
+Epoch: 1/1, Batch: 5700/6250, Train Loss: 1.89 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 5800/6250, Train Loss: 1.6 Train Accuracy: 0.25
+Epoch: 1/1, Batch: 5900/6250, Train Loss: 1.67 Train Accuracy: 0.38
+Epoch: 1/1, Batch: 6000/6250, Train Loss: 1.02 Train Accuracy: 0.75
+                                           Test Loss: 1.73 Test Accuracy: 0.36 Test AUC: 0.84 Test Balanced Accuracy: 0.36
+Epoch: 1/1, Batch: 6100/6250, Train Loss: 1.05 Train Accuracy: 0.5
+Epoch: 1/1, Batch: 6200/6250, Train Loss: 1.64 Train Accuracy: 0.25
