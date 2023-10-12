@@ -332,7 +332,7 @@ def generate_dataloader(shape, batch_size, num_workers):
 
     train_index_list = list(train_index_df['indexes'])
     val_index_list = list(val_index_df['indexes'])
-    # test_index_list = list(test_index_df['indexes'])
+    test_index_list = list(test_index_df['indexes'])
 
     # train_index_list_1 = train_index_list[0:206]
     # train_index_list_2 = train_index_list[206:]
@@ -393,7 +393,21 @@ def generate_dataloader(shape, batch_size, num_workers):
         batch_size=batch_size,
         num_workers=num_workers,
         pin_memory=True,
-        shuffle=True)
+        shuffle=False)
+    
+    test_skin_dataset = SkinDataset(image_dir=source_dir,
+                                    img_info=df,
+                                    file_list=test_index_list,
+                                    shape=shape,
+                                    is_test=True,
+                                    )
 
-    return train_dataloader, val_dataloader
+    test_dataloader = DataLoader(
+        dataset=test_skin_dataset,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        pin_memory=True,
+        shuffle=False)
+
+    return train_dataloader, val_dataloader, test_dataloader
 

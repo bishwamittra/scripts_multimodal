@@ -34,6 +34,7 @@ def train(net, train_dataloader, optimizer, device):
          (logit_diagnosis_fusion, logit_pn_fusion, logit_str_fusion, logit_pig_fusion, logit_rs_fusion, logit_dag_fusion, logit_bwv_fusion,
           logit_vs_fusion)] = net((clinic_image, derm_image))
 
+        # average fusion loss
         loss_fusion = torch.true_divide(
             net.criterion(logit_diagnosis_fusion, diagnosis_label)
             + net.criterion(logit_pn_fusion, pn_label)
@@ -44,6 +45,7 @@ def train(net, train_dataloader, optimizer, device):
             + net.criterion(logit_bwv_fusion, bwv_label)
             + net.criterion(logit_vs_fusion, vs_label), 8)
 
+        # average clic loss
         loss_clic = torch.true_divide(
             net.criterion(logit_diagnosis_clic, diagnosis_label)
             + net.criterion(logit_pn_clic, pn_label)
@@ -54,6 +56,7 @@ def train(net, train_dataloader, optimizer, device):
             + net.criterion(logit_bwv_clic, bwv_label)
             + net.criterion(logit_vs_clic, vs_label), 8)
 
+        # average derm loss
         loss_derm = torch.true_divide(
             net.criterion(logit_diagnosis_derm, diagnosis_label)
             + net.criterion(logit_pn_derm, pn_label)
@@ -64,8 +67,10 @@ def train(net, train_dataloader, optimizer, device):
             + net.criterion(logit_bwv_derm, bwv_label)
             + net.criterion(logit_vs_derm, vs_label), 8)
 
+        # average loss
         loss = loss_fusion*0.33 + loss_clic*0.33 + loss_derm*0.33
 
+        # fusion, clic, derm accuracy for diagnostic
         dia_acc_fusion = torch.true_divide(net.metric(
             logit_diagnosis_fusion, diagnosis_label), clinic_image.size(0))
         dia_acc_clic = torch.true_divide(net.metric(
@@ -73,41 +78,40 @@ def train(net, train_dataloader, optimizer, device):
         dia_acc_derm = torch.true_divide(net.metric(
             logit_diagnosis_derm, diagnosis_label), clinic_image.size(0))
 
+        # average accuracy for diagnostic
         dia_acc = torch.true_divide(
             dia_acc_fusion + dia_acc_clic + dia_acc_derm, 3)
 
+        # seven-point accuracy of fusion
         sps_acc_fusion = torch.true_divide(net.metric(logit_pn_fusion, pn_label)
                                            + net.metric(logit_str_fusion, str_label)
                                            + net.metric(logit_pig_fusion, pig_label)
                                            + net.metric(logit_rs_fusion, rs_label)
                                            + net.metric(logit_dag_fusion, dag_label)
                                            + net.metric(logit_bwv_fusion, bwv_label)
-                                           + net.metric(logit_vs_fusion, vs_label), 7 * clinic_image.size(0))
-        sps_acc_clic = torch.true_divide(net.metric(logit_pn_clic, pn_label)
-                                         + net.metric(logit_str_clic,
-                                                      str_label)
-                                         + net.metric(logit_pig_clic,
-                                                      pig_label)
-                                         + net.metric(logit_rs_clic, rs_label)
-                                         + net.metric(logit_dag_clic,
-                                                      dag_label)
-                                         + net.metric(logit_bwv_clic,
-                                                      bwv_label)
-                                         + net.metric(logit_vs_clic, vs_label), 7 * clinic_image.size(0))
-        sps_acc_derm = torch.true_divide(net.metric(logit_pn_derm, pn_label)
-                                         + net.metric(logit_str_derm,
-                                                      str_label)
-                                         + net.metric(logit_pig_derm,
-                                                      pig_label)
-                                         + net.metric(logit_rs_derm, rs_label)
-                                         + net.metric(logit_dag_derm,
-                                                      dag_label)
-                                         + net.metric(logit_bwv_derm,
-                                                      bwv_label)
-                                         + net.metric(logit_vs_derm, vs_label), 7 * clinic_image.size(0))
+                                           + net.metric(logit_vs_fusion, vs_label), 
+                                                7 * clinic_image.size(0))
 
-        sps_acc = torch.true_divide(
-            sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
+        # seven-point accuracy of clic
+        sps_acc_clic = torch.true_divide(net.metric(logit_pn_clic, pn_label)
+                                         + net.metric(logit_str_clic, str_label)
+                                         + net.metric(logit_pig_clic, pig_label)
+                                         + net.metric(logit_rs_clic, rs_label)
+                                         + net.metric(logit_dag_clic, dag_label)
+                                         + net.metric(logit_bwv_clic, bwv_label)
+                                         + net.metric(logit_vs_clic, vs_label), 
+                                                7 * clinic_image.size(0))
+        # seven-point accuracy of derm
+        sps_acc_derm = torch.true_divide(net.metric(logit_pn_derm, pn_label)
+                                         + net.metric(logit_str_derm, str_label)
+                                         + net.metric(logit_pig_derm, pig_label)
+                                         + net.metric(logit_rs_derm, rs_label)
+                                         + net.metric(logit_dag_derm, dag_label)
+                                         + net.metric(logit_bwv_derm, bwv_label)
+                                         + net.metric(logit_vs_derm, vs_label), 
+                                                7 * clinic_image.size(0))
+        # average seven-point accuracy
+        sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
 
         loss.backward()
         optimizer.step()
@@ -219,8 +223,7 @@ def validation(net, val_dataloader, device):
                                              + net.metric(logit_bwv_derm, bwv_label)
                                              + net.metric(logit_vs_derm, vs_label), 7 * clinic_image.size(0))
 
-            sps_acc = torch.true_divide(
-                sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
+            sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
 
         val_loss += loss.item()
         val_dia_acc += dia_acc.item()
@@ -229,7 +232,6 @@ def validation(net, val_dataloader, device):
     val_loss = val_loss / (index + 1)
     val_dia_acc = val_dia_acc / (index + 1)
     val_sps_acc = val_sps_acc / (index + 1)
-
     return val_loss, val_dia_acc, val_sps_acc
 
 
@@ -237,7 +239,7 @@ def set_path(save_root='result', filename_prefix=""):
     if not os.path.exists(save_root):
         os.makedirs(save_root)
 
-    save_tag = f"split_learning"
+    save_tag = f"{filename_prefix}split_learning"
     exp_seq_path = os.path.join(save_root, 'exp_seq.txt')
 
     if not os.path.exists(exp_seq_path):
@@ -263,9 +265,8 @@ def set_path(save_root='result', filename_prefix=""):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
         os.makedirs(os.path.join(save_path, 'checkpoint'))
-    
 
-    logger_path = os.path.join(save_path, filename_prefix + 'exp_log.log')
+    logger_path = os.path.join(save_path, 'exp_log.log')
 
     return logger_path, exp_seq, save_path
 
