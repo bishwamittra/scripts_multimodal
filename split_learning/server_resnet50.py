@@ -43,7 +43,7 @@ device = "cuda:0"
 logger, exp_seq = get_logger(filename_prefix="server_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
 
-total_communication_time = 0
+
 
 def send_msg(sock, msg):
     assert isinstance(msg, dict)
@@ -65,7 +65,8 @@ def recv_msg(sock):
     msg =  recv_all(sock, msg_len)
     msg = pickle.loads(msg)
     global total_communication_time
-    total_communication_time += time.time() - msg['communication_time_stamp']
+    global offset_time
+    total_communication_time += time.time() - msg['communication_time_stamp'] + offset_time
     return msg, msg_len
 
 def recv_all(sock, n):
@@ -253,15 +254,19 @@ s.listen(5)
 conn, addr = s.accept()
 logger.info(f"Connected to: {addr}")
 
+total_communication_time = 0
+offset_time = 0
 # read epoch
 rmsg, data_size = recv_msg(conn) # receive total bach number and epoch from client.
-
 epoch = rmsg['epoch']
 num_batch = rmsg['total_batch']
+offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
+
+
 
 logger.info(f"received epoch: {rmsg['epoch']}, {rmsg['total_batch']}")
 
-send_msg(conn, {"server_name" : server_name}) # send server meta information.
+send_msg(conn, {"server_name" : server_name, "server_time": time.time()}) # send server meta information.
 
 # Start training
 start_time = time.time()

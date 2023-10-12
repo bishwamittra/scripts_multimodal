@@ -59,7 +59,7 @@ print(f'Train batch shape x: {x_train.size()} y: {y_train.size()}')
 total_batch = len(train_loader)
 print(f'Num Batch {total_batch}')
 
-total_communication_time = 0
+
 
 # Helper functions for communication between client and server.
 def send_msg(sock, msg):
@@ -80,7 +80,8 @@ def recv_msg(sock):
     msg =  recv_all(sock, msg_len)
     msg = pickle.loads(msg)
     global total_communication_time
-    total_communication_time += time.time() - msg['communication_time_stamp']
+    global offset_time
+    total_communication_time += time.time() - msg['communication_time_stamp'] + offset_time
     return msg
 
 def recv_all(sock, n):
@@ -241,8 +242,10 @@ msg = {
 send_msg(s1, msg) # send 'epoch' and 'batch size' to server
 
 # resnet_client.eval() # Why eval()?
-
+total_communication_time = 0
+offset_time = 0
 remote_server = recv_msg(s1)['server_name'] # get server's meta information.
+offset_time = - total_communication_time
 
 
 
