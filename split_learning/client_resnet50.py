@@ -208,7 +208,6 @@ def ResNet50(channel):
 
 resnet_client = ResNet50(channel=3).to(device) # parameters depend on the dataset
 
-epoch = 1
 lr = 0.001
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(resnet_client.parameters(), lr = lr, momentum = 0.9)
@@ -224,7 +223,7 @@ resnet_client
 # host = '10.9.240.14'
 host = '10.2.143.109'
 port = 10081
-epoch = 1
+epoch = 10
 
 start_time = time.time()
 
@@ -247,7 +246,7 @@ remote_server = recv_msg(s1)['server_name'] # get server's meta information.
 
 
 
-for epc in range(1):
+for epc in range(epoch):
     print("running epoch ", epc)
 
     target = 0

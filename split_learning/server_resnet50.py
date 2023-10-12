@@ -237,8 +237,6 @@ criterion = nn.CrossEntropyLoss()
 lr = 0.001
 optimizer = optim.SGD(resnet_server.parameters(), lr=lr, momentum=0.9)
 
-epochs = 1
-
 
 resnet_server
 
