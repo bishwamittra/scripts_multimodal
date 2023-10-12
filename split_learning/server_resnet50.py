@@ -1,4 +1,4 @@
-# %%
+
 server_name = 'SERVER_001'
 
 import os
@@ -31,19 +31,23 @@ import torch.nn.init as init
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score
 import copy
 
-# %%
+
 # Setup CUDA
 seed_num = 777
 # device = "cuda:0" if torch.cuda.is_available() else "cpu"
 # torch.manual_seed(seed_num)
 # if device == "cuda:0":
 #     torch.cuda.manual_seed_all(seed_num)
-device = "cpu"
-logger, exp_seq = get_logger()
+# device = "cpu"
+device = "cuda:0"
+logger, exp_seq = get_logger(filename_prefix="server_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
 
-# %%
+total_communication_time = 0
+
 def send_msg(sock, msg):
+    assert isinstance(msg, dict)
+    msg['communication_time_stamp'] = time.time()
     # prefix each message with a 4-byte length in network byte order
     msg = pickle.dumps(msg)
     l_send = len(msg)
@@ -60,6 +64,8 @@ def recv_msg(sock):
     # read the message data
     msg =  recv_all(sock, msg_len)
     msg = pickle.loads(msg)
+    global total_communication_time
+    total_communication_time += time.time() - msg['communication_time_stamp']
     return msg, msg_len
 
 def recv_all(sock, n):
@@ -72,10 +78,10 @@ def recv_all(sock, n):
         data += packet
     return data
 
-# %% [markdown]
+
 # The model definition of server
 
-# %%
+
 ''' ResNet '''
 
 class BasicBlock(nn.Module):
@@ -224,7 +230,7 @@ class ResNet(nn.Module):
 def ResNet50(num_classes):
     return ResNet(Bottleneck, Bottleneck_server, [3,4,6,3], num_classes=num_classes)
 
-# %%
+
 resnet_server =  ResNet50(num_classes=10).to(device)
 
 criterion = nn.CrossEntropyLoss()
@@ -233,10 +239,10 @@ optimizer = optim.SGD(resnet_server.parameters(), lr=lr, momentum=0.9)
 
 epochs = 1
 
-# %%
+
 resnet_server
 
-# %%
+
 # host = '10.2.144.188'
 # host = '10.9.240.14'
 host = '10.2.143.109'
@@ -257,7 +263,7 @@ num_batch = rmsg['total_batch']
 
 logger.info(f"received epoch: {rmsg['epoch']}, {rmsg['total_batch']}")
 
-send_msg(conn, server_name) # send server meta information.
+send_msg(conn, {"server_name" : server_name}) # send server meta information.
 
 # Start training
 start_time = time.time()
@@ -270,6 +276,7 @@ for epc in range(epoch):
         
         msg, data_size = recv_msg(conn) # receives label and feature from client.
         
+
         # label
         label = msg['label']
         label = label.clone().detach().long().to(device) # conversion between gpu and cpu.
@@ -284,7 +291,9 @@ for epc in range(epoch):
         loss.backward() # backward propagation
         
         # send gradient to client
-        msg = client_output_cpu.grad.clone().detach()
+        msg = {
+            "grad": client_output_cpu.grad.clone().detach(),
+        }
         data_size = send_msg(conn, msg)
         
         optimizer.step()
@@ -296,7 +305,9 @@ for epc in range(epoch):
             _, predicted = torch.max(output, 1)
             correct = (predicted == label).sum().item()
             accuracy = correct / len(label)
-            logger.info(f'Epoch: {epc+1}/{epoch}, Batch: {i+1}/{num_batch}, Train Loss: {round(loss.item(), 2)} Train Accuracy: {round(accuracy, 2)}')
+            logger.info(f'Epoch: {epc+1}/{epoch}, Batch: {i+1}/{num_batch}, Train Loss: {round(loss.item(), 2)} Train Accuracy: {round(accuracy, 2)} Client to server communication time: {round(total_communication_time, 2)}')
+
+            
 
         if (i + 1) % 1000 == 0:
             logger.info("Start validation")
@@ -335,11 +346,19 @@ for epc in range(epoch):
                 logger.info(f'Test Loss: {round(test_loss.item(), 2)} Test Accuracy: {round(test_acc, 2)} Test AUC: {round(test_auc, 2)} Test Balanced Accuracy: {round(test_bal_acc, 2)}')
 
             # break
+            server_to_client_communication_time = recv_msg(conn)[0]['server_to_client_communication_time']        
+            logger.info(f"Server to client communication time: {server_to_client_communication_time}")
+
+            # break
+
+server_to_client_communication_time = recv_msg(conn)[0]['server_to_client_communication_time']        
 
 logger.info(f'Contribution from {server_name} is done')
-logger.info(f'Contribution duration is: {time.time() - start_time} seconds')
+logger.info(f"Client to server communication time: {round(total_communication_time, 2)}")
+logger.info(f"Server to client communication time: {server_to_client_communication_time}")
+logger.info(f'Total duration is: {round(time.time() - start_time, 2)} seconds')
 
-# %%
+
 
 
 

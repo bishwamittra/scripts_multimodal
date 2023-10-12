@@ -31,32 +31,32 @@ def get_metrics(net, eval_loader, device):
 
 
 
-# generic purpose utils
-def mkdirs(dirpath):
-    try:
-        os.makedirs(dirpath)
-    except Exception as _:
-        pass
+# # generic purpose utils
+# def mkdirs(dirpath):
+#     try:
+#         os.makedirs(dirpath)
+#     except Exception as _:
+#         pass
 
-def get_logger(logger_path):
-    logging.basicConfig(
-        filename=logger_path,
-        # filename='/home/qinbin/test.log',
-        format='[%(asctime)s] %(levelname)s: %(message)s',
-        datefmt='%m-%d %H:%M', 
-        level=logging.DEBUG, 
-        filemode='w'
-    )
+# def get_logger(logger_path):
+#     logging.basicConfig(
+#         filename=logger_path,
+#         # filename='/home/qinbin/test.log',
+#         format='[%(asctime)s] %(levelname)s: %(message)s',
+#         datefmt='%m-%d %H:%M', 
+#         level=logging.DEBUG, 
+#         filemode='w'
+#     )
 
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    ch = logging.StreamHandler()
-    logger.addHandler(ch)
+#     logger = logging.getLogger()
+#     logger.setLevel(logging.INFO)
+#     ch = logging.StreamHandler()
+#     logger.addHandler(ch)
 
-    return logger
+#     return logger
 
 
-def set_path(save_root='result'):
+def set_path(save_root='result', filename_prefix=""):
     if not os.path.exists(save_root):
         os.makedirs(save_root)
     
@@ -87,7 +87,7 @@ def set_path(save_root='result'):
         os.makedirs(save_path)
 
     # config_path = os.path.join(save_path, 'config.json')
-    logger_path = os.path.join(save_path, 'exp_log.log')    
+    logger_path = os.path.join(save_path, filename_prefix + 'exp_log.log')    
 
     # server_save_path = os.path.join(save_path, 'server')
     # if not os.path.exists(server_save_path):
@@ -96,9 +96,9 @@ def set_path(save_root='result'):
     return logger_path, exp_seq
 
 
-def get_logger(save_root='result'):
+def get_logger(save_root='result', filename_prefix=""):
 
-    logger_path, exp_seq = set_path(save_root=save_root)
+    logger_path, exp_seq = set_path(save_root=save_root, filename_prefix=filename_prefix)
 
     logging.basicConfig(
         filename=logger_path,

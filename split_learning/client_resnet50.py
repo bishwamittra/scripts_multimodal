@@ -1,4 +1,4 @@
-# %%
+
 import os
 import struct
 import socket
@@ -18,14 +18,15 @@ import torch.optim as optim
 from torch.utils.data import Subset
 from torch.autograd import Variable
 import torch.nn.init as init
-
 import copy
 
-# %%
+
+
 root_path = '../models/cifar10_data'
 
 # Setup cpu
 device = 'cpu'
+# device = 'cuda:0'
 torch.manual_seed(777)
 
 # Setup client order
@@ -58,11 +59,12 @@ print(f'Train batch shape x: {x_train.size()} y: {y_train.size()}')
 total_batch = len(train_loader)
 print(f'Num Batch {total_batch}')
 
-# %% [markdown]
-# Helper functions for communication between client and server.
+total_communication_time = 0
 
-# %%
+# Helper functions for communication between client and server.
 def send_msg(sock, msg):
+    assert isinstance(msg, dict)
+    msg['communication_time_stamp'] = time.time()
     # prefix each message with a 4-byte length in network byte order
     msg = pickle.dumps(msg)
     msg = struct.pack('>I', len(msg)) + msg
@@ -77,6 +79,8 @@ def recv_msg(sock):
     # read the message data
     msg =  recv_all(sock, msg_len)
     msg = pickle.loads(msg)
+    global total_communication_time
+    total_communication_time += time.time() - msg['communication_time_stamp']
     return msg
 
 def recv_all(sock, n):
@@ -89,10 +93,9 @@ def recv_all(sock, n):
         data += packet
     return data
 
-# %% [markdown]
 # Definition of client side model (input layer only)
 
-# %%
+
 ''' ResNet '''
 
 class BasicBlock(nn.Module):
@@ -199,11 +202,10 @@ def ResNet50(channel):
 
 
 
-# %% [markdown]
 # Training hyper parameters
 # 
 
-# %%
+
 resnet_client = ResNet50(channel=3).to(device) # parameters depend on the dataset
 
 epoch = 1
@@ -211,19 +213,20 @@ lr = 0.001
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(resnet_client.parameters(), lr = lr, momentum = 0.9)
 
-# %%
+
 resnet_client
 
-# %% [markdown]
 # Training 
 
-# %%
+
 
 # host = '10.2.144.188'
 # host = '10.9.240.14'
 host = '10.2.143.109'
 port = 10081
 epoch = 1
+
+start_time = time.time()
 
 s1 = socket.socket()
 s1.connect((host, port)) # establish connection
@@ -240,7 +243,9 @@ send_msg(s1, msg) # send 'epoch' and 'batch size' to server
 
 # resnet_client.eval() # Why eval()?
 
-remote_server = recv_msg(s1) # get server's meta information.
+remote_server = recv_msg(s1)['server_name'] # get server's meta information.
+
+
 
 for epc in range(1):
     print("running epoch ", epc)
@@ -261,11 +266,12 @@ for epc in range(1):
             'label': label,
             'client_output': client_output
         }
+        
         send_msg(s1, msg) # send label and output(feature) to server
+        rmsg = recv_msg(s1) # receive gradaint after the server has completed the back propagation.
+        client_grad = rmsg['grad']
         
         
-        
-        client_grad = recv_msg(s1) # receive gradaint after the server has completed the back propagation.
 
         output.backward(client_grad) # continue back propagation for client side layers.
         optimizer.step()
@@ -292,14 +298,23 @@ for epc in range(1):
                     send_msg(s1, msg) # send label and output(feature) to server
 
             # break
+            send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})       
+            # break
+        
+        if(i+1) % 100 == 0:
+            print(f"Server to client communication time: {round(total_communication_time, 2)}")
+            
+
+
+send_msg(s1, {'server_to_client_communication_time': total_communication_time})       
      
 s1.close()
 
+end_time = time.time()
 
-# %% [markdown]
 # 
 
-# %%
+
 
 
 
