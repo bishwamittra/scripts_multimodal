@@ -90,6 +90,7 @@ class FusionNet(nn.Module):
             nn.BatchNorm1d(128),
             Swish_Module(),
         )
+
         self.clin_mlp = nn.Sequential(
             nn.Linear(2048, 512),
             nn.BatchNorm1d(512),
@@ -135,6 +136,7 @@ class FusionNet(nn.Module):
     def forward(self, x):
         (x_clic,x_derm) = x
 
+        # passed through the clinic model (pretained resnet50)
         x_clic = self.conv1_cli(x_clic)
         x_clic = self.bn1_cli(x_clic)
         x_clic = self.relu_cli(x_clic)
@@ -146,6 +148,7 @@ class FusionNet(nn.Module):
         x_clic = self.avgpool_cli(x_clic)
         x_clic = x_clic.view(x_clic.size(0), -1)
         
+        # passed through the derm model (pretained resnet50)
         x_derm = self.conv1_derm(x_derm)
         x_derm = self.bn1_derm(x_derm)
         x_derm = self.relu_derm(x_derm)
@@ -157,12 +160,15 @@ class FusionNet(nn.Module):
         x_derm = self.avgpool_derm(x_derm)
         x_derm = x_derm.view(x_derm.size(0), -1)
 
-
+        # fusion of the two model outputs
         x_fusion = torch.add(x_clic,x_derm)
         x_fusion = self.fc_fusion_(x_fusion)
 
+        # mlp ahead of clinic model
         x_clic = self.clin_mlp(x_clic)
         x_clic = self.dropout(x_clic)
+
+        # logits of clinic mlp
         logit_clic = self.fc_cli(x_clic)
         logit_pn_clic  = self.fc_pn_cli(x_clic)
         logit_str_clic  = self.fc_str_cli(x_clic)
@@ -172,8 +178,11 @@ class FusionNet(nn.Module):
         logit_bwv_clic  = self.fc_bwv_cli(x_clic)
         logit_vs_clic  = self.fc_vs_cli(x_clic)
 
+        # mlp ahead of derm model
         x_derm = self.derm_mlp(x_derm)
         x_derm = self.dropout(x_derm)
+
+        # logits of derm mlp
         logit_derm = self.fc_derm(x_derm)
         logit_pn_derm = self.fc_pn_derm(x_derm)
         logit_str_derm = self.fc_str_derm(x_derm)
@@ -182,7 +191,8 @@ class FusionNet(nn.Module):
         logit_dag_derm = self.fc_dag_derm(x_derm)
         logit_bwv_derm = self.fc_bwv_derm(x_derm)
         logit_vs_derm = self.fc_vs_derm(x_derm)
-          
+
+        # logits of fusion mlp  
         x_fusion = self.dropout(x_fusion)
         logit_fusion = self.fc_fusion(x_fusion)
         logit_pn_fusion  = self.fc_pn_fusion(x_fusion)
