@@ -1,35 +1,18 @@
 
-server_name = 'SERVER_001'
-
-import os
-import h5py
-
-import socket
-import struct
-import pickle
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torchvision
-import torchvision.transforms as transforms
-import torch.optim as optim
-
-import time
-import sys
-from utils import get_logger
-
-
-
-from tqdm import tqdm
-
-
-from torch.utils.data import Dataset, DataLoader
-
-from torch.autograd import Variable
-import torch.nn.init as init
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score
-import copy
+from tqdm import tqdm
+from utils import get_logger
+import time
+import torch.optim as optim
+import torch.nn.functional as F
+import torch.nn as nn
+from model_server import FusionNet
+from dependency import class_list
+import torch
+import pickle
+import struct
+import socket
+server_name = 'SERVER_001'
 
 
 # Setup CUDA
@@ -40,9 +23,8 @@ seed_num = 777
 #     torch.cuda.manual_seed_all(seed_num)
 # device = "cpu"
 device = "cuda:0"
-logger, exp_seq = get_logger(filename_prefix="server_")
+logger, exp_seq, save_path = get_logger(filename_prefix="server_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
-
 
 
 def send_msg(sock, msg):
@@ -55,6 +37,7 @@ def send_msg(sock, msg):
     sock.sendall(msg)
     return l_send
 
+
 def recv_msg(sock):
     # read message length and unpack it into an integer
     raw_msg_len = recv_all(sock, 4)
@@ -62,12 +45,14 @@ def recv_msg(sock):
         return None
     msg_len = struct.unpack('>I', raw_msg_len)[0]
     # read the message data
-    msg =  recv_all(sock, msg_len)
+    msg = recv_all(sock, msg_len)
     msg = pickle.loads(msg)
     global total_communication_time
     global offset_time
-    total_communication_time += time.time() - msg['communication_time_stamp'] + offset_time
+    total_communication_time += time.time() - \
+        msg['communication_time_stamp'] + offset_time
     return msg, msg_len
+
 
 def recv_all(sock, n):
     # helper function to receive n bytes or return None if EOF is hit
@@ -80,166 +65,10 @@ def recv_all(sock, n):
     return data
 
 
-# The model definition of server
-
-
-''' ResNet '''
-
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, in_planes, planes, stride=1, norm='instancenorm'):
-        super(BasicBlock, self).__init__()
-        self.norm = norm
-        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.GroupNorm(self.expansion*planes, self.expansion*planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(self.expansion*planes)
-            )
-
-    def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
-
-
-class Bottleneck(nn.Module):
-    expansion = 4
-
-    def __init__(self, in_planes, planes, stride=1, norm='instancenorm'):
-        super(Bottleneck, self).__init__()
-        self.norm = norm
-        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=1, bias=False)
-        self.bn1 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn2 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, self.expansion*planes, kernel_size=1, bias=False)
-        self.bn3 = nn.GroupNorm(self.expansion*planes, self.expansion*planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(self.expansion*planes)
-
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.GroupNorm(self.expansion*planes, self.expansion*planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(self.expansion*planes)
-            )
-
-    def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = F.relu(self.bn2(self.conv2(out)))
-        out = self.bn3(self.conv3(out))
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
-    
-
-class Bottleneck_server(nn.Module):
-    expansion = 4
-
-    def __init__(self, in_planes, planes, stride=1, norm='instancenorm'):
-        super(Bottleneck_server, self).__init__()
-        self.norm = norm
-        # self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=1, bias=False)
-        # self.bn1 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn2 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, self.expansion*planes, kernel_size=1, bias=False)
-        self.bn3 = nn.GroupNorm(self.expansion*planes, self.expansion*planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(self.expansion*planes)
-
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.GroupNorm(self.expansion*planes, self.expansion*planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(self.expansion*planes)
-            )
-
-    def forward(self, x):
-        # out = F.relu(self.bn1(self.conv1(x)))
-        out = F.relu(self.bn2(self.conv2(x)))
-        out = self.bn3(self.conv3(out))
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
-
-
-class ResNet(nn.Module):
-    # def __init__(self, block, num_blocks, channel=3, num_classes=10, norm='instancenorm'):
-    def __init__(self, block, block_server, num_blocks, num_classes=10, norm='instancenorm'):
-        super(ResNet, self).__init__()
-        self.in_planes = 64
-        self.norm = norm
-
-        # self.conv1 = nn.Conv2d(channel, 64, kernel_size=3, stride=1, padding=1, bias=False)
-        # self.bn1 = nn.GroupNorm(64, 64, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(64)
-        # self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
-        self.layer1 = self._make_layer_server(block, block_server, 64, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
-        self.classifier = nn.Linear(512*block.expansion, num_classes)
-
-    def _make_layer(self, block, planes, num_blocks, stride):
-        strides = [stride] + [1]*(num_blocks-1)
-        layers = []
-        for stride in strides:
-            layers.append(block(self.in_planes, planes, stride, self.norm))
-            self.in_planes = planes * block.expansion
-        return nn.Sequential(*layers)
-    
-    def _make_layer_server(self, block, block_server, planes, num_blocks, stride):
-        # strides = [stride] + [1]*(num_blocks-1)
-        layers = []
-        layers.append(block_server(self.in_planes, planes, 1))
-        self.in_planes = planes * block.expansion
-        layers.append(block(self.in_planes, planes, 1))
-        self.in_planes = planes * block.expansion
-        layers.append(block(self.in_planes, planes, 1))
-        self.in_planes = planes * block.expansion
-        
-        return nn.Sequential(*layers)
-
-    def forward(self, x):
-        # out = F.relu(self.bn1(self.conv1(x)))
-        out = self.layer1(x)
-        out = self.layer2(out)
-        out = self.layer3(out)
-        out = self.layer4(out)
-        out = F.avg_pool2d(out, 4)
-        out = out.view(out.size(0), -1)
-        out = self.classifier(out)
-        return out
-
-    # def embed(self, x):
-    #     out = F.relu(self.bn1(self.conv1(x)))
-    #     out = self.layer1(out)
-    #     out = self.layer2(out)
-    #     out = self.layer3(out)
-    #     out = self.layer4(out)
-    #     out = F.avg_pool2d(out, 4)
-    #     out = out.view(out.size(0), -1)
-    #     return out
-
-
-
-def ResNet50(num_classes):
-    return ResNet(Bottleneck, Bottleneck_server, [3,4,6,3], num_classes=num_classes)
-
-
-resnet_server =  ResNet50(num_classes=10).to(device)
-
+server_model = FusionNet(class_list).to(device)
 criterion = nn.CrossEntropyLoss()
 lr = 0.001
-optimizer = optim.SGD(resnet_server.parameters(), lr=lr, momentum=0.9)
-
-
-resnet_server
+optimizer = optim.Adam(server_model.parameters(), lr=lr)
 
 
 # host = '10.2.144.188'
@@ -256,112 +85,225 @@ logger.info(f"Connected to: {addr}")
 
 total_communication_time = 0
 offset_time = 0
-# read epoch
-rmsg, data_size = recv_msg(conn) # receive total bach number and epoch from client.
-epoch = rmsg['epoch']
+rmsg, data_size = recv_msg(conn)
+epochs = rmsg['epoch']
 num_batch = rmsg['total_batch']
-offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
-
+# setting the first communication time as 0 to offset the time.
+offset_time = - total_communication_time
 
 
 logger.info(f"received epoch: {rmsg['epoch']}, {rmsg['total_batch']}")
 
-send_msg(conn, {"server_name" : server_name, "server_time": time.time()}) # send server meta information.
+# send server meta information.
+send_msg(conn, {"server_name": server_name, "server_time": time.time()})
 
 # Start training
 start_time = time.time()
 logger.info(f"Start training @ {time.asctime()}")
-
-for epc in range(epoch):
-    init = 0
-    for i in tqdm(range(num_batch), ncols = 100, desc='Training with {}'.format(server_name)):
+server_model.set_mode('train')
+for epc in range(epochs):
+    train_loss = 0
+    train_dia_acc = 0
+    train_sps_acc = 0
+    for index in tqdm(range(num_batch), ncols=100, desc='Training with {}'.format(server_name)):
         optimizer.zero_grad()
-        
-        msg, data_size = recv_msg(conn) # receives label and feature from client.
-        
+
+        # receives label and feature from client.
+        msg, data_size = recv_msg(conn)
 
         # label
         label = msg['label']
-        label = label.clone().detach().long().to(device) # conversion between gpu and cpu.
-        
+        # Diagostic label
+        diagnosis_label = label[0].clone().long().to(device)
+        # Seven-Point Checklikst labels
+        pn_label = label[1].clone().long().to(device)
+        str_label = label[2].clone().long().to(device)
+        pig_label = label[3].clone().long().to(device)
+        rs_label = label[4].clone().long().to(device)
+        dag_label = label[5].clone().long().to(device)
+        bwv_label = label[6].clone().long().to(device)
+        vs_label = label[7].clone().long().to(device)
+
         # feature
-        client_output_cpu = msg['client_output']
-        client_output = client_output_cpu.to(device)
+        x_clic_cpu, x_derm_cpu = msg['x_clic'], msg['x_derm']
+        x_clic = x_clic_cpu.to(device)
+        x_derm = x_derm_cpu.to(device)
 
         # forward propagation
-        output = resnet_server(client_output)
-        loss = criterion(output, label) # compute cross-entropy loss
-        loss.backward() # backward propagation
-        
+        [(logit_diagnosis_derm, logit_pn_derm, logit_str_derm, logit_pig_derm, logit_rs_derm, logit_dag_derm, logit_bwv_derm,
+          logit_vs_derm),
+         (logit_diagnosis_clic, logit_pn_clic, logit_str_clic, logit_pig_clic, logit_rs_clic, logit_dag_clic, logit_bwv_clic,
+          logit_vs_clic),
+         (logit_diagnosis_fusion, logit_pn_fusion, logit_str_fusion, logit_pig_fusion, logit_rs_fusion, logit_dag_fusion, logit_bwv_fusion,
+          logit_vs_fusion)] = server_model((x_clic, x_derm))
+
+        # average fusion loss
+        loss_fusion = torch.true_divide(
+            server_model.criterion(logit_diagnosis_fusion, diagnosis_label)
+            + server_model.criterion(logit_pn_fusion, pn_label)
+            + server_model.criterion(logit_str_fusion, str_label)
+            + server_model.criterion(logit_pig_fusion, pig_label)
+            + server_model.criterion(logit_rs_fusion, rs_label)
+            + server_model.criterion(logit_dag_fusion, dag_label)
+            + server_model.criterion(logit_bwv_fusion, bwv_label)
+            + server_model.criterion(logit_vs_fusion, vs_label), 8)
+
+        # average clic loss
+        loss_clic = torch.true_divide(
+            server_model.criterion(logit_diagnosis_clic, diagnosis_label)
+            + server_model.criterion(logit_pn_clic, pn_label)
+            + server_model.criterion(logit_str_clic, str_label)
+            + server_model.criterion(logit_pig_clic, pig_label)
+            + server_model.criterion(logit_rs_clic, rs_label)
+            + server_model.criterion(logit_dag_clic, dag_label)
+            + server_model.criterion(logit_bwv_clic, bwv_label)
+            + server_model.criterion(logit_vs_clic, vs_label), 8)
+
+        # average derm loss
+        loss_derm = torch.true_divide(
+            server_model.criterion(logit_diagnosis_derm, diagnosis_label)
+            + server_model.criterion(logit_pn_derm, pn_label)
+            + server_model.criterion(logit_str_derm, str_label)
+            + server_model.criterion(logit_pig_derm, pig_label)
+            + server_model.criterion(logit_rs_derm, rs_label)
+            + server_model.criterion(logit_dag_derm, dag_label)
+            + server_model.criterion(logit_bwv_derm, bwv_label)
+            + server_model.criterion(logit_vs_derm, vs_label), 8)
+
+        # average loss
+        loss = loss_fusion*0.33 + loss_clic*0.33 + loss_derm*0.33
+
+        # fusion, clic, derm accuracy for diagnostic
+        dia_acc_fusion = torch.true_divide(server_model.metric(
+            logit_diagnosis_fusion, diagnosis_label), num_batch)
+        dia_acc_clic = torch.true_divide(server_model.metric(
+            logit_diagnosis_clic, diagnosis_label), num_batch)
+        dia_acc_derm = torch.true_divide(server_model.metric(
+            logit_diagnosis_derm, diagnosis_label), num_batch)
+
+        # average accuracy for diagnostic
+        dia_acc = torch.true_divide(
+            dia_acc_fusion + dia_acc_clic + dia_acc_derm, 3)
+
+        # seven-point accuracy of fusion
+        sps_acc_fusion = torch.true_divide(server_model.metric(logit_pn_fusion, pn_label)
+                                           + server_model.metric(logit_str_fusion, str_label)
+                                           + server_model.metric(logit_pig_fusion, pig_label)
+                                           + server_model.metric(logit_rs_fusion, rs_label)
+                                           + server_model.metric(logit_dag_fusion, dag_label)
+                                           + server_model.metric(logit_bwv_fusion, bwv_label)
+                                           + server_model.metric(logit_vs_fusion, vs_label), 
+                                                7 * num_batch)
+
+        # seven-point accuracy of clic
+        sps_acc_clic = torch.true_divide(server_model.metric(logit_pn_clic, pn_label)
+                                         + server_model.metric(logit_str_clic, str_label)
+                                         + server_model.metric(logit_pig_clic, pig_label)
+                                         + server_model.metric(logit_rs_clic, rs_label)
+                                         + server_model.metric(logit_dag_clic, dag_label)
+                                         + server_model.metric(logit_bwv_clic, bwv_label)
+                                         + server_model.metric(logit_vs_clic, vs_label), 
+                                                7 * num_batch)
+        # seven-point accuracy of derm
+        sps_acc_derm = torch.true_divide(server_model.metric(logit_pn_derm, pn_label)
+                                         + server_model.metric(logit_str_derm, str_label)
+                                         + server_model.metric(logit_pig_derm, pig_label)
+                                         + server_model.metric(logit_rs_derm, rs_label)
+                                         + server_model.metric(logit_dag_derm, dag_label)
+                                         + server_model.metric(logit_bwv_derm, bwv_label)
+                                         + server_model.metric(logit_vs_derm, vs_label), 
+                                                7 * num_batch)
+        # average seven-point accuracy
+        sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
+        loss.backward()
+
         # send gradient to client
         msg = {
-            "grad": client_output_cpu.grad.clone().detach(),
+            "x_clic_grad": x_clic_cpu.grad.clone().detach(),
+            "x_derm_grad": x_derm_cpu.grad.clone().detach(),
         }
         data_size = send_msg(conn, msg)
-        
         optimizer.step()
-        
 
-        if (i + 1) % 100 == 0:
+        train_loss += loss.item()
+        train_dia_acc += dia_acc.item()
+        train_sps_acc += sps_acc.item()
 
-            # measure accuracy and record loss
-            _, predicted = torch.max(output, 1)
-            correct = (predicted == label).sum().item()
-            accuracy = correct / len(label)
-            logger.info(f'Epoch: {epc+1}/{epoch}, Batch: {i+1}/{num_batch}, Train Loss: {round(loss.item(), 2)} Train Accuracy: {round(accuracy, 2)} Client to server communication time: {round(total_communication_time, 2)}')
+    
+    train_loss = train_loss / (index + 1)
+    train_dia_acc = train_dia_acc / (index + 1)
+    train_sps_acc = train_sps_acc / (index + 1)
 
-            
 
-        if (i + 1) % 1000 == 0:
-            logger.info("Start validation")
-            # validation
-            rmsg, data_size = recv_msg(conn) # receive total bach number and epoch from client.
-            num_test_batch = rmsg['num_batch']
-            test_dataset_size = rmsg['dataset_size']
-            resnet_server.eval()
-            with torch.no_grad():
-                logits_all, targets_all = torch.tensor([], device='cpu'), torch.tensor([], dtype=torch.int, device='cpu')
-                # for j in range(num_test_batch):
-                for j in range(num_test_batch):
-                    msg, data_size = recv_msg(conn)
-                    # label
-                    label = msg['label']
-                    label = label.clone().detach().long().to(device) # conversion between gpu and cpu.
+    # logging
+    logger.info(f"Round: ---, epoch: {epc+1}/{epochs}, Train Loss: {round(train_loss, 2)}, Train Dia Acc: {round(train_dia_acc, 2)}, Train SPS Acc: {round(train_sps_acc, 2)}")
 
-                    # feature
-                    client_output_cpu = msg['client_output']
-                    client_output = client_output_cpu.to(device)
-                    
-                    # forward propagation
-                    logits = resnet_server(client_output)
-                    logits_all = torch.cat((logits_all, logits.detach().cpu()),dim=0)
-                    targets_all = torch.cat((targets_all, label.cpu()), dim=0)
+        # if (i + 1) % 100 == 0:
+        #     # measure accuracy and record loss
+        #     _, predicted = torch.max(output, 1)
+        #     correct = (predicted == label).sum().item()
+        #     accuracy = correct / len(label)
+        #     logger.info(f'Epoch: {epc+1}/{epoch}, Batch: {i+1}/{num_batch}, Train Loss: {round(loss.item(), 2)} Train Accuracy: {round(accuracy, 2)} Client to server communication time: {round(total_communication_time, 2)}')
 
-                pred = F.log_softmax(logits_all, dim=1)
-                test_loss = criterion(pred, targets_all)/test_dataset_size # validation loss
-                
-                output = pred.argmax(dim=1) # predicated/output label
-                prob = F.softmax(logits_all, dim=1) # probabilities
+        # if (i + 1) % 1000 == 0:
+        #     logger.info("Start validation")
+        #     # validation
+        #     # receive total bach number and epoch from client.
+        #     rmsg, data_size = recv_msg(conn)
+        #     num_test_batch = rmsg['num_batch']
+        #     test_dataset_size = rmsg['dataset_size']
+        #     resnet_server.eval()
+        #     with torch.no_grad():
+        #         logits_all, targets_all = torch.tensor(
+        #             [], device='cpu'), torch.tensor([], dtype=torch.int, device='cpu')
+        #         # for j in range(num_test_batch):
+        #         for j in range(num_test_batch):
+        #             msg, data_size = recv_msg(conn)
+        #             # label
+        #             label = msg['label']
+        #             # conversion between gpu and cpu.
+        #             label = label.clone().detach().long().to(device)
 
-                test_acc = accuracy_score(y_pred=output.numpy(), y_true=targets_all.numpy())
-                test_bal_acc = balanced_accuracy_score(y_pred=output.numpy(), y_true=targets_all.numpy())
-                test_auc = roc_auc_score(targets_all.numpy(), prob.numpy(), multi_class='ovr')
-                logger.info(f'Test Loss: {round(test_loss.item(), 2)} Test Accuracy: {round(test_acc, 2)} Test AUC: {round(test_auc, 2)} Test Balanced Accuracy: {round(test_bal_acc, 2)}')
+        #             # feature
+        #             client_output_cpu = msg['client_output']
+        #             client_output = client_output_cpu.to(device)
 
-            # break
-            server_to_client_communication_time = recv_msg(conn)[0]['server_to_client_communication_time']        
-            logger.info(f"Server to client communication time: {server_to_client_communication_time}")
+        #             # forward propagation
+        #             logits = resnet_server(client_output)
+        #             logits_all = torch.cat(
+        #                 (logits_all, logits.detach().cpu()), dim=0)
+        #             targets_all = torch.cat((targets_all, label.cpu()), dim=0)
 
-            # break
+        #         pred = F.log_softmax(logits_all, dim=1)
+        #         test_loss = criterion(pred, targets_all) / \
+        #             test_dataset_size  # validation loss
 
-server_to_client_communication_time = recv_msg(conn)[0]['server_to_client_communication_time']        
+        #         output = pred.argmax(dim=1)  # predicated/output label
+        #         prob = F.softmax(logits_all, dim=1)  # probabilities
+
+        #         test_acc = accuracy_score(
+        #             y_pred=output.numpy(), y_true=targets_all.numpy())
+        #         test_bal_acc = balanced_accuracy_score(
+        #             y_pred=output.numpy(), y_true=targets_all.numpy())
+        #         test_auc = roc_auc_score(
+        #             targets_all.numpy(), prob.numpy(), multi_class='ovr')
+        #         logger.info(
+        #             f'Test Loss: {round(test_loss.item(), 2)} Test Accuracy: {round(test_acc, 2)} Test AUC: {round(test_auc, 2)} Test Balanced Accuracy: {round(test_bal_acc, 2)}')
+
+        #     # break
+        #     server_to_client_communication_time = recv_msg(
+        #         conn)[0]['server_to_client_communication_time']
+        #     logger.info(
+        #         f"Server to client communication time: {server_to_client_communication_time}")
+
+        #     # break
+
+server_to_client_communication_time = recv_msg(
+    conn)[0]['server_to_client_communication_time']
 
 logger.info(f'Contribution from {server_name} is done')
-logger.info(f"Client to server communication time: {round(total_communication_time, 2)}")
-logger.info(f"Server to client communication time: {server_to_client_communication_time}")
+logger.info(
+    f"Client to server communication time: {round(total_communication_time, 2)}")
+logger.info(
+    f"Server to client communication time: {server_to_client_communication_time}")
 logger.info(f'Total duration is: {round(time.time() - start_time, 2)} seconds')
-
-
-
-
-
