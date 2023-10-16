@@ -213,9 +213,6 @@ lr = 0.001
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(resnet_client.parameters(), lr = lr, momentum = 0.9)
 
-
-resnet_client
-
 # Training 
 
 
@@ -232,7 +229,6 @@ s1 = socket.socket()
 s1.connect((host, port)) # establish connection
 # s1.close()
 
-client_weight = copy.deepcopy(resnet_client.state_dict()) # init weight of client model.
 
 msg = {
     'epoch': epoch,

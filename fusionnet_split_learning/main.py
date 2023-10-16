@@ -4,6 +4,8 @@ from model import FusionNet
 import numpy as np
 import torch
 import os
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 from dependency import *
 from dataloader import generate_dataloader
 
@@ -26,12 +28,10 @@ def run_exp(model, epochs, optimizer, device, train_dataloader, val_dataloader, 
         val_mean_acc = (val_dia_acc*1 + val_sps_acc*7)/8
         logger.info(f'Round: ---, epoch: {epoch}, Valid Loss: {round(val_loss, 2)}, Valid Dia Acc: {round(val_dia_acc, 2)}, Valid SPS Acc: {round(val_sps_acc, 2)}')
 
-        
-
         # save the best model
         if val_mean_acc > best_mean_acc:
             best_mean_acc = val_mean_acc
-            torch.save(model.state_dict(), f'{save_path}/checkpoint/model_{round(best_mean_acc, 3)}.pth')
+            torch.save(model.state_dict(), f'{save_path}/checkpoint/fusionnet_first_stage.pth')
             logger.info(f'Current Best Mean Validation Acc is {round(best_mean_acc, 2)}')
         
         # test mode

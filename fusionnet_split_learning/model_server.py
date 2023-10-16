@@ -49,10 +49,10 @@ class FusionNet(nn.Module):
         self.model_derm = torchvision.models.resnet50(pretrained=True)
 
         # define the clinic model
-        self.conv1_cli = self.model_clinic.conv1
-        self.bn1_cli = self.model_clinic.bn1
-        self.relu_cli = self.model_clinic.relu
-        self.maxpool_cli = self.model_clinic.maxpool
+        # self.conv1_cli = self.model_clinic.conv1
+        # self.bn1_cli = self.model_clinic.bn1
+        # self.relu_cli = self.model_clinic.relu
+        # self.maxpool_cli = self.model_clinic.maxpool
         self.layer1_cli = self.model_clinic.layer1
         self.layer2_cli = self.model_clinic.layer2
         self.layer3_cli = self.model_clinic.layer3
@@ -60,10 +60,10 @@ class FusionNet(nn.Module):
         self.avgpool_cli = self.model_clinic.avgpool
         # self.avgpool_cli = nn.MaxPool2d(7, 7)
 
-        self.conv1_derm = self.model_derm.conv1
-        self.bn1_derm = self.model_derm.bn1
-        self.relu_derm = self.model_derm.relu
-        self.maxpool_derm = self.model_derm.maxpool
+        # self.conv1_derm = self.model_derm.conv1
+        # self.bn1_derm = self.model_derm.bn1
+        # self.relu_derm = self.model_derm.relu
+        # self.maxpool_derm = self.model_derm.maxpool
         self.layer1_derm = self.model_derm.layer1
         self.layer2_derm = self.model_derm.layer2
         self.layer3_derm = self.model_derm.layer3
@@ -135,10 +135,10 @@ class FusionNet(nn.Module):
         (x_clic, x_derm) = x
 
         # passed through the clinic model (pretained resnet50)
-        x_clic = self.conv1_cli(x_clic)
-        x_clic = self.bn1_cli(x_clic)
-        x_clic = self.relu_cli(x_clic)
-        x_clic = self.maxpool_cli(x_clic)
+        # x_clic = self.conv1_cli(x_clic)
+        # x_clic = self.bn1_cli(x_clic)
+        # x_clic = self.relu_cli(x_clic)
+        # x_clic = self.maxpool_cli(x_clic)
         x_clic = self.layer1_cli(x_clic)
         x_clic = self.layer2_cli(x_clic)
         x_clic = self.layer3_cli(x_clic)
@@ -147,10 +147,10 @@ class FusionNet(nn.Module):
         x_clic = x_clic.view(x_clic.size(0), -1)
 
         # passed through the derm model (pretained resnet50)
-        x_derm = self.conv1_derm(x_derm)
-        x_derm = self.bn1_derm(x_derm)
-        x_derm = self.relu_derm(x_derm)
-        x_derm = self.maxpool_derm(x_derm)
+        # x_derm = self.conv1_derm(x_derm)
+        # x_derm = self.bn1_derm(x_derm)
+        # x_derm = self.relu_derm(x_derm)
+        # x_derm = self.maxpool_derm(x_derm)
         x_derm = self.layer1_derm(x_derm)
         x_derm = self.layer2_derm(x_derm)
         x_derm = self.layer3_derm(x_derm)
