@@ -13,12 +13,12 @@ import torch.optim as optim
 from model_client import ResNet50 as ResNet50_client
 from model_server import ResNet50 as ResNet50_server
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score
-
-
+from utils import get_logger
 from torch.utils.data import Subset
 
 
-
+logger, exp_seq = get_logger(filename_prefix="client_")
+logger.info(f"-------------------------Session: Exp {exp_seq}")
 root_path = '../models/cifar10_data'
 
 # Setup cpu
@@ -28,7 +28,7 @@ torch.manual_seed(777)
 
 # Setup client order
 client_order = int(0)
-print('Client starts from: ', client_order)
+logger.info(f'Client starts from: {client_order}')
 
 num_train_data = 50000
 
@@ -52,9 +52,9 @@ test_set = torchvision.datasets.CIFAR10(root=root_path, train=False, download=Tr
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=64, shuffle=False, num_workers=2)
 
 x_train, y_train = next(iter(train_loader))
-print(f'Train batch shape x: {x_train.size()} y: {y_train.size()}')
+logger.info(f'Train batch shape x: {x_train.size()} y: {y_train.size()}')
 total_batch = len(train_loader)
-print(f'Num Batch {total_batch}')
+logger.info(f'Num Batch {total_batch}')
 
 
 
@@ -138,7 +138,7 @@ offset_time = - total_communication_time
 
 
 for epc in range(epoch):
-    print("running epoch ", epc)
+    logger.info(f"running epoch  {epc}")
 
     target = 0
 
@@ -167,7 +167,7 @@ for epc in range(epoch):
         optimizer.step()
 
         if(i+1) % 100 == 0:
-            print(f"Server to client communication time: {round(total_communication_time, 2)}")
+            logger.info(f"Server to client communication time: {round(total_communication_time, 2)}")
             send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})       
         
 
