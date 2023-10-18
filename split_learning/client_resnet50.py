@@ -1,24 +1,21 @@
-
 import os
 import struct
 import socket
 import pickle
 import time
-
-import h5py
 from tqdm import tqdm
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 import torch.optim as optim
+from model_client import ResNet50 as ResNet50_client
+from model_server import ResNet50 as ResNet50_server
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score
+
 
 from torch.utils.data import Subset
-from torch.autograd import Variable
-import torch.nn.init as init
-import copy
 
 
 
@@ -49,10 +46,10 @@ part_tr = indices[num_train_data * client_order : num_train_data * (client_order
 
 train_set  = torchvision.datasets.CIFAR10(root=root_path, train=True, download=True, transform=transform)
 train_set_sub = Subset(train_set, part_tr)
-train_loader = torch.utils.data.DataLoader(train_set_sub, batch_size=8, shuffle=True, num_workers=2)
+train_loader = torch.utils.data.DataLoader(train_set_sub, batch_size=64, shuffle=True, num_workers=2)
 
 test_set = torchvision.datasets.CIFAR10(root=root_path, train=False, download=True, transform=transform)
-test_loader = torch.utils.data.DataLoader(test_set, batch_size=8, shuffle=False, num_workers=2)
+test_loader = torch.utils.data.DataLoader(test_set, batch_size=64, shuffle=False, num_workers=2)
 
 x_train, y_train = next(iter(train_loader))
 print(f'Train batch shape x: {x_train.size()} y: {y_train.size()}')
@@ -94,112 +91,7 @@ def recv_all(sock, n):
         data += packet
     return data
 
-# Definition of client side model (input layer only)
 
-
-''' ResNet '''
-
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, in_planes, planes, stride=1, norm='instancenorm'):
-        super(BasicBlock, self).__init__()
-        self.norm = norm
-        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.GroupNorm(self.expansion*planes, self.expansion*planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(self.expansion*planes)
-            )
-
-    def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
-
-
-class Bottleneck(nn.Module):
-    expansion = 4
-
-    def __init__(self, in_planes, planes, stride=1, norm='instancenorm'):
-        super(Bottleneck, self).__init__()
-        self.norm = norm
-        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=1, bias=False)
-        self.bn1 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn2 = nn.GroupNorm(planes, planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, self.expansion*planes, kernel_size=1, bias=False)
-        self.bn3 = nn.GroupNorm(self.expansion*planes, self.expansion*planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(self.expansion*planes)
-
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.GroupNorm(self.expansion*planes, self.expansion*planes, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(self.expansion*planes)
-            )
-
-    def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = F.relu(self.bn2(self.conv2(out)))
-        out = self.bn3(self.conv3(out))
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
-
-
-class ResNet(nn.Module):
-    # def __init__(self, block, num_blocks, channel=3, num_classes=10, norm='instancenorm'):
-    def __init__(self, channel=3, norm='instancenorm'):
-        super(ResNet, self).__init__()
-        self.in_planes = 64
-        self.norm = norm
-
-        self.conv1 = nn.Conv2d(channel, 64, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn1 = nn.GroupNorm(64, 64, affine=True) if self.norm == 'instancenorm' else nn.BatchNorm2d(64)
-        # self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
-        # self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
-        # self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
-        # self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
-        # self.classifier = nn.Linear(512*block.expansion, num_classes)
-
-    # def _make_layer(self, block, planes, num_blocks, stride):
-    #     strides = [stride] + [1]*(num_blocks-1)
-    #     layers = []
-    #     for stride in strides:
-    #         layers.append(block(self.in_planes, planes, stride, self.norm))
-    #         self.in_planes = planes * block.expansion
-    #     return nn.Sequential(*layers)
-
-    def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        # out = self.layer1(out)
-        # out = self.layer2(out)
-        # out = self.layer3(out)
-        # out = self.layer4(out)
-        # out = F.avg_pool2d(out, 4)
-        # out = out.view(out.size(0), -1)
-        # out = self.classifier(out)
-        return out
-
-    # def embed(self, x):
-    #     out = F.relu(self.bn1(self.conv1(x)))
-    #     out = self.layer1(out)
-    #     out = self.layer2(out)
-    #     out = self.layer3(out)
-    #     out = self.layer4(out)
-    #     out = F.avg_pool2d(out, 4)
-    #     out = out.view(out.size(0), -1)
-    #     return out
-
-def ResNet50(channel):
-    return ResNet(channel=channel)
 
 
 
@@ -207,7 +99,7 @@ def ResNet50(channel):
 # 
 
 
-resnet_client = ResNet50(channel=3).to(device) # parameters depend on the dataset
+resnet_client = ResNet50_client(channel=3).to(device) # parameters depend on the dataset
 
 lr = 0.001
 criterion = nn.CrossEntropyLoss()
@@ -274,34 +166,49 @@ for epc in range(epoch):
         output.backward(client_grad) # continue back propagation for client side layers.
         optimizer.step()
 
-
-        if (i + 1) % 1000 == 0:
-            msg = {
-                'num_batch': len(test_loader),
-                'dataset_size': len(test_loader.dataset)
-            }
-            # print(msg)
-            send_msg(s1, msg) # 'num test batch' to server
-            resnet_client.eval()
-            with torch.no_grad():
-                for x, label in test_loader:
-                    x = x.to(device)
-                    label = label.to(device)
-                    output = resnet_client(x)
-                    client_output = output.clone().detach().requires_grad_(True)
-                    msg = {
-                        'label': label,
-                        'client_output': client_output
-                    }
-                    send_msg(s1, msg) # send label and output(feature) to server
-
-            # break
-            send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})       
-            # break
-        
         if(i+1) % 100 == 0:
             print(f"Server to client communication time: {round(total_communication_time, 2)}")
-            
+            send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})       
+        
+
+    # # validation after each epoch      
+    # receive server's model
+    rmsg = recv_msg(s1)
+    server_model_state_dict = rmsg['server model']
+    resnet_server = ResNet50_server(num_classes=10).to(device)
+    resnet_server.load_state_dict(server_model_state_dict)
+    resnet_server.eval()
+    resnet_client.eval()
+    test_dataset_size = len(test_loader.dataset)
+    with torch.no_grad():
+        logits_all, targets_all = torch.tensor([], device=device), torch.tensor([], dtype=torch.int, device=device)
+        for x, label in tqdm(test_loader):
+            x = x.to(device)
+            label = label.to(device)
+            output = resnet_client(x)
+            client_output = output.clone().detach().requires_grad_(True)
+
+            logits = resnet_server(client_output)
+            logits_all = torch.cat((logits_all, logits.detach().cpu()),dim=0)
+            targets_all = torch.cat((targets_all, label.cpu()), dim=0)
+
+        pred = F.log_softmax(logits_all, dim=1)
+        test_loss = criterion(pred, targets_all)/test_dataset_size # validation loss
+        
+        output = pred.argmax(dim=1) # predicated/output label
+        prob = F.softmax(logits_all, dim=1) # probabilities
+
+        test_acc = accuracy_score(y_pred=output.numpy(), y_true=targets_all.numpy())
+        test_bal_acc = balanced_accuracy_score(y_pred=output.numpy(), y_true=targets_all.numpy())
+        test_auc = roc_auc_score(targets_all.numpy(), prob.numpy(), multi_class='ovr')
+
+        send_msg(s1, {
+            'Test Loss': round(test_loss.item(), 2),
+            'Test Accuracy': round(test_acc, 2),
+            'Test AUC': round(test_auc, 2),
+            'Test Balanced Accuracy': round(test_bal_acc, 2)
+        })
+
 
 
 send_msg(s1, {'server_to_client_communication_time': total_communication_time})       

@@ -115,8 +115,6 @@ for epc in range(epochs):
     for i, (clinic_image, derm_image, meta_data, label) in enumerate(tqdm(train_dataloader, ncols=100, desc='Training with {}'.format(remote_server))):
         optimizer.zero_grad()
         clinic_image = clinic_image.to(device)
-        print(clinic_image.size(), clinic_image.size(0))
-        quit()
         derm_image = derm_image.to(device)
         meta_data = meta_data.to(device)
 
