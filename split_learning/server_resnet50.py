@@ -12,18 +12,14 @@ import torch.optim as optim
 import time
 from model_server import ResNet50 as ResNet50_server
 from utils import get_logger
-
-
-
 from tqdm import tqdm
 
 
-from torch.utils.data import Dataset, DataLoader
-
-from torch.autograd import Variable
-import torch.nn.init as init
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score
-import copy
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--connection_start_from_client', action='store_true', default=False)
+parser.add_argument('--client_in_sambanova', action='store_true', default=False)
+args = parser.parse_args()
 
 
 # Setup CUDA
@@ -84,11 +80,11 @@ optimizer = optim.SGD(resnet_server.parameters(), lr=lr, momentum=0.9)
 resnet_server
 
 
-connection_start_from_server = False
+
 total_communication_time = 0
 offset_time = 0
 
-if(connection_start_from_server):
+if(not args.connection_start_from_client):
     # host = '10.2.144.188'
     # host = '10.9.240.14'
     host = '10.2.143.109'
@@ -105,11 +101,17 @@ if(connection_start_from_server):
     rmsg, data_size = recv_msg(conn) 
     print(rmsg['initial_msg'])
     offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
+    total_communication_time = 0
     send_msg(conn, {"server_name" : server_name}) # send server meta information.
 
+
 else:
-    host = '10.2.143.109'
-    port = 10081
+    if(args.client_in_sambanova):
+        host = '10.9.240.14'
+        port = 8870
+    else:
+        host = '10.2.143.109'
+        port = 10081
     s1 = socket.socket()
     s1.connect((host, port)) # establish connection
     conn = s1
@@ -117,8 +119,8 @@ else:
     rmsg, data_size = recv_msg(conn) 
     print(rmsg['initial_msg'])
     offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
+    total_communication_time = 0
     
-
 
 rmsg, data_size = recv_msg(conn) # receive total bach number and epoch from client.
 epoch = rmsg['epoch']
@@ -161,7 +163,7 @@ for epc in range(epoch):
         optimizer.step()
         
 
-        if (i + 1) % 100 == 0:
+        if (i + 1) % 10 == 0:
 
             # measure accuracy and record loss
             _, predicted = torch.max(output, 1)

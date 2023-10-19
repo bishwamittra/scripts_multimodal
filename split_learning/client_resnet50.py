@@ -16,6 +16,12 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_sco
 from utils import get_logger
 from torch.utils.data import Subset
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--connection_start_from_client', action='store_true', default=False)
+parser.add_argument('--client_in_sambanova', action='store_true', default=False)
+args = parser.parse_args()
+
 
 logger, exp_seq = get_logger(filename_prefix="client_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
@@ -108,11 +114,10 @@ optimizer = optim.SGD(resnet_client.parameters(), lr = lr, momentum = 0.9)
 # Training 
 
 
-connection_start_from_server = False
 
 total_communication_time = 0
 offset_time = 0
-if(connection_start_from_server):
+if(not args.connection_start_from_client):
     # host = '10.2.144.188'
     # host = '10.9.240.14'
     host = '10.2.143.109'
@@ -122,11 +127,17 @@ if(connection_start_from_server):
     send_msg(s1, {"initial_msg": "Greetings from client"}) # send 'epoch' and 'batch size' to server
     remote_server = recv_msg(s1)['server_name'] # get server's meta information.
     offset_time = - total_communication_time
+    total_communication_time = 0
     logger.info(f"Server: {remote_server}")
 
 else:
-    host = '10.2.143.109'
-    port = 10081
+    if(args.client_in_sambanova):
+        host = '10.9.240.14'
+        port = 8870
+    else:
+        host = '10.2.143.109'
+        port = 10081
+
     s1 = socket.socket()
     s1.bind((host, port))
     s1.listen(5)
@@ -136,6 +147,7 @@ else:
     print(rmsg['initial_msg'])
     remote_server = rmsg['server_name']
     offset_time = - total_communication_time
+    total_communication_time = 0
     s1 = conn
     send_msg(s1, {"initial_msg": "Greetings from client"})
 
@@ -180,7 +192,7 @@ for epc in range(epoch):
         output.backward(client_grad) # continue back propagation for client side layers.
         optimizer.step()
 
-        if(i+1) % 100 == 0:
+        if(i+1) % 10 == 0:
             logger.info(f"Server to client communication time: {round(total_communication_time, 2)}")
             send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})       
         
