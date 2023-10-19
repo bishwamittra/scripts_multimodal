@@ -131,6 +131,7 @@ logger.info(f"received epoch: {rmsg['epoch']}, batch: {rmsg['total_batch']}")
 
 # Start training
 start_time = time.time()
+total_validation_time = 0
 logger.info(f"Start training @ {time.asctime()}")
 
 for epc in range(epoch):
@@ -180,17 +181,21 @@ for epc in range(epoch):
 
     # validation after each epoch    
     logger.info("Start validation: Sending model to client, who will perform validation.")
-    data_size = send_msg(conn, {"server model": resnet_server.state_dict()}) # send model to client.
-    # data_size = send_msg(conn, {"server model": {k: v.cpu() for k, v in resnet_server.state_dict().items()}}) # send model to client.
+    # data_size = send_msg(conn, {"server model": resnet_server.state_dict()}) # send model to client.
+    data_size = send_msg(conn, {"server model": {k: v.cpu() for k, v in resnet_server.state_dict().items()}}) # send model to client.
     rmsg = recv_msg(conn)[0]
     logger.info(f'Test Loss: {round(rmsg["Test Loss"], 2)} Test Accuracy: {round(rmsg["Test Accuracy"], 2)} Test AUC: {round(rmsg["Test AUC"], 2)} Test Balanced Accuracy: {round(rmsg["Test Balanced Accuracy"], 2)}')
+    total_validation_time += rmsg['validation time']
+    logger.info(f"Validation time: {rmsg['validation time']}")
         
 
 server_to_client_communication_time = recv_msg(conn)[0]['server_to_client_communication_time']        
 
+logger.info()
 logger.info(f'Contribution from {server_name} is done')
 logger.info(f"Client to server communication time: {round(total_communication_time, 2)}")
 logger.info(f"Server to client communication time: {server_to_client_communication_time}")
+logger.info(f"Validation time: {total_validation_time}")
 logger.info(f'Total duration is: {round(time.time() - start_time, 2)} seconds')
 
 

@@ -153,7 +153,8 @@ else:
 
 
 start_time = time.time()
-epoch = 1
+
+epoch = 2
 msg = {
     'epoch': epoch,
     'total_batch': total_batch
@@ -198,7 +199,7 @@ for epc in range(epoch):
 
             break       
         
-
+    validation_start_time = time.time()
     # validation after each epoch      
     rmsg = recv_msg(s1)
     server_model_state_dict = rmsg['server model']
@@ -219,6 +220,7 @@ for epc in range(epoch):
             logits_all = torch.cat((logits_all, logits.detach().cpu()),dim=0)
             targets_all = torch.cat((targets_all, label.cpu()), dim=0)
 
+            break
         pred = F.log_softmax(logits_all, dim=1)
         test_loss = criterion(pred, targets_all)/test_dataset_size # validation loss
         
@@ -228,13 +230,15 @@ for epc in range(epoch):
         test_acc = accuracy_score(y_pred=output.numpy(), y_true=targets_all.numpy())
         test_bal_acc = balanced_accuracy_score(y_pred=output.numpy(), y_true=targets_all.numpy())
         test_auc = roc_auc_score(targets_all.numpy(), prob.numpy(), multi_class='ovr')
-
         send_msg(s1, {
             'Test Loss': round(test_loss.item(), 2),
             'Test Accuracy': round(test_acc, 2),
             'Test AUC': round(test_auc, 2),
-            'Test Balanced Accuracy': round(test_bal_acc, 2)
+            'Test Balanced Accuracy': round(test_bal_acc, 2),
+            'validation time': round(time.time() - validation_start_time, 2),
         })
+
+    
 
 
 
