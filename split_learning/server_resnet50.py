@@ -174,45 +174,14 @@ for epc in range(epoch):
             logger.info(f"Client to server com. time: {round(total_communication_time, 2)}") 
             logger.info(f"Server to client com. time: {round(server_to_client_communication_time, 2)}")
 
+            break
+
             
 
-    # # validation after each epoch    
+    # validation after each epoch    
     logger.info("Start validation: Sending model to client, who will perform validation.")
     data_size = send_msg(conn, {"server model": resnet_server.state_dict()}) # send model to client.
-    
-    # rmsg, data_size = recv_msg(conn) # receive total bach number and epoch from client.
-    # num_test_batch = rmsg['num_batch']
-    # test_dataset_size = rmsg['dataset_size']
-    # resnet_server.eval()
-    # with torch.no_grad():
-    #     logits_all, targets_all = torch.tensor([], device='cpu'), torch.tensor([], dtype=torch.int, device='cpu')
-    #     # for j in range(num_test_batch):
-    #     for j in range(num_test_batch):
-    #         msg, data_size = recv_msg(conn)
-    #         # label
-    #         label = msg['label']
-    #         label = label.clone().detach().long().to(device) # conversion between gpu and cpu.
-
-    #         # feature
-    #         client_output_cpu = msg['client_output']
-    #         client_output = client_output_cpu.to(device)
-            
-    #         # forward propagation
-    #         logits = resnet_server(client_output)
-    #         logits_all = torch.cat((logits_all, logits.detach().cpu()),dim=0)
-    #         targets_all = torch.cat((targets_all, label.cpu()), dim=0)
-
-    #     pred = F.log_softmax(logits_all, dim=1)
-    #     test_loss = criterion(pred, targets_all)/test_dataset_size # validation loss
-        
-    #     output = pred.argmax(dim=1) # predicated/output label
-    #     prob = F.softmax(logits_all, dim=1) # probabilities
-
-    #     test_acc = accuracy_score(y_pred=output.numpy(), y_true=targets_all.numpy())
-    #     test_bal_acc = balanced_accuracy_score(y_pred=output.numpy(), y_true=targets_all.numpy())
-    #     test_auc = roc_auc_score(targets_all.numpy(), prob.numpy(), multi_class='ovr')
-    #     logger.info(f'Test Loss: {round(test_loss.item(), 2)} Test Accuracy: {round(test_acc, 2)} Test AUC: {round(test_auc, 2)} Test Balanced Accuracy: {round(test_bal_acc, 2)}')
-
+    # data_size = send_msg(conn, {"server model": {k: v.cpu() for k, v in resnet_server.state_dict().items()}}) # send model to client.
     rmsg = recv_msg(conn)[0]
     logger.info(f'Test Loss: {round(rmsg["Test Loss"], 2)} Test Accuracy: {round(rmsg["Test Accuracy"], 2)} Test AUC: {round(rmsg["Test AUC"], 2)} Test Balanced Accuracy: {round(rmsg["Test Balanced Accuracy"], 2)}')
         

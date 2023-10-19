@@ -194,11 +194,12 @@ for epc in range(epoch):
 
         if(i+1) % 10 == 0:
             logger.info(f"Server to client communication time: {round(total_communication_time, 2)}")
-            send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})       
+            send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})
+
+            break       
         
 
-    # # validation after each epoch      
-    # receive server's model
+    # validation after each epoch      
     rmsg = recv_msg(s1)
     server_model_state_dict = rmsg['server model']
     resnet_server = ResNet50_server(num_classes=10).to(device)
@@ -244,8 +245,3 @@ s1.close()
 end_time = time.time()
 
 # 
-
-
-
-
-
