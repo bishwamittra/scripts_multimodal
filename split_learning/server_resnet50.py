@@ -164,7 +164,7 @@ for epc in range(epoch):
         optimizer.step()
         
 
-        if (i + 1) % 10 == 0:
+        if (i + 1) % 100 == 0:
 
             # measure accuracy and record loss
             _, predicted = torch.max(output, 1)

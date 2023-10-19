@@ -193,7 +193,7 @@ for epc in range(epoch):
         output.backward(client_grad) # continue back propagation for client side layers.
         optimizer.step()
 
-        if(i+1) % 10 == 0:
+        if(i+1) % 100 == 0:
             logger.info(f"Server to client communication time: {round(total_communication_time, 2)}")
             send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})
 
