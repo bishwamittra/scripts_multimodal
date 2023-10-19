@@ -154,7 +154,7 @@ else:
 
 start_time = time.time()
 
-epoch = 2
+epoch = 10
 msg = {
     'epoch': epoch,
     'total_batch': total_batch
@@ -197,7 +197,7 @@ for epc in range(epoch):
             logger.info(f"Server to client communication time: {round(total_communication_time, 2)}")
             send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})
 
-            break       
+            # break       
         
     validation_start_time = time.time()
     # validation after each epoch      
@@ -220,7 +220,7 @@ for epc in range(epoch):
             logits_all = torch.cat((logits_all, logits.detach().cpu()),dim=0)
             targets_all = torch.cat((targets_all, label.cpu()), dim=0)
 
-            break
+            # break
         pred = F.log_softmax(logits_all, dim=1)
         test_loss = criterion(pred, targets_all)/test_dataset_size # validation loss
         

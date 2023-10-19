@@ -175,7 +175,7 @@ for epc in range(epoch):
             logger.info(f"Client to server com. time: {round(total_communication_time, 2)}") 
             logger.info(f"Server to client com. time: {round(server_to_client_communication_time, 2)}")
 
-            break
+            # break
 
             
 
@@ -191,7 +191,7 @@ for epc in range(epoch):
 
 server_to_client_communication_time = recv_msg(conn)[0]['server_to_client_communication_time']        
 
-logger.info()
+logger.info("")
 logger.info(f'Contribution from {server_name} is done')
 logger.info(f"Client to server communication time: {round(total_communication_time, 2)}")
 logger.info(f"Server to client communication time: {server_to_client_communication_time}")
