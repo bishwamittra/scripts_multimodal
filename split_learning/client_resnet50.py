@@ -108,32 +108,46 @@ optimizer = optim.SGD(resnet_client.parameters(), lr = lr, momentum = 0.9)
 # Training 
 
 
+connection_start_from_server = False
 
-# host = '10.2.144.188'
-# host = '10.9.240.14'
-host = '10.2.143.109'
-port = 10081
-epoch = 10
+total_communication_time = 0
+offset_time = 0
+if(connection_start_from_server):
+    # host = '10.2.144.188'
+    # host = '10.9.240.14'
+    host = '10.2.143.109'
+    port = 10081
+    s1 = socket.socket()
+    s1.connect((host, port)) # establish connection
+    send_msg(s1, {"initial_msg": "Greetings from client"}) # send 'epoch' and 'batch size' to server
+    remote_server = recv_msg(s1)['server_name'] # get server's meta information.
+    offset_time = - total_communication_time
+    logger.info(f"Server: {remote_server}")
+
+else:
+    host = '10.2.143.109'
+    port = 10081
+    s1 = socket.socket()
+    s1.bind((host, port))
+    s1.listen(5)
+    conn, addr = s1.accept()
+    logger.info(f"Connected to: {addr}")
+    rmsg = recv_msg(conn) 
+    print(rmsg['initial_msg'])
+    remote_server = rmsg['server_name']
+    offset_time = - total_communication_time
+    s1 = conn
+    send_msg(s1, {"initial_msg": "Greetings from client"})
+
 
 start_time = time.time()
-
-s1 = socket.socket()
-s1.connect((host, port)) # establish connection
-# s1.close()
-
-
+epoch = 1
 msg = {
     'epoch': epoch,
     'total_batch': total_batch
 }
-
 send_msg(s1, msg) # send 'epoch' and 'batch size' to server
 
-# resnet_client.eval() # Why eval()?
-total_communication_time = 0
-offset_time = 0
-remote_server = recv_msg(s1)['server_name'] # get server's meta information.
-offset_time = - total_communication_time
 
 
 

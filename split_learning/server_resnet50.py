@@ -74,8 +74,6 @@ def recv_all(sock, n):
     return data
 
 
-
-
 resnet_server =  ResNet50_server(num_classes=10).to(device)
 
 criterion = nn.CrossEntropyLoss()
@@ -86,31 +84,48 @@ optimizer = optim.SGD(resnet_server.parameters(), lr=lr, momentum=0.9)
 resnet_server
 
 
-# host = '10.2.144.188'
-# host = '10.9.240.14'
-host = '10.2.143.109'
-port = 10081
-
-s = socket.socket()
-s.bind((host, port))
-s.listen(5)
-
-conn, addr = s.accept()
-logger.info(f"Connected to: {addr}")
-
+connection_start_from_server = False
 total_communication_time = 0
 offset_time = 0
-# read epoch
+
+if(connection_start_from_server):
+    # host = '10.2.144.188'
+    # host = '10.9.240.14'
+    host = '10.2.143.109'
+    port = 10081
+
+    s = socket.socket()
+    s.bind((host, port))
+    s.listen(5)
+    conn, addr = s.accept()
+    logger.info(f"Connected to: {addr}")
+
+
+    # First communication
+    rmsg, data_size = recv_msg(conn) 
+    print(rmsg['initial_msg'])
+    offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
+    send_msg(conn, {"server_name" : server_name}) # send server meta information.
+
+else:
+    host = '10.2.143.109'
+    port = 10081
+    s1 = socket.socket()
+    s1.connect((host, port)) # establish connection
+    conn = s1
+    send_msg(conn, {"initial_msg": "Greetings from Server", "server_name" : server_name})
+    rmsg, data_size = recv_msg(conn) 
+    print(rmsg['initial_msg'])
+    offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
+    
+
+
 rmsg, data_size = recv_msg(conn) # receive total bach number and epoch from client.
 epoch = rmsg['epoch']
 num_batch = rmsg['total_batch']
-offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
+logger.info(f"received epoch: {rmsg['epoch']}, batch: {rmsg['total_batch']}")
 
 
-
-logger.info(f"received epoch: {rmsg['epoch']}, {rmsg['total_batch']}")
-
-send_msg(conn, {"server_name" : server_name, "server_time": time.time()}) # send server meta information.
 
 # Start training
 start_time = time.time()
