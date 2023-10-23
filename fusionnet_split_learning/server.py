@@ -129,6 +129,8 @@ logger.info(f"received epoch: {rmsg['epoch']}, batch size: {rmsg['batch_size']},
 
 # Start training
 start_time = time.time()
+total_validation_time = 0
+total_test_time = 0
 logger.info(f"Start training @ {time.asctime()}")
 server_model.set_mode('train')
 for epc in range(epochs):
@@ -263,22 +265,41 @@ for epc in range(epochs):
     train_dia_acc = train_dia_acc / (index + 1)
     train_sps_acc = train_sps_acc / (index + 1)
 
+    # logging
+    logger.info(f"Round: ---, epoch: {epc+1}/{epochs}, Train Loss: {round(train_loss, 2)}, Train Dia Acc: {round(train_dia_acc, 2)}, Train SPS Acc: {round(train_sps_acc, 2)}")
+    server_to_client_communication_time = recv_msg(conn)[0]['server_to_client_communication_time']
+    logger.info(f"Client to server com. time: {round(total_communication_time, 2)}") 
+    logger.info(f"Server to client com. time: {round(server_to_client_communication_time, 2)}")
+
     # for validation and test, send server model to client
-    logger.info("Start validation and testing: Sending model to client, who will perform validation and testing.")
     data_size = send_msg(conn, {"server model": {k: v.cpu() for k, v in server_model.state_dict().items()}}) # send model to client.
-    # rmsg = recv_msg(conn)[0]
+    
+    # validation
+    rmsg = recv_msg(conn)[0]
+    logger.info(f"Round: ---, epoch: {epc+1}/{epochs}, Validation loss: {rmsg['validation loss']}, Validation dia acc: {rmsg['validation dia acc']}, Validation sps acc: {rmsg['validation sps acc']}, Validation mean acc: {rmsg['validation mean acc']}")
+    total_validation_time += rmsg['validation time']
+    logger.info(f"Validation time: {rmsg['validation time']}")
+
+
+    # test
+    rmsg = recv_msg(conn)[0]
+    logger.info(f"Round: ---, epoch: {epc+1}/{epochs}, Test loss: {rmsg['test loss']}, Test dia acc: {rmsg['test dia acc']}, Test sps acc: {rmsg['test sps acc']}, Test mean acc: {rmsg['test mean acc']}")
+    total_test_time += rmsg['test time']
+    logger.info(f"Test time: {rmsg['test time']}")
+
+
+
     
 
 
-    # logging
-    logger.info(f"Round: ---, epoch: {epc+1}/{epochs}, Train Loss: {round(train_loss, 2)}, Train Dia Acc: {round(train_dia_acc, 2)}, Train SPS Acc: {round(train_sps_acc, 2)}")
-
+    
 server_to_client_communication_time = recv_msg(
     conn)[0]['server_to_client_communication_time']
-
 logger.info(f'Contribution from {server_name} is done')
 logger.info(
     f"Client to server communication time: {round(total_communication_time, 2)}")
 logger.info(
     f"Server to client communication time: {server_to_client_communication_time}")
+logger.info(f"Validation time: {total_validation_time}")
+logger.info(f"Test time: {total_test_time}")
 logger.info(f'Total duration is: {round(time.time() - start_time, 2)} seconds')

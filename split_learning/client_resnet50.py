@@ -199,7 +199,7 @@ for epc in range(epoch):
 
             # break      
         
-    validation_start_time = time.time()
+    
     # validation after each epoch      
     rmsg = recv_msg(s1)
     server_model_state_dict = rmsg['server model']
@@ -208,6 +208,7 @@ for epc in range(epoch):
     resnet_server.eval()
     resnet_client.eval()
     test_dataset_size = len(test_loader.dataset)
+    validation_start_time = time.time()
     with torch.no_grad():
         logits_all, targets_all = torch.tensor([], device=device), torch.tensor([], dtype=torch.int, device=device)
         for x, label in tqdm(test_loader):

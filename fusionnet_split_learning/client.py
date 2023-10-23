@@ -12,6 +12,7 @@ import torch.optim as optim
 from dataloader import generate_dataloader
 from dependency import *
 from utils import get_logger
+from utils_client import validation
 
 
 import argparse
@@ -142,7 +143,7 @@ msg = {
 
 send_msg(s1, msg)  # send 'epoch' and 'batch size' to server
 
-
+best_mean_acc = 0
 for epc in range(epochs):
     print("running epoch ", epc)
     client_model.set_mode('train')
@@ -176,19 +177,59 @@ for epc in range(epochs):
         x_derm.backward(x_derm_grad)
         optimizer.step()
 
+    send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})
     
     # validation
-    validation_start_time = time.time()
     rmsg = recv_msg(s1)
+    logger.info("Received server model")
     server_model_state_dict = rmsg['server model']
     server_model = FusionNet_server(class_list).to(device)
     server_model.load_state_dict(server_model_state_dict)
-    server_model.set_mode('eval')
-    client_model.set_mode('eval')
+
+    # validation mode
+    validation_start_time = time.time()
+    val_loss, val_dia_acc, val_sps_acc = validation(client_model, server_model, val_dataloader, device)
+    val_mean_acc = (val_dia_acc*1 + val_sps_acc*7)/8
+    logger.info(f'Round: ---, epoch: {epc}, Valid Loss: {round(val_loss, 2)}, Valid Dia Acc: {round(val_dia_acc, 2)}, Valid SPS Acc: {round(val_sps_acc, 2)} Valid Mean Acc: {round(val_mean_acc, 2)}')
+
+    send_msg(s1, {
+            'validation loss': round(val_loss, 2),
+            'validation dia acc': round(val_dia_acc, 2),
+            'validation sps acc': round(val_sps_acc, 2),
+            'validation mean acc': round(val_mean_acc, 2),
+            'validation time': round(time.time() - validation_start_time, 2),
+    })
+
+    # save the best model
+    if val_mean_acc > best_mean_acc:
+        best_mean_acc = val_mean_acc
+        torch.save(client_model.state_dict(), f'{save_path}/checkpoint/fusionnet_first_stage_client.pth')
+        torch.save(server_model.state_dict(), f'{save_path}/checkpoint/fusionnet_first_stage_server.pth')
+        logger.info(f'Current Best Mean Validation Acc is {round(best_mean_acc, 2)}')
+
+
+    # test mode
+    test_start_time = time.time()
+    test_loss, test_dia_acc, test_sps_acc = validation(client_model, server_model, test_dataloader, device)
+    test_mean_acc = (test_dia_acc*1 + test_sps_acc*7)/8
+    logger.info(f'Round: ---, epoch: {epc}, Test Loss: {round(test_loss, 2)}, Test Dia Acc: {round(test_dia_acc, 2)}, Test SPS Acc: {round(test_sps_acc, 2)} Test Mean Acc: {round(test_mean_acc, 2)}')
+
+    send_msg(s1, {
+            'test loss': round(test_loss, 2),
+            'test dia acc': round(test_dia_acc, 2),
+            'test sps acc': round(test_sps_acc, 2),
+            'test mean acc': round(test_mean_acc, 2),
+            'test time': round(time.time() - test_start_time, 2),
+    })
+
+
+
+
+    
+
     
 
 send_msg(s1, {'server_to_client_communication_time': total_communication_time})
-
 s1.close()
 
 end_time = time.time()

@@ -180,7 +180,7 @@ for epc in range(epoch):
             
 
     # validation after each epoch    
-    logger.info("Start validation: Sending model to client, who will perform validation.")
+    # logger.info("Start validation: Sending model to client, who will perform validation.")
     # data_size = send_msg(conn, {"server model": resnet_server.state_dict()}) # send model to client.
     data_size = send_msg(conn, {"server model": {k: v.cpu() for k, v in resnet_server.state_dict().items()}}) # send model to client.
     rmsg = recv_msg(conn)[0]

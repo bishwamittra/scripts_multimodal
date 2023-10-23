@@ -46,7 +46,7 @@ def main():
     logger, exp_seq, save_path = get_logger(filename_prefix="fusionNet")
     logger.info(f"-------------------------Session: Exp {exp_seq}")
 
-    epochs = 100
+    epochs = 200
     lr = 3e-5
     batch_size = 32
     num_workers = 8
