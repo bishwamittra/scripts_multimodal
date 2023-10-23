@@ -197,7 +197,7 @@ for epc in range(epoch):
             logger.info(f"Server to client communication time: {round(total_communication_time, 2)}")
             send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})
 
-            break      
+            # break      
         
     validation_start_time = time.time()
     # validation after each epoch      

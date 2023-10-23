@@ -175,7 +175,7 @@ for epc in range(epoch):
             logger.info(f"Client to server com. time: {round(total_communication_time, 2)}") 
             logger.info(f"Server to client com. time: {round(server_to_client_communication_time, 2)}")
 
-            break
+            # break
 
             
 
