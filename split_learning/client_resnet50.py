@@ -197,7 +197,7 @@ for epc in range(epoch):
             logger.info(f"Server to client communication time: {round(total_communication_time, 2)}")
             send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})
 
-            # break       
+            break      
         
     validation_start_time = time.time()
     # validation after each epoch      
@@ -214,7 +214,7 @@ for epc in range(epoch):
             x = x.to(device)
             label = label.to(device)
             output = resnet_client(x)
-            client_output = output.clone().detach().requires_grad_(True)
+            client_output = output.clone().detach().requires_grad_(False)
 
             logits = resnet_server(client_output)
             logits_all = torch.cat((logits_all, logits.detach().cpu()),dim=0)
