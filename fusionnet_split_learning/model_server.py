@@ -30,10 +30,10 @@ class Swish_Module(nn.Module):
         return Swish.apply(x)
 
 
-class FusionNet(nn.Module):
+class FusionNet_server(nn.Module):
 
     def __init__(self, class_list):
-        super(FusionNet, self).__init__()
+        super(FusionNet_server, self).__init__()
         self.num_label = class_list[0]
         self.num_pn = class_list[1]
         self.num_str = class_list[2]

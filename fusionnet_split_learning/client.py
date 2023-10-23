@@ -3,13 +3,28 @@ import struct
 import socket
 import pickle
 import time
-from model_client import FusionNet
+from model_client import FusionNet_client
+from model_server import FusionNet_server
 from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from dataloader import generate_dataloader
 from dependency import *
+from utils import get_logger
+
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--connection_start_from_client', action='store_true', default=False)
+parser.add_argument('--client_in_sambanova', action='store_true', default=False)
+args = parser.parse_args()
+
+
+logger, exp_seq, save_path = get_logger(filename_prefix="client_")
+logger.info(f"-------------------------Session: Exp {exp_seq}")
+
+
 
 
 # Setup cpu
@@ -71,23 +86,49 @@ train_dataloader, val_dataloader, test_dataloader = generate_dataloader(
 
 
 # Definition of client side model (input layer only)
-client_model = FusionNet(class_list).to(device)
+client_model = FusionNet_client(class_list).to(device)
 optimizer = optim.Adam(client_model.parameters(), lr=lr)
-
 lr = 0.001
 
 
-# Training
+
+total_communication_time = 0
+offset_time = 0
+if(not args.connection_start_from_client):
+    # host = '10.2.144.188'
+    # host = '10.9.240.14'
+    host = '10.2.143.109'
+    port = 10081
+    s1 = socket.socket()
+    s1.connect((host, port)) # establish connection
+    send_msg(s1, {"initial_msg": "Greetings from client"}) # send 'epoch' and 'batch size' to server
+    remote_server = recv_msg(s1)['server_name'] # get server's meta information.
+    offset_time = - total_communication_time
+    total_communication_time = 0
+    logger.info(f"Server: {remote_server}")
+
+else:
+    if(args.client_in_sambanova):
+        host = '10.9.240.14'
+        port = 8870
+    else:
+        host = '10.2.143.109'
+        port = 10081
+
+    s1 = socket.socket()
+    s1.bind((host, port))
+    s1.listen(5)
+    conn, addr = s1.accept()
+    logger.info(f"Connected to: {addr}")
+    rmsg = recv_msg(conn) 
+    print(rmsg['initial_msg'])
+    remote_server = rmsg['server_name']
+    offset_time = - total_communication_time
+    total_communication_time = 0
+    s1 = conn
+    send_msg(s1, {"initial_msg": "Greetings from client"})
 
 
-# connection to server
-# host = '10.2.144.188'
-# host = '10.9.240.14'
-host = '10.2.143.109'
-port = 10081
-s1 = socket.socket()
-s1.connect((host, port))  # establish connection
-# s1.close()
 
 
 start_time = time.time()
@@ -95,21 +136,16 @@ start_time = time.time()
 
 msg = {
     'epoch': epochs,
-    'total_batch': len(train_dataloader)
+    'batch_size': batch_size,
+    'num_batch': len(train_dataloader)
 }
 
 send_msg(s1, msg)  # send 'epoch' and 'batch size' to server
 
-# resnet_client.eval() # Why eval()?
-total_communication_time = 0
-offset_time = 0
-remote_server = recv_msg(s1)['server_name']  # get server's meta information.
-offset_time = - total_communication_time
 
-client_model.set_mode('train')
 for epc in range(epochs):
     print("running epoch ", epc)
-
+    client_model.set_mode('train')
     target = 0
 
     for i, (clinic_image, derm_image, meta_data, label) in enumerate(tqdm(train_dataloader, ncols=100, desc='Training with {}'.format(remote_server))):
@@ -140,33 +176,16 @@ for epc in range(epochs):
         x_derm.backward(x_derm_grad)
         optimizer.step()
 
-        # if (i + 1) % 1000 == 0:
-        #     msg = {
-        #         'num_batch': len(test_loader),
-        #         'dataset_size': len(test_loader.dataset)
-        #     }
-        #     # print(msg)
-        #     send_msg(s1, msg) # 'num test batch' to server
-        #     resnet_client.eval()
-        #     with torch.no_grad():
-        #         for x, label in test_loader:
-        #             x = x.to(device)
-        #             label = label.to(device)
-        #             output = resnet_client(x)
-        #             client_output = output.clone().detach().requires_grad_(True)
-        #             msg = {
-        #                 'label': label,
-        #                 'client_output': client_output
-        #             }
-        #             send_msg(s1, msg) # send label and output(feature) to server
-
-        #     # break
-        #     send_msg(s1, {'server_to_client_communication_time': round(total_communication_time, 2)})
-        #     # break
-
-        # if(i+1) % 100 == 0:
-        #     print(f"Server to client communication time: {round(total_communication_time, 2)}")
-
+    
+    # validation
+    validation_start_time = time.time()
+    rmsg = recv_msg(s1)
+    server_model_state_dict = rmsg['server model']
+    server_model = FusionNet_server(class_list).to(device)
+    server_model.load_state_dict(server_model_state_dict)
+    server_model.set_mode('eval')
+    client_model.set_mode('eval')
+    
 
 send_msg(s1, {'server_to_client_communication_time': total_communication_time})
 

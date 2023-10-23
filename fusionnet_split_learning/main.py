@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import os
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 from dependency import *
 from dataloader import generate_dataloader
 

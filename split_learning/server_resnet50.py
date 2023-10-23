@@ -83,7 +83,6 @@ resnet_server
 
 total_communication_time = 0
 offset_time = 0
-
 if(not args.connection_start_from_client):
     # host = '10.2.144.188'
     # host = '10.9.240.14'
@@ -99,7 +98,7 @@ if(not args.connection_start_from_client):
 
     # First communication
     rmsg, data_size = recv_msg(conn) 
-    print(rmsg['initial_msg'])
+    logger.info(rmsg['initial_msg'])
     offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
     total_communication_time = 0
     send_msg(conn, {"server_name" : server_name}) # send server meta information.
@@ -117,7 +116,7 @@ else:
     conn = s1
     send_msg(conn, {"initial_msg": "Greetings from Server", "server_name" : server_name})
     rmsg, data_size = recv_msg(conn) 
-    print(rmsg['initial_msg'])
+    logger.info(rmsg['initial_msg'])
     offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
     total_communication_time = 0
     
@@ -136,6 +135,7 @@ logger.info(f"Start training @ {time.asctime()}")
 
 for epc in range(epoch):
     init = 0
+    resnet_server.train()
     for i in tqdm(range(num_batch), ncols = 100, desc='Training with {}'.format(server_name)):
         optimizer.zero_grad()
         

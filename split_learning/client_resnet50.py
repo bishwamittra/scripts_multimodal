@@ -166,7 +166,7 @@ send_msg(s1, msg) # send 'epoch' and 'batch size' to server
 
 for epc in range(epoch):
     logger.info(f"running epoch  {epc}")
-
+    resnet_client.train()
     target = 0
 
     for i, data in enumerate(tqdm(train_loader, ncols=100, desc='Training with {}'.format(remote_server))):

@@ -6,13 +6,21 @@ import time
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.nn as nn
-from model_server import FusionNet
+from model_server import FusionNet_server
 from dependency import class_list
 import torch
 import pickle
 import struct
 import socket
 server_name = 'SERVER_001'
+
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--connection_start_from_client', action='store_true', default=False)
+parser.add_argument('--client_in_sambanova', action='store_true', default=False)
+args = parser.parse_args()
+
 
 
 # Setup CUDA
@@ -22,7 +30,7 @@ seed_num = 777
 # if device == "cuda:0":
 #     torch.cuda.manual_seed_all(seed_num)
 # device = "cpu"
-device = "cuda:0"
+device = "cuda:1"
 logger, exp_seq, save_path = get_logger(filename_prefix="server_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
 
@@ -65,37 +73,59 @@ def recv_all(sock, n):
     return data
 
 
-server_model = FusionNet(class_list).to(device)
+server_model = FusionNet_server(class_list).to(device)
 criterion = nn.CrossEntropyLoss()
 lr = 0.001
 optimizer = optim.Adam(server_model.parameters(), lr=lr)
 
 
-# host = '10.2.144.188'
-# host = '10.9.240.14'
-host = '10.2.143.109'
-port = 10081
-
-s = socket.socket()
-s.bind((host, port))
-s.listen(5)
-
-conn, addr = s.accept()
-logger.info(f"Connected to: {addr}")
-
 total_communication_time = 0
 offset_time = 0
+if(not args.connection_start_from_client):
+    # host = '10.2.144.188'
+    # host = '10.9.240.14'
+    host = '10.2.143.109'
+    port = 10081
+
+    s = socket.socket()
+    s.bind((host, port))
+    s.listen(5)
+    conn, addr = s.accept()
+    logger.info(f"Connected to: {addr}")
+
+
+    # First communication
+    rmsg, data_size = recv_msg(conn) 
+    print(rmsg['initial_msg'])
+    offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
+    total_communication_time = 0
+    send_msg(conn, {"server_name" : server_name}) # send server meta information.
+
+
+else:
+    if(args.client_in_sambanova):
+        host = '10.9.240.14'
+        port = 8870
+    else:
+        host = '10.2.143.109'
+        port = 10081
+    s1 = socket.socket()
+    s1.connect((host, port)) # establish connection
+    conn = s1
+    send_msg(conn, {"initial_msg": "Greetings from Server", "server_name" : server_name})
+    rmsg, data_size = recv_msg(conn) 
+    print(rmsg['initial_msg'])
+    offset_time = - total_communication_time # setting the first communication time as 0 to offset the time.
+    total_communication_time = 0
+
+
+
 rmsg, data_size = recv_msg(conn)
 epochs = rmsg['epoch']
-num_batch = rmsg['total_batch']
-# setting the first communication time as 0 to offset the time.
-offset_time = - total_communication_time
+batch_size = rmsg['batch_size']
+num_batch = rmsg['num_batch']
+logger.info(f"received epoch: {rmsg['epoch']}, batch size: {rmsg['batch_size']}, num_batch: {rmsg['num_batch']}")
 
-
-logger.info(f"received epoch: {rmsg['epoch']}, {rmsg['total_batch']}")
-
-# send server meta information.
-send_msg(conn, {"server_name": server_name, "server_time": time.time()})
 
 # Start training
 start_time = time.time()
@@ -175,11 +205,11 @@ for epc in range(epochs):
 
         # fusion, clic, derm accuracy for diagnostic
         dia_acc_fusion = torch.true_divide(server_model.metric(
-            logit_diagnosis_fusion, diagnosis_label), num_batch)
+            logit_diagnosis_fusion, diagnosis_label), batch_size)
         dia_acc_clic = torch.true_divide(server_model.metric(
-            logit_diagnosis_clic, diagnosis_label), num_batch)
+            logit_diagnosis_clic, diagnosis_label), batch_size)
         dia_acc_derm = torch.true_divide(server_model.metric(
-            logit_diagnosis_derm, diagnosis_label), num_batch)
+            logit_diagnosis_derm, diagnosis_label), batch_size)
 
         # average accuracy for diagnostic
         dia_acc = torch.true_divide(
@@ -193,7 +223,7 @@ for epc in range(epochs):
                                            + server_model.metric(logit_dag_fusion, dag_label)
                                            + server_model.metric(logit_bwv_fusion, bwv_label)
                                            + server_model.metric(logit_vs_fusion, vs_label), 
-                                                7 * num_batch)
+                                                7 * batch_size)
 
         # seven-point accuracy of clic
         sps_acc_clic = torch.true_divide(server_model.metric(logit_pn_clic, pn_label)
@@ -203,7 +233,7 @@ for epc in range(epochs):
                                          + server_model.metric(logit_dag_clic, dag_label)
                                          + server_model.metric(logit_bwv_clic, bwv_label)
                                          + server_model.metric(logit_vs_clic, vs_label), 
-                                                7 * num_batch)
+                                                7 * batch_size)
         # seven-point accuracy of derm
         sps_acc_derm = torch.true_divide(server_model.metric(logit_pn_derm, pn_label)
                                          + server_model.metric(logit_str_derm, str_label)
@@ -212,7 +242,7 @@ for epc in range(epochs):
                                          + server_model.metric(logit_dag_derm, dag_label)
                                          + server_model.metric(logit_bwv_derm, bwv_label)
                                          + server_model.metric(logit_vs_derm, vs_label), 
-                                                7 * num_batch)
+                                                7 * batch_size)
         # average seven-point accuracy
         sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
         loss.backward()
@@ -229,74 +259,19 @@ for epc in range(epochs):
         train_dia_acc += dia_acc.item()
         train_sps_acc += sps_acc.item()
 
-    
     train_loss = train_loss / (index + 1)
     train_dia_acc = train_dia_acc / (index + 1)
     train_sps_acc = train_sps_acc / (index + 1)
 
+    # for validation and test, send server model to client
+    logger.info("Start validation and testing: Sending model to client, who will perform validation and testing.")
+    data_size = send_msg(conn, {"server model": {k: v.cpu() for k, v in server_model.state_dict().items()}}) # send model to client.
+    # rmsg = recv_msg(conn)[0]
+    
+
 
     # logging
     logger.info(f"Round: ---, epoch: {epc+1}/{epochs}, Train Loss: {round(train_loss, 2)}, Train Dia Acc: {round(train_dia_acc, 2)}, Train SPS Acc: {round(train_sps_acc, 2)}")
-
-        # if (i + 1) % 100 == 0:
-        #     # measure accuracy and record loss
-        #     _, predicted = torch.max(output, 1)
-        #     correct = (predicted == label).sum().item()
-        #     accuracy = correct / len(label)
-        #     logger.info(f'Epoch: {epc+1}/{epoch}, Batch: {i+1}/{num_batch}, Train Loss: {round(loss.item(), 2)} Train Accuracy: {round(accuracy, 2)} Client to server communication time: {round(total_communication_time, 2)}')
-
-        # if (i + 1) % 1000 == 0:
-        #     logger.info("Start validation")
-        #     # validation
-        #     # receive total bach number and epoch from client.
-        #     rmsg, data_size = recv_msg(conn)
-        #     num_test_batch = rmsg['num_batch']
-        #     test_dataset_size = rmsg['dataset_size']
-        #     resnet_server.eval()
-        #     with torch.no_grad():
-        #         logits_all, targets_all = torch.tensor(
-        #             [], device='cpu'), torch.tensor([], dtype=torch.int, device='cpu')
-        #         # for j in range(num_test_batch):
-        #         for j in range(num_test_batch):
-        #             msg, data_size = recv_msg(conn)
-        #             # label
-        #             label = msg['label']
-        #             # conversion between gpu and cpu.
-        #             label = label.clone().detach().long().to(device)
-
-        #             # feature
-        #             client_output_cpu = msg['client_output']
-        #             client_output = client_output_cpu.to(device)
-
-        #             # forward propagation
-        #             logits = resnet_server(client_output)
-        #             logits_all = torch.cat(
-        #                 (logits_all, logits.detach().cpu()), dim=0)
-        #             targets_all = torch.cat((targets_all, label.cpu()), dim=0)
-
-        #         pred = F.log_softmax(logits_all, dim=1)
-        #         test_loss = criterion(pred, targets_all) / \
-        #             test_dataset_size  # validation loss
-
-        #         output = pred.argmax(dim=1)  # predicated/output label
-        #         prob = F.softmax(logits_all, dim=1)  # probabilities
-
-        #         test_acc = accuracy_score(
-        #             y_pred=output.numpy(), y_true=targets_all.numpy())
-        #         test_bal_acc = balanced_accuracy_score(
-        #             y_pred=output.numpy(), y_true=targets_all.numpy())
-        #         test_auc = roc_auc_score(
-        #             targets_all.numpy(), prob.numpy(), multi_class='ovr')
-        #         logger.info(
-        #             f'Test Loss: {round(test_loss.item(), 2)} Test Accuracy: {round(test_acc, 2)} Test AUC: {round(test_auc, 2)} Test Balanced Accuracy: {round(test_bal_acc, 2)}')
-
-        #     # break
-        #     server_to_client_communication_time = recv_msg(
-        #         conn)[0]['server_to_client_communication_time']
-        #     logger.info(
-        #         f"Server to client communication time: {server_to_client_communication_time}")
-
-        #     # break
 
 server_to_client_communication_time = recv_msg(
     conn)[0]['server_to_client_communication_time']
