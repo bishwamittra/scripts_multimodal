@@ -204,7 +204,7 @@ for epc in range(epoch):
     rmsg = recv_msg(conn)[0]
     logger.info("")
     logger.info(f"Epoch {epc+1}/{epoch} results:")
-    logger.info(f"Train Loss: {round(rmsg['Train Loss'], 4)} Train Accuracy: {round(rmsg['Train Accuracy'], 4)} Train AUC: {round(rmsg['Train AUC'], 4)} Train Balanced Accuracy: {round(rmsg['Train Balanced Accuracy'], 4)}")
+    # logger.info(f"Train Loss: {round(rmsg['Train Loss'], 4)} Train Accuracy: {round(rmsg['Train Accuracy'], 4)} Train AUC: {round(rmsg['Train AUC'], 4)} Train Balanced Accuracy: {round(rmsg['Train Balanced Accuracy'], 4)}")
     logger.info(f'Test Loss: {round(rmsg["Test Loss"], 4)} Test Accuracy: {round(rmsg["Test Accuracy"], 4)} Test AUC: {round(rmsg["Test AUC"], 4)} Test Balanced Accuracy: {round(rmsg["Test Balanced Accuracy"], 4)}')
     
     

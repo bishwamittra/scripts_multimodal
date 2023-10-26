@@ -224,13 +224,13 @@ for epc in range(epoch):
     resnet_server.load_state_dict(server_model_state_dict)
 
     validation_start_time = time.time()
-    train_loss, train_acc, train_auc, train_bal_acc = get_metrics(resnet_server, resnet_client, train_loader, criterion, device)
+    # train_loss, train_acc, train_auc, train_bal_acc = get_metrics(resnet_server, resnet_client, train_loader, criterion, device)
     test_loss, test_acc, test_auc, test_bal_acc = get_metrics(resnet_server, resnet_client, test_loader, criterion, device)
     msg = {
-        'Train Loss': train_loss,
-        'Train Accuracy': train_acc,
-        'Train AUC': train_auc,
-        'Train Balanced Accuracy': train_bal_acc,
+        # 'Train Loss': train_loss,
+        # 'Train Accuracy': train_acc,
+        # 'Train AUC': train_auc,
+        # 'Train Balanced Accuracy': train_bal_acc,
 
 
         'Test Loss': test_loss,
@@ -245,7 +245,7 @@ for epc in range(epoch):
     send_msg(s1, msg)
     logger.info("")
     logger.info(f"Epoch {epc+1}/{epoch} results:")
-    logger.info(f"Train Loss: {round(train_loss, 4)}, Train Accuracy: {round(train_acc, 4)}, Train AUC: {round(train_auc, 4)}, Train Balanced Accuracy: {round(train_bal_acc, 4)}")
+    # logger.info(f"Train Loss: {round(train_loss, 4)}, Train Accuracy: {round(train_acc, 4)}, Train AUC: {round(train_auc, 4)}, Train Balanced Accuracy: {round(train_bal_acc, 4)}")
     logger.info(f"Test Loss: {round(test_loss, 4)}, Test Accuracy: {round(test_acc, 4)}, Test AUC: {round(test_auc, 4)}, Test Balanced Accuracy: {round(test_bal_acc, 4)}")
     # communicating time
     send_msg(s1, {'server_to_client_communication_time': total_communication_time_server_to_client})
