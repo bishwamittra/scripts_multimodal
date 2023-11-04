@@ -265,7 +265,7 @@ for epc in range(epoch):
 
         if(i+1) % 100 == 0:
             pass
-            break
+            # break
 
     training_time += epoch_training_time 
     # training_time_server += epoch_training_time_server
