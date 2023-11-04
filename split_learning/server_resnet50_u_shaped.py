@@ -40,6 +40,7 @@ def sync_time(conn, logger):
     global epoch_communication_time_client_to_server
     global offset_time
     epoch_communication_time_client_to_server = 0
+    offset_time = 0
     send_msg(conn, {"sync_time": "sync request from server"})
     rmsg = recv_msg(conn) 
     logger.info(rmsg['sync_time'])
