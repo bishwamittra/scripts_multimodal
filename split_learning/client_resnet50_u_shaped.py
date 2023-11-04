@@ -67,6 +67,19 @@ logger.info(f'Num Batch {total_batch}')
 
 
 
+def sync_time(conn, offset_time, epoch_communication_time, logger):
+    # a back and forth communication to sync time between client and server.
+
+    rmsg = recv_msg(conn)
+    logger.info(rmsg['sync_time'])
+    send_msg(conn, {"sync_time": "sync request from client"})
+    
+    
+    offset_time = - epoch_communication_time
+    epoch_communication_time = 0
+    return offset_time, epoch_communication_time
+
+
 # Helper functions for communication between client and server.
 def send_msg(sock, msg):
     assert isinstance(msg, dict)
@@ -87,9 +100,9 @@ def recv_msg(sock):
     # read the message data
     msg =  recv_all(sock, msg_len)
     msg = pickle.loads(msg)
-    global total_communication_time_server_to_client
+    global epoch_communication_time_server_to_client
     global offset_time
-    total_communication_time_server_to_client += time.time() - msg['communication_time_stamp'] + offset_time
+    epoch_communication_time_server_to_client += time.time() - msg['communication_time_stamp'] + offset_time
     return msg
 
 def recv_all(sock, n):
@@ -122,7 +135,7 @@ optimizer = optim.SGD(resnet_client_tail.parameters(), lr = lr, momentum = 0.9)
 
 
 
-total_communication_time_server_to_client = 0
+epoch_communication_time_server_to_client = 0
 offset_time = 0
 received_msg_len = 0
 if(not args.connection_start_from_client):
@@ -134,8 +147,6 @@ if(not args.connection_start_from_client):
     s1.connect((host, port)) # establish connection
     send_msg(s1, {"initial_msg": "Greetings from client"}) # send 'epoch' and 'batch size' to server
     remote_server = recv_msg(s1)['server_name'] # get server's meta information.
-    offset_time = - total_communication_time_server_to_client
-    total_communication_time_server_to_client = 0
     logger.info(f"Server: {remote_server}")
 
 else:
@@ -154,16 +165,15 @@ else:
     rmsg = recv_msg(conn) 
     print(rmsg['initial_msg'])
     remote_server = rmsg['server_name']
-    offset_time = - total_communication_time_server_to_client
-    total_communication_time_server_to_client = 0
     s1 = conn
     send_msg(s1, {"initial_msg": "Greetings from client"})
 
+offset_time, epoch_communication_time_server_to_client = sync_time(s1, offset_time, epoch_communication_time_server_to_client, logger)
 
 start_time = time.time()
 total_validation_time = 0
-epoch_communication_time_server_to_client = 0
-epoch_communication_time_client_to_server = 0
+total_communication_time_server_to_client = 0
+total_communication_time_client_to_server = 0
 epoch_received_msg_len = 0
 total_size_server_model = 0
 total_size_server_output = 0
@@ -188,6 +198,7 @@ for epc in range(epoch):
     epoch_training_time_server = 0
     epoch_size_server_output = 0
     epoch_size_client_head_gradient = 0
+    epoch_communication_time_server_to_client = 0
     
     # logger.info(f"running epoch  {epc+1}")
     resnet_client_head.train()
@@ -249,7 +260,7 @@ for epc in range(epoch):
 
         if(i+1) % 100 == 0:
             pass
-            # break
+            break
 
     training_time += epoch_training_time 
     # training_time_server += epoch_training_time_server
@@ -288,17 +299,20 @@ for epc in range(epoch):
     # logger.info(f"Train Loss: {round(train_loss, 4)}, Train Accuracy: {round(train_acc, 4)}, Train AUC: {round(train_auc, 4)}, Train Balanced Accuracy: {round(train_bal_acc, 4)}")
     logger.info(f"Test Loss: {round(test_loss, 4)}, Test Accuracy: {round(test_acc, 4)}, Test AUC: {round(test_auc, 4)}, Test Balanced Accuracy: {round(test_bal_acc, 4)}")
     # communicating time
-    send_msg(s1, {'server_to_client_communication_time': total_communication_time_server_to_client})
+    send_msg(s1, {'server_to_client_communication_time': epoch_communication_time_server_to_client})
     rmsg = recv_msg(s1)
-    total_communication_time_client_to_server = rmsg['client_to_server_communication_time']
-    logger.info(f"Epoch: client to server com time: {round(total_communication_time_client_to_server - epoch_communication_time_client_to_server, 2)}")
-    logger.info(f"Epoch: server to client com. time: {round(total_communication_time_server_to_client - epoch_communication_time_server_to_client, 2)}")
-    epoch_communication_time_server_to_client = total_communication_time_server_to_client    
-    epoch_communication_time_client_to_server = total_communication_time_client_to_server
+    epoch_communication_time_client_to_server = rmsg['client_to_server_communication_time']
+    logger.info(f"Epoch: client to server com time: {round(epoch_communication_time_client_to_server, 2)}")
+    logger.info(f"Epoch: server to client com. time: {round(epoch_communication_time_server_to_client, 2)}")
+    total_communication_time_server_to_client += epoch_communication_time_server_to_client    
+    total_communication_time_client_to_server += epoch_communication_time_client_to_server
     logger.info(f"Epoch: training time client: {round(epoch_training_time, 2)}")
     # logger.info(f"Epoch: training time server (over-approximation): {round(epoch_training_time_server, 2)}")
     logger.info(f"Epoch: validation time: {round(msg['validation time'], 2)}")
     logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
+    
+    
+    
     logger.info("")
     logger.info(f"Epoch: received msg len from server: {round((received_msg_len - epoch_received_msg_len)/1024/1024, 2)} MB")
     epoch_received_msg_len = received_msg_len

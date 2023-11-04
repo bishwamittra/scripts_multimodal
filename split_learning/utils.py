@@ -82,7 +82,7 @@ def get_metrics_u_shaped(resnet_server, resnet_client_head, resnet_client_tail, 
             logits_all = torch.cat((logits_all, logits.detach().cpu()),dim=0)
             targets_all = torch.cat((targets_all, label.cpu()), dim=0)
 
-            # break
+            break
             
         pred = F.log_softmax(logits_all, dim=1)
         test_loss = criterion(pred, targets_all)/test_dataset_size # validation loss
