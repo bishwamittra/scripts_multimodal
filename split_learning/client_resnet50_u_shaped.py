@@ -115,8 +115,8 @@ resnet_client_tail = ResNet50_client_tail(num_classes=10).to(device) # parameter
 
 lr = 0.001
 criterion = nn.CrossEntropyLoss()
-all_params = chain(resnet_client_head.parameters(), resnet_client_tail.parameters())
-optimizer = optim.SGD(all_params, lr = lr, momentum = 0.9)
+# all_params = chain(resnet_client_head.parameters(), resnet_client_tail.parameters())
+optimizer = optim.SGD(resnet_client_tail.parameters(), lr = lr, momentum = 0.9)
 
 # Training 
 
@@ -165,6 +165,11 @@ total_validation_time = 0
 epoch_communication_time_server_to_client = 0
 epoch_communication_time_client_to_server = 0
 epoch_received_msg_len = 0
+total_size_server_model = 0
+total_size_server_output = 0
+total_size_client_head_gradient = 0
+
+
 training_time = 0
 # training_time_server = 0
 epoch = args.epoch
@@ -181,6 +186,8 @@ for epc in range(epoch):
     epoch_start_time = time.time()
     epoch_training_time = 0
     epoch_training_time_server = 0
+    epoch_size_server_output = 0
+    epoch_size_client_head_gradient = 0
     
     # logger.info(f"running epoch  {epc+1}")
     resnet_client_head.train()
@@ -204,7 +211,10 @@ for epc in range(epoch):
         
         
         send_msg(s1, msg) # send head output to server
+        size_server_output = received_msg_len
         rmsg = recv_msg(s1) # receive server output from server
+        size_server_output = received_msg_len - size_server_output
+        epoch_size_server_output += size_server_output
 
 
         # tail forward propagation
@@ -217,7 +227,6 @@ for epc in range(epoch):
         # backward propagation
         loss = criterion(output_tail, label) # compute cross-entropy loss
         loss.backward() # backward propagation
-        optimizer.step()
         epoch_training_time += time.time() - batch_training_start_time
 
         # send gradient to server
@@ -226,10 +235,21 @@ for epc in range(epoch):
         }
         send_msg(s1, msg)
 
+        size_client_head_gradient = received_msg_len
+        rmsg = recv_msg(s1) # receive gradient of the head from server
+        size_client_head_gradient = received_msg_len - size_client_head_gradient
+        epoch_size_client_head_gradient += size_client_head_gradient
+
+        # update head gradient
+        batch_training_start_time = time.time()
+        client_output_head.backward(rmsg['client_grad'])
+        optimizer.step()
+        epoch_training_time += time.time() - batch_training_start_time
+
 
         if(i+1) % 100 == 0:
             pass
-            # break
+            break
 
     training_time += epoch_training_time 
     # training_time_server += epoch_training_time_server
@@ -238,6 +258,7 @@ for epc in range(epoch):
     server_model_size = received_msg_len
     rmsg = recv_msg(s1)
     server_model_size = received_msg_len - server_model_size
+    total_size_server_model += server_model_size
     server_model_state_dict = rmsg['server model']
     resnet_server = ResNet50_server().to(device)
     resnet_server.load_state_dict(server_model_state_dict)
@@ -278,9 +299,15 @@ for epc in range(epoch):
     # logger.info(f"Epoch: training time server (over-approximation): {round(epoch_training_time_server, 2)}")
     logger.info(f"Epoch: validation time: {round(msg['validation time'], 2)}")
     logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
+    logger.info("")
     logger.info(f"Epoch: received msg len from server: {round((received_msg_len - epoch_received_msg_len)/1024/1024, 2)} MB")
     epoch_received_msg_len = received_msg_len
+    logger.info(f"Epoch: size of server output: {round(epoch_size_server_output/1024/1024, 2)} MB")
+    total_size_server_output += epoch_size_server_output
+    logger.info(f"Epoch: size of client head gradient: {round(epoch_size_client_head_gradient/1024/1024, 2)} MB")
+    total_size_client_head_gradient += epoch_size_client_head_gradient
     logger.info(f"Epoch: server model size: {round(server_model_size/1024/1024, 2)} MB")
+
     
 
 
@@ -300,5 +327,9 @@ logger.info(f"Training time client: {round(training_time, 2)}")
 # logger.info(f"Training time server (over-approximation): {round(training_time_server, 2)}")
 logger.info(f"Validation time: {round(total_validation_time, 2)}")
 logger.info(f"Total time: {round(end_time - start_time, 2)}")
+logger.info("")
 logger.info(f"Received msg len from server: {round(received_msg_len/1024/1024, 2)} MB")
+logger.info(f"Total size of server output: {round(total_size_server_output/1024/1024, 2)} MB")
+logger.info(f"Total size of client head gradient: {round(total_size_client_head_gradient/1024/1024, 2)} MB")
+logger.info(f"Total size of server model: {round(total_size_server_model/1024/1024, 2)} MB")
 # 

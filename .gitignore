@@ -9,6 +9,6 @@ __pycache__/*
 */*/__pycache__/*
 fusionm4net/result_prev/*
 split_learning/pytorch_resnet_cifar10/pretrained_models/*
-split_learning/result/*
+split_learning/result*/*
 models/*
-fusionnet_split_learning/result/*
+fusionnet_split_learning/result*/*

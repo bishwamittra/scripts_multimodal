@@ -29,7 +29,7 @@ seed_num = 777
 # if device == "cuda:0":
 #     torch.cuda.manual_seed_all(seed_num)
 # device = "cpu"
-device = "cuda:1"
+device = "cuda:0"
 logger, exp_seq = get_logger(filename_prefix="server_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
 
@@ -137,13 +137,17 @@ total_validation_time = 0
 epoch_communication_time_server_to_client = 0
 epoch_communication_time_client_to_server = 0
 epoch_received_msg_len = 0
+total_size_client_head_output = 0
+total_size_server_gradient = 0
+
 training_time = 0
 logger.info(f"Start training @ {time.asctime()}")
 
 for epc in range(epoch):
     epoch_start_time = time.time()
     epoch_training_time = 0
-    
+    epoch_size_client_head_output = 0
+    epoch_size_server_gradient = 0
     
 
     
@@ -153,8 +157,10 @@ for epc in range(epoch):
         optimizer.zero_grad()
         epoch_training_time += time.time() - batch_training_start_time
         
-        
+        size_client_head_output = received_msg_len
         rmsg, data_size = recv_msg(conn) # receives feature from client.
+        size_client_head_output = received_msg_len - size_client_head_output
+        epoch_size_client_head_output += size_client_head_output
         
 
         # forward propagation
@@ -170,19 +176,34 @@ for epc in range(epoch):
         
         
         data_size = send_msg(conn, msg) # send server output to client
+        size_server_gradient = received_msg_len
         rmsg, data_size = recv_msg(conn) # receive gradient from client
+        size_server_gradient = received_msg_len - size_server_gradient
+        epoch_size_server_gradient += size_server_gradient
 
         # backward propagation
         batch_training_start_time = time.time()
         server_grad = rmsg['server_grad'].to(device)
         server_output_gpu.backward(server_grad)
+        epoch_training_time += time.time() - batch_training_start_time
+        
+        
+        
+        # send gradient to client
+        batch_training_start_time = time.time()
+        msg = {
+            "client_grad": client_output_cpu.grad.clone().detach(),
+        }
         optimizer.step()
         epoch_training_time += time.time() - batch_training_start_time
+        data_size = send_msg(conn, msg)
+        
+        
         
 
         if (i + 1) % 100 == 0:
             pass
-            # break
+            break
 
          
 
@@ -207,7 +228,12 @@ for epc in range(epoch):
     total_validation_time += rmsg['validation time']
     logger.info(f"Epoch: validation time: {round(rmsg['validation time'], 2)}")
     logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
+    logger.info("")
     logger.info(f"Epoch: received msg len from client: {round((received_msg_len - epoch_received_msg_len)/1024/1024, 2)} MB")
+    logger.info(f"Epoch: size of client head output: {round(epoch_size_client_head_output/1024/1024, 2)} MB")
+    logger.info(f"Epoch: size of server gradient: {round(epoch_size_server_gradient/1024/1024, 2)} MB")
+    total_size_client_head_output += epoch_size_client_head_output
+    total_size_server_gradient += epoch_size_server_gradient
     epoch_received_msg_len = received_msg_len
     
 
@@ -222,7 +248,10 @@ logger.info(f"Server to client communication time: {round(total_communication_ti
 logger.info(f"Training time server: {round(training_time, 2)}")
 logger.info(f"Validation time: {round(total_validation_time, 2)}")
 logger.info(f'Total duration is: {round(time.time() - start_time, 2)} seconds')
+logger.info("")
 logger.info(f"Received msg len from client: {round(received_msg_len/1024/1024, 2)} MB")
+logger.info(f"Total size of client head output: {round(total_size_client_head_output/1024/1024, 2)} MB")
+logger.info(f"Total size of server gradient: {round(total_size_server_gradient/1024/1024, 2)} MB")
 
 
 
