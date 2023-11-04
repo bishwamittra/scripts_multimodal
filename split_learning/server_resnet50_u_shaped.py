@@ -34,16 +34,19 @@ logger, exp_seq = get_logger(filename_prefix="server_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
 
 
-def sync_time(conn, offset_time, epoch_communication_time, logger):
+def sync_time(conn, logger):
     # a back and forth communication to sync time between client and server.
 
+    global epoch_communication_time_client_to_server
+    global offset_time
+    epoch_communication_time_client_to_server = 0
     send_msg(conn, {"sync_time": "sync request from server"})
     rmsg = recv_msg(conn) 
     logger.info(rmsg['sync_time'])
     
-    offset_time = - epoch_communication_time # setting the first communication time as 0 to offset the time.
-    epoch_communication_time = 0
-    return offset_time, epoch_communication_time
+    offset_time = - epoch_communication_time_client_to_server # setting the first communication time as 0 to offset the time.
+    epoch_communication_time_client_to_server = 0
+    
     
 
 def send_msg(sock, msg):
@@ -132,7 +135,6 @@ else:
     logger.info(rmsg['initial_msg'])
 
 
-offset_time, epoch_communication_time_client_to_server = sync_time(conn, offset_time, epoch_communication_time_client_to_server, logger)
    
 rmsg = recv_msg(conn) # receive total bach number and epoch from client.
 epoch = rmsg['epoch']
@@ -154,6 +156,7 @@ training_time = 0
 logger.info(f"Start training @ {time.asctime()}")
 
 for epc in range(epoch):
+    sync_time(conn, logger)
     epoch_start_time = time.time()
     epoch_training_time = 0
     epoch_size_client_head_output = 0

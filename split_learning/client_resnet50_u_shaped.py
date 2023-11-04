@@ -67,17 +67,20 @@ logger.info(f'Num Batch {total_batch}')
 
 
 
-def sync_time(conn, offset_time, epoch_communication_time, logger):
+def sync_time(conn, logger):
     # a back and forth communication to sync time between client and server.
 
+    global epoch_communication_time_server_to_client
+    global offset_time
+    epoch_communication_time_server_to_client = 0
     rmsg = recv_msg(conn)
     logger.info(rmsg['sync_time'])
     send_msg(conn, {"sync_time": "sync request from client"})
     
     
-    offset_time = - epoch_communication_time
-    epoch_communication_time = 0
-    return offset_time, epoch_communication_time
+    offset_time = - epoch_communication_time_server_to_client
+    epoch_communication_time_server_to_client = 0
+    
 
 
 # Helper functions for communication between client and server.
@@ -168,7 +171,7 @@ else:
     s1 = conn
     send_msg(s1, {"initial_msg": "Greetings from client"})
 
-offset_time, epoch_communication_time_server_to_client = sync_time(s1, offset_time, epoch_communication_time_server_to_client, logger)
+
 
 start_time = time.time()
 total_validation_time = 0
@@ -193,6 +196,7 @@ send_msg(s1, msg) # send 'epoch' and 'batch size' to server
 
 
 for epc in range(epoch):
+    sync_time(s1, logger)
     epoch_start_time = time.time()
     epoch_training_time = 0
     epoch_training_time_server = 0
