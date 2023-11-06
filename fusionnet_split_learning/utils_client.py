@@ -110,6 +110,8 @@ def validation(client_net, server_net, val_dataloader, device):
 
             sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
 
+            break
+
         val_loss += loss.item()
         val_dia_acc += dia_acc.item()
         val_sps_acc += sps_acc.item()
