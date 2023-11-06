@@ -5,6 +5,8 @@ import pickle
 from itertools import chain
 import time
 from tqdm import tqdm
+import random
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,7 +16,6 @@ import torch.optim as optim
 from model_client_u_shaped import ResNet50_Head as ResNet50_client_head
 from model_client_u_shaped import ResNet50_Tail as ResNet50_client_tail
 from model_server_u_shaped import ResNet50 as ResNet50_server
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score
 from utils import get_logger, get_metrics_u_shaped
 from torch.utils.data import Subset
 
@@ -23,6 +24,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int)
 parser.add_argument('--connection_start_from_client', action='store_true', default=False)
 parser.add_argument('--client_in_sambanova', action='store_true', default=False)
+parser.add_argument('--seed', type=int, default=42, help='random seed')
 args = parser.parse_args()
 
 
@@ -32,8 +34,13 @@ root_path = '../models/cifar10_data'
 
 # Setup cpu
 device = 'cpu'
-# device = 'cuda:0'
-torch.manual_seed(777)
+seed = args.seed
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(seed)     
+
 
 # Setup client order
 client_order = int(0)
@@ -133,7 +140,9 @@ resnet_client_tail = ResNet50_client_tail(num_classes=10).to(device) # parameter
 lr = 0.001
 criterion = nn.CrossEntropyLoss()
 # all_params = chain(resnet_client_head.parameters(), resnet_client_tail.parameters())
-optimizer = optim.SGD(resnet_client_tail.parameters(), lr = lr, momentum = 0.9)
+# optimizer_combined = optim.SGD(all_params, lr = lr, momentum = 0.9)
+optimizer_tail = optim.SGD(resnet_client_tail.parameters(), lr = lr, momentum = 0.9)
+optimizer_head = optim.SGD(resnet_client_head.parameters(), lr = lr, momentum = 0.9)
 
 # Training 
 
@@ -176,6 +185,7 @@ else:
 
 start_time = time.time()
 total_validation_time = 0
+total_training_time = 0
 total_communication_time_server_to_client = 0
 total_communication_time_client_to_server = 0
 epoch_received_msg_len = 0
@@ -184,7 +194,7 @@ total_size_server_output = 0
 total_size_client_head_gradient = 0
 
 
-training_time = 0
+
 # training_time_server = 0
 epoch = args.epoch
 msg = {
@@ -193,7 +203,12 @@ msg = {
 }
 send_msg(s1, msg) # send 'epoch' and 'batch size' to server
 
-
+"""
+Todo: 
+    1. Version 1: Separate optimizers for head and tail. Once tail computes gradient, we call optimizer_tail.step(). Similarly for head
+    2. Version 2: One optmizer combining both parameters.
+    3. Find the model definition of VIT
+"""
 
 
 for epc in range(epoch):
@@ -217,7 +232,8 @@ for epc in range(epoch):
         x, label = data
         x = x.to(device)
         label = label.to(device)
-        optimizer.zero_grad()
+        optimizer_head.zero_grad()
+        optimizer_tail.zero_grad()
         output_head = resnet_client_head(x)
         client_output_head = output_head.clone().detach().requires_grad_(True)
         msg = {
@@ -227,6 +243,8 @@ for epc in range(epoch):
         
         
         send_msg(s1, msg) # send head output to server
+        
+        
         size_server_output = received_msg_len
         rmsg = recv_msg(s1) # receive server output from server
         size_server_output = received_msg_len - size_server_output
@@ -251,6 +269,9 @@ for epc in range(epoch):
         }
         send_msg(s1, msg)
 
+
+        optimizer_tail.step()
+
         size_client_head_gradient = received_msg_len
         rmsg = recv_msg(s1) # receive gradient of the head from server
         size_client_head_gradient = received_msg_len - size_client_head_gradient
@@ -259,7 +280,7 @@ for epc in range(epoch):
         # update head gradient
         batch_training_start_time = time.time()
         client_output_head.backward(rmsg['client_grad'])
-        optimizer.step()
+        optimizer_head.step()
         epoch_training_time += time.time() - batch_training_start_time
 
 
@@ -267,7 +288,7 @@ for epc in range(epoch):
             pass
             # break
 
-    training_time += epoch_training_time 
+    total_training_time += epoch_training_time 
     # training_time_server += epoch_training_time_server
     
     # validation after each epoch
@@ -342,7 +363,7 @@ logger.info("")
 logger.info(f'Summary')
 logger.info(f"Client to server communication time: {round(total_communication_time_client_to_server, 2)}")
 logger.info(f"Server to client communication time: {round(total_communication_time_server_to_client, 2)}")
-logger.info(f"Training time client: {round(training_time, 2)}")
+logger.info(f"Training time client: {round(total_training_time, 2)}")
 # logger.info(f"Training time server (over-approximation): {round(training_time_server, 2)}")
 logger.info(f"Validation time: {round(total_validation_time, 2)}")
 logger.info(f"Total time: {round(end_time - start_time, 2)}")

@@ -6,8 +6,8 @@ import struct
 import pickle
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torchvision.transforms as transforms
+import numpy as np
+import random
 import torch.optim as optim
 import time
 from model_server_u_shaped import ResNet50 as ResNet50_server
@@ -19,17 +19,24 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--connection_start_from_client', action='store_true', default=False)
 parser.add_argument('--client_in_sambanova', action='store_true', default=False)
+parser.add_argument('--seed', type=int, default=42, help='random seed')
 args = parser.parse_args()
 
 
 # Setup CUDA
-seed_num = 777
-# device = "cuda:0" if torch.cuda.is_available() else "cpu"
-# torch.manual_seed(seed_num)
-# if device == "cuda:0":
-#     torch.cuda.manual_seed_all(seed_num)
+
 # device = "cpu"
-device = "cuda:0"
+device = "cuda:1"
+
+# seed
+seed = args.seed
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(seed)     
+
+
 logger, exp_seq = get_logger(filename_prefix="server_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
 
@@ -162,7 +169,7 @@ for epc in range(epoch):
     epoch_training_time = 0
     epoch_size_client_head_output = 0
     epoch_size_server_gradient = 0
-    epoch_communication_time_client_to_server = 0
+    # epoch_communication_time_client_to_server = 0
     # offset_time, epoch_communication_time_client_to_server = sync_time(offset_time, epoch_communication_time_client_to_server)
     
 
@@ -193,6 +200,9 @@ for epc in range(epoch):
         
         send_msg(conn, msg) # send server output to client
         size_server_gradient = received_msg_len
+        
+        
+        
         rmsg = recv_msg(conn) # receive gradient from client
         size_server_gradient = received_msg_len - size_server_gradient
         epoch_size_server_gradient += size_server_gradient
@@ -210,9 +220,11 @@ for epc in range(epoch):
         msg = {
             "client_grad": client_output_cpu.grad.clone().detach(),
         }
-        optimizer.step()
         epoch_training_time += time.time() - batch_training_start_time
         send_msg(conn, msg)
+
+
+        optimizer.step()
         
         
         
@@ -235,7 +247,6 @@ for epc in range(epoch):
     # show time
     epoch_communication_time_server_to_client = recv_msg(conn)['server_to_client_communication_time']
     logger.info(f"Epoch: client to server com. time: {round(epoch_communication_time_client_to_server, 2)}") 
-    
     logger.info(f"Epoch: server to client com. time: {round(epoch_communication_time_server_to_client, 2)}")
     total_communication_time_server_to_client += epoch_communication_time_server_to_client
     send_msg(conn, {'client_to_server_communication_time': epoch_communication_time_client_to_server})
