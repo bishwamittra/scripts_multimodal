@@ -62,7 +62,7 @@ def sync_time(conn, logger):
     epoch_communication_time_server_to_client = 0
     offset_time = 0
     rmsg = recv_msg(conn)
-    logger.info(rmsg['sync_time'])
+    # logger.info(rmsg['sync_time'])
     send_msg(conn, {"sync_time": "sync request from client"})
     
     
@@ -227,7 +227,7 @@ for epc in range(epochs):
         optimizer.step()
         epoch_training_time += time.time() - batch_training_start_time
 
-        break
+        # break
 
     total_training_time += epoch_training_time
     
@@ -237,7 +237,7 @@ for epc in range(epochs):
     rmsg = recv_msg(s1)
     server_model_size = received_msg_len - server_model_size
     total_size_server_model += server_model_size
-    logger.info("Received server model")
+    # logger.info("Received server model")
     server_model_state_dict = rmsg['server model']
     server_model = FusionNet_server(class_list).to(device)
     server_model.load_state_dict(server_model_state_dict)
@@ -246,13 +246,13 @@ for epc in range(epochs):
     validation_start_time = time.time()
     val_loss, val_dia_acc, val_sps_acc = validation(client_model, server_model, val_dataloader, device)
     val_mean_acc = (val_dia_acc*1 + val_sps_acc*7)/8
-    
+    validation_time = time.time() - validation_start_time
     msg = {
             'validation loss': val_loss,
             'validation dia acc': val_dia_acc,
             'validation sps acc': val_sps_acc,
             'validation mean acc': val_mean_acc,
-            'validation time': time.time() - validation_start_time,
+            'validation time': validation_time,
     }
     total_validation_time += msg['validation time']
 
@@ -270,14 +270,15 @@ for epc in range(epochs):
     test_start_time = time.time()
     test_loss, test_dia_acc, test_sps_acc = validation(client_model, server_model, test_dataloader, device)
     test_mean_acc = (test_dia_acc*1 + test_sps_acc*7)/8
+    test_time = time.time() - test_start_time
     msg = {
             'test loss': test_loss,
             'test dia acc': test_dia_acc,
             'test sps acc': test_sps_acc,
             'test mean acc': test_mean_acc,
-            'test time': time.time() - test_start_time,
+            'test time': test_time,
     }
-    total_test_time += msg['test time']
+    total_test_time += test_time
     send_msg(s1, msg)
 
 
@@ -285,8 +286,8 @@ for epc in range(epochs):
     # logging
     logger.info("")
     logger.info(f"Epoch {epc+1}/{epochs} results:")
-    logger.info(f'Round: ---, epoch: {epc}, Valid Loss: {round(val_loss, 2)}, Valid Dia Acc: {round(val_dia_acc, 2)}, Valid SPS Acc: {round(val_sps_acc, 2)} Valid Mean Acc: {round(val_mean_acc, 2)}')
-    logger.info(f'Round: ---, epoch: {epc}, Test Loss: {round(test_loss, 2)}, Test Dia Acc: {round(test_dia_acc, 2)}, Test SPS Acc: {round(test_sps_acc, 2)} Test Mean Acc: {round(test_mean_acc, 2)}')
+    logger.info(f'Valid Loss: {round(val_loss, 2)}, Valid Dia Acc: {round(val_dia_acc, 2)}, Valid SPS Acc: {round(val_sps_acc, 2)} Valid Mean Acc: {round(val_mean_acc, 2)}')
+    logger.info(f'Test Loss: {round(test_loss, 2)}, Test Dia Acc: {round(test_dia_acc, 2)}, Test SPS Acc: {round(test_sps_acc, 2)} Test Mean Acc: {round(test_mean_acc, 2)}')
 
     
     
@@ -294,13 +295,15 @@ for epc in range(epochs):
     send_msg(s1, {'server_to_client_communication_time': epoch_communication_time_server_to_client})
     rmsg = recv_msg(s1)
     epoch_communication_time_client_to_server = rmsg['client_to_server_communication_time']
+    logger.info("")
     logger.info(f"Epoch: client to server com time: {round(epoch_communication_time_client_to_server, 2)}")
     logger.info(f"Epoch: server to client com. time: {round(epoch_communication_time_server_to_client, 2)}")
     total_communication_time_server_to_client += epoch_communication_time_server_to_client    
     total_communication_time_client_to_server += epoch_communication_time_client_to_server
     logger.info(f"Epoch: training time client: {round(epoch_training_time, 2)}")
     # logger.info(f"Epoch: training time server (over-approximation): {round(epoch_training_time_server, 2)}")
-    logger.info(f"Epoch: validation time: {round(msg['validation time'], 2)}")
+    logger.info(f"Epoch: validation time: {round(validation_time, 2)}")
+    logger.info(f"Epoch: test time: {round(test_time, 2)}")
     logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
     
     
@@ -308,10 +311,10 @@ for epc in range(epochs):
     logger.info("")
     logger.info(f"Epoch: received msg len from server: {round((received_msg_len - epoch_received_msg_len)/1024/1024, 2)} MB")
     epoch_received_msg_len = received_msg_len
-    logger.info(f"Epoch: size of server output: {round(epoch_size_server_output/1024/1024, 2)} MB")
+    logger.info(f"Epoch: size of client gradient: {round(epoch_size_server_output/1024/1024, 2)} MB")
     total_size_server_output += epoch_size_server_output
-    logger.info(f"Epoch: size of client head gradient: {round(epoch_size_client_head_gradient/1024/1024, 2)} MB")
-    total_size_client_head_gradient += epoch_size_client_head_gradient
+    # logger.info(f"Epoch: size of client head gradient: {round(epoch_size_client_head_gradient/1024/1024, 2)} MB")
+    # total_size_client_head_gradient += epoch_size_client_head_gradient
     logger.info(f"Epoch: server model size: {round(server_model_size/1024/1024, 2)} MB")
 
 
@@ -338,8 +341,8 @@ logger.info(f"Total time: {round(end_time - start_time, 2)}")
 
 logger.info("")
 logger.info(f"Received msg len from server: {round(received_msg_len/1024/1024, 2)} MB")
-logger.info(f"Total size of server output: {round(total_size_server_output/1024/1024, 2)} MB")
-logger.info(f"Total size of client head gradient: {round(total_size_client_head_gradient/1024/1024, 2)} MB")
+logger.info(f"Total size of client gradient: {round(total_size_server_output/1024/1024, 2)} MB")
+# logger.info(f"Total size of client head gradient: {round(total_size_client_head_gradient/1024/1024, 2)} MB")
 logger.info(f"Total size of server model: {round(total_size_server_model/1024/1024, 2)} MB")
 # 
 

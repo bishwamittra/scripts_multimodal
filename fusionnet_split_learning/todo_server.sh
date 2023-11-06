@@ -1,4 +1,4 @@
-client_start=True
+client_start=False
 
 
 server_seed="42"
@@ -14,9 +14,9 @@ for i in {1..3}
 do
     seed=$((server_seed + i))
     if [ "$client_start" = True ] ; then
-        python server_resnet50_u_shaped.py --seed ${seed} --connection_start_from_client --client_in_sambanova
+        python server.py --seed ${seed} --connection_start_from_client --client_in_sambanova
     else
-        python server_resnet50_u_shaped.py --seed ${seed}
+        python server.py --seed ${seed}
     fi
     sleep ${server_wait_time}
 done
