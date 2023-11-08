@@ -16,9 +16,9 @@ for i in {1..3}
 do
     seed=$((client_seed + i))
     if [ "$client_start" = True ] ; then
-        python client.py --epoch ${epoch} --seed ${seed} --connection_start_from_client --client_in_sambanova
+        python client_u_shaped.py --epoch ${epoch} --seed ${seed} --connection_start_from_client --client_in_sambanova
     else
-        python client.py --epoch ${epoch} --seed ${seed}
+        python client_u_shaped.py --epoch ${epoch} --seed ${seed}
     fi
     sleep ${client_wait_time}
 done

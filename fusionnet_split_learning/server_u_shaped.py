@@ -81,6 +81,7 @@ def recv_msg(sock):
     global offset_time
     epoch_communication_time_client_to_server += time.time() - \
         msg['communication_time_stamp'] + offset_time
+    # print("\n", epoch_communication_time_client_to_server)
     return msg
 
 
@@ -271,7 +272,7 @@ for epc in range(epochs):
     logger.info(f"Epoch: training time server: {round(epoch_training_time, 2)}")
     logger.info(f"Epoch: validation time: {round(validation_time, 2)}")
     logger.info(f"Epoch: test time: {round(test_time, 2)}")
-    logger.info(f"Server encode time: {round(server_encode_time, 2)}")
+    logger.info(f"Epoch: server encode time: {round(server_encode_time, 2)}")
     logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
     total_communication_time_client_to_server += epoch_communication_time_client_to_server
 

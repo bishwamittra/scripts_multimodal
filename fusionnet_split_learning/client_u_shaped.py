@@ -95,6 +95,7 @@ def recv_msg(sock):
     global offset_time
     epoch_communication_time_server_to_client += time.time() - \
         msg['communication_time_stamp'] + offset_time
+    # print("\n", epoch_communication_time_server_to_client)
     return msg
 
 
@@ -244,18 +245,18 @@ for epc in range(epochs):
         train_sps_acc += sps_acc.item()
         # backward propagation client_last model
         loss.backward()
-        epoch_training_time += time.time() - batch_training_start_time
-
-        
         # send gradient to server
         msg = {
             "x_clic_server_grad": x_clic_server_gpu.grad.clone().detach(),
             "x_derm_server_grad": x_derm_server_gpu.grad.clone().detach(),
             "x_fusion_server_grad": x_fusion_server_gpu.grad.clone().detach()
         }
+        epoch_training_time += time.time() - batch_training_start_time
         send_msg(s1, msg)
 
+        batch_training_start_time = time.time()
         optimizer_last.step()
+        epoch_training_time += time.time() - batch_training_start_time
 
 
         # back propagation client_first model
@@ -289,9 +290,11 @@ for epc in range(epochs):
     server_model_size = received_msg_len - server_model_size
     total_size_server_model += server_model_size
     # logger.info("Received server model")
+    server_load_start_time = time.time()
     server_model_state_dict = rmsg['server model']
     server_model = FusionNet_server_middle().to(device)
     server_model.load_state_dict(server_model_state_dict)
+    server_load_time = time.time() - server_load_start_time
 
     # validation mode
     validation_start_time = time.time()
@@ -354,6 +357,7 @@ for epc in range(epochs):
     # logger.info(f"Epoch: training time server (over-approximation): {round(epoch_training_time_server, 2)}")
     logger.info(f"Epoch: validation time: {round(validation_time, 2)}")
     logger.info(f"Epoch: test time: {round(test_time, 2)}")
+    logger.info(f"Eopch: server load time: {round(server_load_time, 2)}")
     logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
     
     
