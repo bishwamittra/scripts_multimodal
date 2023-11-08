@@ -1,5 +1,4 @@
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score
 from tqdm import tqdm
 from utils import get_logger
@@ -7,7 +6,7 @@ import time
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.nn as nn
-from model_server import FusionNet_server
+from model_server_u_shaped import FusionNet_server_middle
 from dependency import class_list
 import torch
 import numpy as np
@@ -28,14 +27,14 @@ args = parser.parse_args()
 
 
 # Setup CUDA
-device = "cuda"
+device = "cuda:1"
 seed = args.seed
 random.seed(seed)
 np.random.seed(seed)
 torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(seed)     
-logger, exp_seq, save_path = get_logger(filename_prefix="server_")
+logger, exp_seq, save_path = get_logger(filename_prefix="server_u_shaped_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
 
 
@@ -96,7 +95,7 @@ def recv_all(sock, n):
     return data
 
 
-server_model = FusionNet_server(class_list).to(device)
+server_model = FusionNet_server_middle().to(device)
 criterion = nn.CrossEntropyLoss()
 lr = 0.001
 optimizer = optim.Adam(server_model.parameters(), lr=lr)
@@ -142,9 +141,8 @@ else:
 
 rmsg = recv_msg(conn)
 epochs = rmsg['epoch']
-batch_size = rmsg['batch_size']
 num_batch = rmsg['num_batch']
-logger.info(f"received epoch: {rmsg['epoch']}, batch size: {rmsg['batch_size']}, num_batch: {rmsg['num_batch']}")
+logger.info(f"received epoch: {rmsg['epoch']}, num_batch: {rmsg['num_batch']}")
 
 
 # Start training
@@ -171,10 +169,6 @@ for epc in range(epochs):
     epoch_size_server_gradient = 0
     
 
-    train_loss = 0
-    train_dia_acc = 0
-    train_sps_acc = 0
-
     for index in tqdm(range(num_batch), ncols=100, desc='Training with {}'.format(server_name)):
         batch_training_start_time = time.time()
         optimizer.zero_grad()
@@ -188,138 +182,64 @@ for epc in range(epochs):
 
         # forward propagation
         batch_training_start_time = time.time()
-        # label
-        label = rmsg['label']
-        # Diagostic label
-        diagnosis_label = label[0].clone().long().to(device)
-        # Seven-Point Checklikst labels
-        pn_label = label[1].clone().long().to(device)
-        str_label = label[2].clone().long().to(device)
-        pig_label = label[3].clone().long().to(device)
-        rs_label = label[4].clone().long().to(device)
-        dag_label = label[5].clone().long().to(device)
-        bwv_label = label[6].clone().long().to(device)
-        vs_label = label[7].clone().long().to(device)
-
         # feature
         x_clic_cpu, x_derm_cpu = rmsg['x_clic'], rmsg['x_derm']
         x_clic = x_clic_cpu.to(device)
         x_derm = x_derm_cpu.to(device)
-
-        # forward propagation
-        [(logit_diagnosis_derm, logit_pn_derm, logit_str_derm, logit_pig_derm, logit_rs_derm, logit_dag_derm, logit_bwv_derm,
-          logit_vs_derm),
-         (logit_diagnosis_clic, logit_pn_clic, logit_str_clic, logit_pig_clic, logit_rs_clic, logit_dag_clic, logit_bwv_clic,
-          logit_vs_clic),
-         (logit_diagnosis_fusion, logit_pn_fusion, logit_str_fusion, logit_pig_fusion, logit_rs_fusion, logit_dag_fusion, logit_bwv_fusion,
-          logit_vs_fusion)] = server_model((x_clic, x_derm))
-
-        # average fusion loss
-        loss_fusion = torch.true_divide(
-            server_model.criterion(logit_diagnosis_fusion, diagnosis_label)
-            + server_model.criterion(logit_pn_fusion, pn_label)
-            + server_model.criterion(logit_str_fusion, str_label)
-            + server_model.criterion(logit_pig_fusion, pig_label)
-            + server_model.criterion(logit_rs_fusion, rs_label)
-            + server_model.criterion(logit_dag_fusion, dag_label)
-            + server_model.criterion(logit_bwv_fusion, bwv_label)
-            + server_model.criterion(logit_vs_fusion, vs_label), 8)
-
-        # average clic loss
-        loss_clic = torch.true_divide(
-            server_model.criterion(logit_diagnosis_clic, diagnosis_label)
-            + server_model.criterion(logit_pn_clic, pn_label)
-            + server_model.criterion(logit_str_clic, str_label)
-            + server_model.criterion(logit_pig_clic, pig_label)
-            + server_model.criterion(logit_rs_clic, rs_label)
-            + server_model.criterion(logit_dag_clic, dag_label)
-            + server_model.criterion(logit_bwv_clic, bwv_label)
-            + server_model.criterion(logit_vs_clic, vs_label), 8)
-
-        # average derm loss
-        loss_derm = torch.true_divide(
-            server_model.criterion(logit_diagnosis_derm, diagnosis_label)
-            + server_model.criterion(logit_pn_derm, pn_label)
-            + server_model.criterion(logit_str_derm, str_label)
-            + server_model.criterion(logit_pig_derm, pig_label)
-            + server_model.criterion(logit_rs_derm, rs_label)
-            + server_model.criterion(logit_dag_derm, dag_label)
-            + server_model.criterion(logit_bwv_derm, bwv_label)
-            + server_model.criterion(logit_vs_derm, vs_label), 8)
-
-        # average loss
-        loss = loss_fusion*0.33 + loss_clic*0.33 + loss_derm*0.33
-
-        # fusion, clic, derm accuracy for diagnostic
-        dia_acc_fusion = torch.true_divide(server_model.metric(
-            logit_diagnosis_fusion, diagnosis_label), batch_size)
-        dia_acc_clic = torch.true_divide(server_model.metric(
-            logit_diagnosis_clic, diagnosis_label), batch_size)
-        dia_acc_derm = torch.true_divide(server_model.metric(
-            logit_diagnosis_derm, diagnosis_label), batch_size)
-
-        # average accuracy for diagnostic
-        dia_acc = torch.true_divide(
-            dia_acc_fusion + dia_acc_clic + dia_acc_derm, 3)
-
-        # seven-point accuracy of fusion
-        sps_acc_fusion = torch.true_divide(server_model.metric(logit_pn_fusion, pn_label)
-                                           + server_model.metric(logit_str_fusion, str_label)
-                                           + server_model.metric(logit_pig_fusion, pig_label)
-                                           + server_model.metric(logit_rs_fusion, rs_label)
-                                           + server_model.metric(logit_dag_fusion, dag_label)
-                                           + server_model.metric(logit_bwv_fusion, bwv_label)
-                                           + server_model.metric(logit_vs_fusion, vs_label), 
-                                                7 * batch_size)
-
-        # seven-point accuracy of clic
-        sps_acc_clic = torch.true_divide(server_model.metric(logit_pn_clic, pn_label)
-                                         + server_model.metric(logit_str_clic, str_label)
-                                         + server_model.metric(logit_pig_clic, pig_label)
-                                         + server_model.metric(logit_rs_clic, rs_label)
-                                         + server_model.metric(logit_dag_clic, dag_label)
-                                         + server_model.metric(logit_bwv_clic, bwv_label)
-                                         + server_model.metric(logit_vs_clic, vs_label), 
-                                                7 * batch_size)
-        # seven-point accuracy of derm
-        sps_acc_derm = torch.true_divide(server_model.metric(logit_pn_derm, pn_label)
-                                         + server_model.metric(logit_str_derm, str_label)
-                                         + server_model.metric(logit_pig_derm, pig_label)
-                                         + server_model.metric(logit_rs_derm, rs_label)
-                                         + server_model.metric(logit_dag_derm, dag_label)
-                                         + server_model.metric(logit_bwv_derm, bwv_label)
-                                         + server_model.metric(logit_vs_derm, vs_label), 
-                                                7 * batch_size)
-        # average seven-point accuracy
-        sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
-        train_loss += loss.item()
-        train_dia_acc += dia_acc.item()
-        train_sps_acc += sps_acc.item()
-        loss.backward()
+        x_clic_server_gpu, x_derm_server_gpu, x_fusion_server_gpu = server_model((x_clic, x_derm))
+        x_clic_server = x_clic_server_gpu.cpu().clone().detach().requires_grad_(True)
+        x_derm_server = x_derm_server_gpu.cpu().clone().detach().requires_grad_(True)
+        x_fusion_server = x_fusion_server_gpu.cpu().clone().detach().requires_grad_(True)
+        msg = {
+            'x_clic_server' : x_clic_server,
+            'x_derm_server' : x_derm_server,
+            'x_fusion_server' : x_fusion_server
+        }
+        epoch_training_time += time.time() - batch_training_start_time
 
 
+        send_msg(conn, msg) # send server output to client
+        size_server_gradient = received_msg_len
+        rmsg = recv_msg(conn) # receive gradient from client
+        size_server_gradient = received_msg_len - size_server_gradient
+        epoch_size_server_gradient += size_server_gradient
+
+        
+    
+
+        # backward propagation
+        batch_training_start_time = time.time()
+        x_clic_server_gpu.backward(rmsg['x_clic_server_grad'].to(device))
+        x_derm_server_gpu.backward(rmsg['x_derm_server_grad'].to(device))
+        """
+            Interesting error: Trying to backward through the graph a second time
+        """
+        # x_fusion_server_gpu.backward(rmsg['x_fusion_server_grad'].to(device))
         # send gradient to client
         msg = {
             "x_clic_grad": x_clic_cpu.grad.clone().detach(),
             "x_derm_grad": x_derm_cpu.grad.clone().detach(),
         }
         epoch_training_time += time.time() - batch_training_start_time
-
         send_msg(conn, msg)
-        
+
         batch_training_start_time = time.time()
         optimizer.step()
         epoch_training_time += time.time() - batch_training_start_time
+        
 
         # break
 
-    train_loss = train_loss / (index + 1)
-    train_dia_acc = train_dia_acc / (index + 1)
-    train_sps_acc = train_sps_acc / (index + 1)
     total_training_time += epoch_training_time
 
     # for validation and test, send server model to client
-    send_msg(conn, {"server model": {k: v.cpu() for k, v in server_model.state_dict().items()}}) # send model to client.
+    server_encode_start_time = time.time()
+    msg = {
+        "server model": {k: v.cpu() for k, v in server_model.state_dict().items()}
+    }
+    server_encode_time = time.time() - server_encode_start_time
+
+    send_msg(conn, msg) # send model to client.
     
 
     # logging
@@ -351,6 +271,7 @@ for epc in range(epochs):
     logger.info(f"Epoch: training time server: {round(epoch_training_time, 2)}")
     logger.info(f"Epoch: validation time: {round(validation_time, 2)}")
     logger.info(f"Epoch: test time: {round(test_time, 2)}")
+    logger.info(f"Server encode time: {round(server_encode_time, 2)}")
     logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
     total_communication_time_client_to_server += epoch_communication_time_client_to_server
 
@@ -358,7 +279,7 @@ for epc in range(epochs):
     logger.info("")
     logger.info(f"Epoch: received msg len from client: {round((received_msg_len - epoch_received_msg_len)/1024/1024, 2)} MB")
     logger.info(f"Epoch: size of client head output: {round(epoch_size_client_head_output/1024/1024, 2)} MB")
-    # logger.info(f"Epoch: size of server gradient: {round(epoch_size_server_gradient/1024/1024, 2)} MB")
+    logger.info(f"Epoch: size of server gradient: {round(epoch_size_server_gradient/1024/1024, 2)} MB")
     total_size_client_head_output += epoch_size_client_head_output
     total_size_server_gradient += epoch_size_server_gradient
     epoch_received_msg_len = received_msg_len
@@ -380,7 +301,7 @@ logger.info(f'Total duration is: {round(time.time() - start_time, 2)} seconds')
 logger.info("")
 logger.info(f"Received msg len from client: {round(received_msg_len/1024/1024, 2)} MB")
 logger.info(f"Total size of client head output: {round(total_size_client_head_output/1024/1024, 2)} MB")
-# logger.info(f"Total size of server gradient: {round(total_size_server_gradient/1024/1024, 2)} MB")
+logger.info(f"Total size of server gradient: {round(total_size_server_gradient/1024/1024, 2)} MB")
 
     
 

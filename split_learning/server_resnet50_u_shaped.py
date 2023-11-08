@@ -200,9 +200,6 @@ for epc in range(epoch):
         
         send_msg(conn, msg) # send server output to client
         size_server_gradient = received_msg_len
-        
-        
-        
         rmsg = recv_msg(conn) # receive gradient from client
         size_server_gradient = received_msg_len - size_server_gradient
         epoch_size_server_gradient += size_server_gradient

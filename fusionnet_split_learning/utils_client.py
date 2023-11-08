@@ -121,3 +121,38 @@ def validation(client_net, server_net, val_dataloader, device):
     val_dia_acc = val_dia_acc / num_batch
     val_sps_acc = val_sps_acc / num_batch
     return val_loss, val_dia_acc, val_sps_acc
+
+
+
+def validation_u_shaped(client_first_model, client_last_model, server_middle_model, val_dataloader, device):
+    client_first_model.set_mode('valid')
+    server_middle_model.set_mode('valid')
+    client_last_model.set_mode('valid')
+    
+    val_loss = 0
+    val_dia_acc = 0
+    val_sps_acc = 0
+    for (clinic_image, derm_image, meta_data, label) in tqdm(val_dataloader):
+
+        clinic_image = clinic_image.to(device)
+        derm_image = derm_image.to(device)
+        meta_data = meta_data.to(device)
+
+        with torch.no_grad():
+
+            
+            client_first_output = client_first_model((clinic_image, derm_image))
+            server_middle_output = server_middle_model(client_first_output)
+            loss, dia_acc, sps_acc = client_last_model.forward_propagate_and_loss_compute(server_middle_output, label, clinic_image.size(0), device)
+            
+            val_loss += loss.item()
+            val_dia_acc += dia_acc.item()
+            val_sps_acc += sps_acc.item()
+
+            
+
+    num_batch = len(val_dataloader)
+    val_loss = val_loss / num_batch
+    val_dia_acc = val_dia_acc / num_batch
+    val_sps_acc = val_sps_acc / num_batch
+    return val_loss, val_dia_acc, val_sps_acc
