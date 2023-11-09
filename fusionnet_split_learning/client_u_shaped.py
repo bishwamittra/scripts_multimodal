@@ -35,7 +35,7 @@ logger.info(f"-------------------------Session: Exp {exp_seq}")
 # Setup cpu
 device = 'cpu'
 epochs = args.epoch
-lr = 3e-5
+lr = 0.001 # 3e-5
 batch_size = 32
 num_workers = 8
 shape = (224, 224)
