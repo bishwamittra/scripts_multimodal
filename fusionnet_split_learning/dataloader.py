@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from dependency import *
 import torch
 import numpy as np
-from keras.utils import to_categorical
+# from tensorflow.keras.utils import to_categorical
 # Build the Pytorch dataloader
 from albumentations import (
     PadIfNeeded,
@@ -59,7 +59,8 @@ def encode_label(img_info, index_num):
     for index, label in enumerate(label_list):
         if diagnosis_label in label:
             diagnosis_index = index
-            diagnosis_label_one_hot = to_categorical(diagnosis_index, num_label)
+            # diagnosis_label_one_hot = to_categorical(diagnosis_index, num_label)
+            diagnosis_label_one_hot = np.eye(num_label)[diagnosis_index]
         # print(index_num,diagnosis_index,diagnosis_label,diagnosis_label_one_hot)
         else:
             continue
@@ -69,7 +70,8 @@ def encode_label(img_info, index_num):
     for index, label in enumerate(pigment_network_label_list):
         if pigment_network_label in label:
             pigment_network_index = index
-            pigment_network_label_one_hot = to_categorical(pigment_network_index, num_pigment_network_label)
+            # pigment_network_label_one_hot = to_categorical(pigment_network_index, num_pigment_network_label)
+            pigment_network_label_one_hot = np.eye(num_pigment_network_label)[pigment_network_index]
         else:
             continue
     # 2
@@ -77,7 +79,8 @@ def encode_label(img_info, index_num):
     for index, label in enumerate(streaks_label_list):
         if streaks_label in label:
             streaks_index = index
-            streaks_label_one_hot = to_categorical(streaks_index, num_streaks_label)
+            # streaks_label_one_hot = to_categorical(streaks_index, num_streaks_label)
+            streaks_label_one_hot = np.eye(num_streaks_label)[streaks_index]
         else:
             continue
     # 3
@@ -85,7 +88,8 @@ def encode_label(img_info, index_num):
     for index, label in enumerate(pigmentation_label_list):
         if pigmentation_label in label:
             pigmentation_index = index
-            pigmentation_label_one_hot = to_categorical(pigmentation_index, num_pigmentation_label)
+            # pigmentation_label_one_hot = to_categorical(pigmentation_index, num_pigmentation_label)
+            pigmentation_label_one_hot = np.eye(num_pigmentation_label)[pigmentation_index]
         else:
             continue
     # 4
@@ -93,8 +97,9 @@ def encode_label(img_info, index_num):
     for index, label in enumerate(regression_structures_label_list):
         if regression_structures_label in label:
             regression_structures_index = index
-            regression_structures_label_one_hot = to_categorical(regression_structures_index,
-                                                                 num_regression_structures_label)
+            # regression_structures_label_one_hot = to_categorical(regression_structures_index,
+            #                                                      num_regression_structures_label)
+            regression_structures_label_one_hot = np.eye(num_regression_structures_label)[regression_structures_index]
         else:
             continue
     # 5
@@ -102,7 +107,8 @@ def encode_label(img_info, index_num):
     for index, label in enumerate(dots_and_globules_label_list):
         if dots_and_globules_label in label:
             dots_and_globules_index = index
-            dots_and_globules_label_one_hot = to_categorical(dots_and_globules_index, num_dots_and_globules_label)
+            # dots_and_globules_label_one_hot = to_categorical(dots_and_globules_index, num_dots_and_globules_label)
+            dots_and_globules_label_one_hot = np.eye(num_dots_and_globules_label)[dots_and_globules_index]
         else:
             continue
     # 6
@@ -110,7 +116,8 @@ def encode_label(img_info, index_num):
     for index, label in enumerate(blue_whitish_veil_label_list):
         if blue_whitish_veil_label in label:
             blue_whitish_veil_index = index
-            blue_whitish_veil_label_one_hot = to_categorical(blue_whitish_veil_index, num_blue_whitish_veil_label)
+            # blue_whitish_veil_label_one_hot = to_categorical(blue_whitish_veil_index, num_blue_whitish_veil_label)
+            blue_whitish_veil_label_one_hot = np.eye(num_blue_whitish_veil_label)[blue_whitish_veil_index]
         else:
             continue
     # 7
@@ -118,7 +125,8 @@ def encode_label(img_info, index_num):
     for index, label in enumerate(vascular_structures_label_list):
         if vascular_structures_label in label:
             vascular_structures_index = index
-            vascular_structures_label_one_hot = to_categorical(vascular_structures_index, num_vascular_structures_label)
+            # vascular_structures_label_one_hot = to_categorical(vascular_structures_index, num_vascular_structures_label)
+            vascular_structures_label_one_hot = np.eye(num_vascular_structures_label)[vascular_structures_index]
         else:
             continue
 
@@ -139,7 +147,8 @@ def encode_meta_label(img_info,index_num):
 
         if level_of_diagnostic_difficulty_label in label:
             level_of_diagnostic_difficulty_index = index
-            level_of_diagnostic_difficulty_label_one_hot = to_categorical(level_of_diagnostic_difficulty_index,num_level_of_diagnostic_difficulty_label_list)
+            # level_of_diagnostic_difficulty_label_one_hot = to_categorical(level_of_diagnostic_difficulty_index,num_level_of_diagnostic_difficulty_label_list)
+            level_of_diagnostic_difficulty_label_one_hot = np.eye(num_level_of_diagnostic_difficulty_label_list)[level_of_diagnostic_difficulty_index]
         else:
             continue
 
@@ -147,7 +156,8 @@ def encode_meta_label(img_info,index_num):
     for index,label in enumerate(evaluation_list):
         if evaluation_label in label:
             evaluation_label_index = index
-            evaluation_label_one_hot = to_categorical(evaluation_label_index,num_evaluation_list)
+            # evaluation_label_one_hot = to_categorical(evaluation_label_index,num_evaluation_list)
+            evaluation_label_one_hot = np.eye(num_evaluation_list)[evaluation_label_index]
         else:
             continue
 
@@ -155,7 +165,8 @@ def encode_meta_label(img_info,index_num):
     for index,label in enumerate(sex_list):
         if sex_label in label:
             sex_label_index = index
-            sex_label_one_hot = to_categorical(sex_label_index,num_sex_list)
+            # sex_label_one_hot = to_categorical(sex_label_index,num_sex_list)
+            sex_label_one_hot = np.eye(num_sex_list)[sex_label_index]
         else:
             continue
 
@@ -163,7 +174,8 @@ def encode_meta_label(img_info,index_num):
     for index,label in enumerate(location_list):
         if location_label in label:
             location_label_index = index
-            location_label_one_hot = to_categorical(location_label_index,num_location_list)
+            # location_label_one_hot = to_categorical(location_label_index,num_location_list)
+            location_label_one_hot = np.eye(num_location_list)[location_label_index]
         else:
             continue
 
@@ -171,16 +183,17 @@ def encode_meta_label(img_info,index_num):
     for index,label in enumerate(management_list):
         if management_label in label:
             management_label_index = index
-            management_label_one_hot = to_categorical(management_label_index,num_management_list)
+            # management_label_one_hot = to_categorical(management_label_index,num_management_list)
+            management_label_one_hot = np.eye(num_management_list)[management_label_index]
         else:
             continue
 
     meta_vector = np.hstack([
-    level_of_diagnostic_difficulty_label_one_hot,
-    evaluation_label_one_hot,
-    location_label_one_hot,
-    sex_label_one_hot,
-    management_label_one_hot
+                level_of_diagnostic_difficulty_label_one_hot,
+                evaluation_label_one_hot,
+                location_label_one_hot,
+                sex_label_one_hot,
+                management_label_one_hot
     ])
     
     
@@ -224,8 +237,9 @@ class SkinDataset(data.Dataset):
         for index_label, label in enumerate(label_list):
             if diagnosis_label in label:
                 diagnosis_index = index_label
-                diagnosis_label_one_hot = to_categorical(
-                    diagnosis_index, num_label)
+                # diagnosis_label_one_hot = to_categorical(
+                #     diagnosis_index, num_label)
+                diagnosis_label_one_hot = np.eye(num_label)[diagnosis_index]
             else:
                 continue
 

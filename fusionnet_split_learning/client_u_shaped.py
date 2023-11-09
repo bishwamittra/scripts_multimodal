@@ -38,7 +38,6 @@ epochs = args.epoch
 lr = 3e-5
 batch_size = 32
 num_workers = 8
-device = "cpu"
 shape = (224, 224)
 seed = args.seed
 random.seed(seed)
@@ -175,7 +174,8 @@ total_size_client_first_gradient = 0
 
 msg = {
     'epoch': epochs,
-    'num_batch': len(train_dataloader)
+    'num_batch': len(train_dataloader),
+    'lr': lr,
 }
 
 send_msg(s1, msg)  # send 'epoch' and 'batch size' to server

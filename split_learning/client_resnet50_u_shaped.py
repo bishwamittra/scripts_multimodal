@@ -21,7 +21,7 @@ from torch.utils.data import Subset
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--epoch', type=int)
+parser.add_argument('--epoch', type=int, default=2)
 parser.add_argument('--connection_start_from_client', action='store_true', default=False)
 parser.add_argument('--client_in_sambanova', action='store_true', default=False)
 parser.add_argument('--seed', type=int, default=42, help='random seed')
@@ -133,11 +133,9 @@ def recv_all(sock, n):
 # Training hyper parameters
 # 
 
-
+lr = 0.001
 resnet_client_head = ResNet50_client_head(channel=3).to(device) # parameters depend on the dataset
 resnet_client_tail = ResNet50_client_tail(num_classes=10).to(device) # parameters depend on the dataset
-
-lr = 0.001
 criterion = nn.CrossEntropyLoss()
 # all_params = chain(resnet_client_head.parameters(), resnet_client_tail.parameters())
 # optimizer_combined = optim.SGD(all_params, lr = lr, momentum = 0.9)
@@ -199,7 +197,8 @@ total_size_client_head_gradient = 0
 epoch = args.epoch
 msg = {
     'epoch': epoch,
-    'total_batch': total_batch
+    'total_batch': total_batch,
+    'lr': lr
 }
 send_msg(s1, msg) # send 'epoch' and 'batch size' to server
 

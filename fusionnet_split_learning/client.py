@@ -38,7 +38,6 @@ epochs = args.epoch
 lr = 3e-5
 batch_size = 32
 num_workers = 8
-device = "cpu"
 shape = (224, 224)
 seed = args.seed
 random.seed(seed)
@@ -117,7 +116,6 @@ train_dataloader, val_dataloader, test_dataloader = generate_dataloader(
 # Definition of client side model (input layer only)
 client_model = FusionNet_client(class_list).to(device)
 optimizer = optim.Adam(client_model.parameters(), lr=lr)
-lr = 0.001
 
 
 
@@ -173,7 +171,8 @@ total_size_client_head_gradient = 0
 msg = {
     'epoch': epochs,
     'batch_size': batch_size,
-    'num_batch': len(train_dataloader)
+    'num_batch': len(train_dataloader),
+    'lr': lr,
 }
 
 send_msg(s1, msg)  # send 'epoch' and 'batch size' to server

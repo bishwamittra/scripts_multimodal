@@ -96,10 +96,7 @@ def recv_all(sock, n):
     return data
 
 
-server_model = FusionNet_server(class_list).to(device)
-criterion = nn.CrossEntropyLoss()
-lr = 0.001
-optimizer = optim.Adam(server_model.parameters(), lr=lr)
+
 
 
 epoch_communication_time_client_to_server = 0
@@ -144,8 +141,13 @@ rmsg = recv_msg(conn)
 epochs = rmsg['epoch']
 batch_size = rmsg['batch_size']
 num_batch = rmsg['num_batch']
+lr = rmsg['lr']
 logger.info(f"received epoch: {rmsg['epoch']}, batch size: {rmsg['batch_size']}, num_batch: {rmsg['num_batch']}")
 
+
+server_model = FusionNet_server(class_list).to(device)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(server_model.parameters(), lr=lr)
 
 # Start training
 start_time = time.time()

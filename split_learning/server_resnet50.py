@@ -72,14 +72,6 @@ def recv_all(sock, n):
     return data
 
 
-resnet_server =  ResNet50_server(num_classes=10).to(device)
-
-criterion = nn.CrossEntropyLoss()
-lr = 0.001
-optimizer = optim.SGD(resnet_server.parameters(), lr=lr, momentum=0.9)
-
-
-resnet_server
 
 
 
@@ -127,7 +119,13 @@ else:
 rmsg, data_size = recv_msg(conn) # receive total bach number and epoch from client.
 epoch = rmsg['epoch']
 num_batch = rmsg['total_batch']
+lr = rmsg['lr']
 logger.info(f"received epoch: {rmsg['epoch']}, batch: {rmsg['total_batch']}")
+
+
+resnet_server =  ResNet50_server(num_classes=10).to(device)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(resnet_server.parameters(), lr=lr, momentum=0.9)
 
 
 

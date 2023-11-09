@@ -94,16 +94,6 @@ def recv_all(sock, n):
     return data
 
 
-resnet_server =  ResNet50_server().to(device)
-
-criterion = nn.CrossEntropyLoss()
-lr = 0.001
-optimizer = optim.SGD(resnet_server.parameters(), lr=lr, momentum=0.9)
-
-
-resnet_server
-
-
 
 
 epoch_communication_time_client_to_server = 0
@@ -147,9 +137,14 @@ else:
 rmsg = recv_msg(conn) # receive total bach number and epoch from client.
 epoch = rmsg['epoch']
 num_batch = rmsg['total_batch']
+lr = rmsg['lr']
 logger.info(f"received epoch: {rmsg['epoch']}, batch: {rmsg['total_batch']}")
 
 
+
+resnet_server =  ResNet50_server().to(device)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(resnet_server.parameters(), lr=lr, momentum=0.9)
 
 # Start training
 start_time = time.time()
