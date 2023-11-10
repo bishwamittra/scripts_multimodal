@@ -35,7 +35,8 @@ logger.info(f"-------------------------Session: Exp {exp_seq}")
 # Setup cpu
 device = 'cpu'
 epochs = args.epoch
-lr = 0.001 # 3e-5
+# lr = 0.001 # 3e-5
+lr = 3e-5
 batch_size = 32
 num_workers = 8
 shape = (224, 224)
@@ -180,7 +181,7 @@ msg = {
 
 send_msg(s1, msg)  # send 'epoch' and 'batch size' to server
 
-best_mean_acc = 0
+best_val_mean_acc = 0
 for epc in range(epochs):
     print("running epoch ", epc)
     sync_time(s1, logger)
