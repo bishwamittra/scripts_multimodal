@@ -140,7 +140,7 @@ rmsg = recv_msg(conn)
 epochs = rmsg['epoch']
 num_batch = rmsg['num_batch']
 lr = rmsg['lr']
-logger.info(f"received epoch: {rmsg['epoch']}, num_batch: {rmsg['num_batch']}")
+logger.info(f"received epoch: {rmsg['epoch']}, num_batch: {rmsg['num_batch']}, learning rate: {rmsg['lr']}")
 
 
 server_model = FusionNet_server_middle().to(device)

@@ -179,6 +179,9 @@ msg = {
     'lr': lr,
 }
 
+
+logger.info(f"Epoch: {epochs}, Batch Size: {batch_size}, Learning Rate: {lr}")
+
 send_msg(s1, msg)  # send 'epoch' and 'batch size' to server
 
 best_val_mean_acc = 0
