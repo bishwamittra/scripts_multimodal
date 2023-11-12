@@ -171,7 +171,7 @@ epoch_received_msg_len = 0
 total_size_server_model = 0
 total_size_server_output = 0
 total_size_client_first_gradient = 0
-
+best_mean_acc = 0
 
 msg = {
     'epoch': epochs,
