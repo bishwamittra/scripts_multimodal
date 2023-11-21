@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 logger, exp_seq = get_logger(filename_prefix="client_")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
-root_path = '../models/cifar10_data'
+root_path = '../cifar10_data'
 
 # Setup cpu
 device = 'cpu'
