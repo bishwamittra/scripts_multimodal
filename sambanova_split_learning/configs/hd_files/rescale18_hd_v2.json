@@ -1,0 +1,42 @@
+{
+    "fwd_section_boundaries": [
+        ["rescale__conv1__conv2d"],
+        ["rescale__addbias1__add"],
+        ["rescale__maxpool__maxpool2d"],
+        ["rescale__layer1__0__relu"],
+        ["rescale__layer1__0__add"],
+
+        ["rescale__layer1__1__relu"],
+        ["rescale__layer1__1__add"],
+
+
+        ["rescale__layer2__0__relu"],
+        ["rescale__layer2__0__add"],
+
+        ["rescale__layer2__1__relu"],
+        ["rescale__layer2__1__add"],
+
+        ["rescale__layer3__0__relu"],
+        ["rescale__layer3__0__add"],
+
+        ["rescale__layer3__1__relu"],
+        ["rescale__layer3__1__add"],
+
+        ["rescale__layer4__0__downsample__1__add"],
+        ["rescale__layer4__0__downsample__2__conv2d"],
+        ["rescale__layer4__0__relu"],
+        ["rescale__layer4__0__add"],
+
+        ["rescale__layer4__1__relu"],
+        ["rescale__layer4__1__add"],
+
+        ["rescale__addbias2__add"],
+
+        ["rescale__fc__linear_t_output0"]
+    ],
+    "mac_resources_scale": {
+        "fwd": 0.9,
+        "bwd": 0.9,
+        "opt": 0.9
+      }
+}

@@ -1,0 +1,161 @@
+import json
+from pathlib import Path
+from typing import Optional
+
+import yaml
+from classification.estimators.utils import load_data_pipeline
+from classification.schema import common_schema
+from pydantic import BaseModel
+
+from samba_tools.constants import EstimatorMode
+
+
+class Model(common_schema.ModelBase):
+    in_height: int
+    in_width: int
+    num_classes: int
+    model: str
+    batch_size: int
+    num_flexible_classes: int
+    drop_conv: float
+    drop_fc: float
+    hot_layers: Optional[list]
+    device: str
+    weighted_cross_entropy: bool
+    class_weights: Optional[Path]
+    channels: int
+    compute_input_grad: bool
+
+
+class Optim(common_schema.OptimBase):
+    optimizer: str
+    learning_rate: float
+    weight_decay: float
+    gamma: Optional[float]
+    multi_step: Optional[list]
+    momentum: float
+    scheduler: Optional[str]
+    warmup_epochs: Optional[float]
+
+
+class Run(common_schema.RunBase):
+    seed: int
+    resume: bool
+    use_ddp: bool
+    local_rank: Optional[int]
+    data_init_iters: int
+
+
+class Data(common_schema.DataBase):
+    data_transform_config: Path
+    transforms: dict
+    dataset_csv_path: Optional[Path]
+    prefetch_factor: int
+
+
+class RegressionTest(common_schema.RegressionTestBase):
+    acc_thresh: Optional[float]
+    loss_thresh: Optional[float]
+    perf_test: Optional[bool]
+    run_benchmark: Optional[bool]
+    benchmark_steps: Optional[int]
+    benchmark_warmup_steps: Optional[int]
+    min_throughput: Optional[int]
+    acc_report_json: Optional[Path]
+
+
+class Logging(common_schema.OutputBase):
+    ckpt_file: Optional[Path]
+    setup_subdirs: Optional[bool]
+    log_to_stdout: Optional[bool]
+    print_freq: Optional[int]
+    tensorboard: Optional[bool]
+    tensorboard_log_dir: Optional[Path]
+    log_type: Optional[str]
+    run_tag: Optional[str]
+    n_keep: Optional[int]
+
+
+class Analysis(BaseModel):
+    compute_patient_metrics: bool
+    generate_cams: bool
+
+
+class EstimatorConfig(BaseModel):
+    task: common_schema.TaskBase
+    meta: common_schema.MetaBase
+    model: Model
+    optim: Optim
+    run: Optional[Run]
+    data: Optional[Data]
+    regression_test: RegressionTest
+    logging: Optional[Logging]
+    analysis: Optional[Analysis]
+
+
+# TODO: Change name to RunConfigs
+class Configs(EstimatorConfig):
+    run: Run
+    data: Data
+    logging: Logging
+    analysis: Analysis
+    optim: Optim
+
+
+class CompileConfigs(EstimatorConfig):
+    pass
+
+
+def load_data_config(args):
+    try:
+        transforms = load_data_pipeline(args)
+    except FileNotFoundError as e:
+        print("No transforms found for the data pipeline")
+        print("e")
+        if args.mode != EstimatorMode.COMPILE:
+            # Any run-time mode requires a data pipeline
+            # raise the exception
+            raise e
+
+    return Data(**vars(args), transforms=transforms)
+
+
+def save_cfg(cfg):
+    cfg_file = cfg.logging.output_folder / 'cfg.yaml'
+    with cfg_file.open('w') as f:
+        yaml.dump(json.loads(cfg.json()), f)
+
+
+def convert_run_args_to_pydantic(args, save_cfg_to_yaml=False):
+    argv = vars(args)
+
+    cfg = Configs(task=common_schema.TaskBase(**argv),
+                  meta=common_schema.MetaBase(**argv),
+                  model=Model(**argv),
+                  run=Run(**argv),
+                  data=load_data_config(args),
+                  regression_test=RegressionTest(**argv),
+                  logging=Logging(**argv),
+                  optim=Optim(**argv),
+                  analysis=Analysis(**argv))
+
+    if save_cfg_to_yaml:
+        save_cfg(cfg)
+
+    return cfg
+
+
+def convert_compile_args_to_pydantic(args, save_cfg_to_yaml=False):
+    argv = vars(args)
+
+    cfg = CompileConfigs(task=common_schema.TaskBase(**argv),
+                         meta=common_schema.MetaBase(**argv),
+                         model=Model(**argv),
+                         regression_test=RegressionTest(**argv),
+                         optim=Optim(**argv),
+                         logging=Logging(**argv))
+
+    if save_cfg_to_yaml:
+        save_cfg(cfg)
+
+    return cfg

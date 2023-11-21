@@ -1,0 +1,22 @@
+meta:
+    pod_name: vision
+    script: rescale_hook
+    pef: rescalenet50_benchmark
+model:
+    model: rescale50
+    drop_conv: 0.0
+    drop_fc: 0.0
+    num_classes: 2
+task: 
+    task_name: msi_v1
+run: 
+    mode: eval
+    inference: True
+    num_workers: 7
+    benchmark_steps: 20
+    run_args: "run --yaml-path"
+data:
+    data_dir: null
+    data_transform_config: ../configs/datapipeline/tcga_rescale_data_transforms.yaml
+checkpoint:
+    ckpt_file: null

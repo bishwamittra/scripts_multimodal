@@ -1,0 +1,30 @@
+meta:
+    pod_name: vision
+    script: rescale_hook
+    pef: rescalenet50_predict
+model:
+    # Constants for the model
+    model: rescale50
+    drop_conv: 0.0
+    drop_fc: 0.0
+    num_classes: 1000
+    in_height: 512
+    in_width: 512
+    num_flexible_classes: 257
+run:
+    batch_size: 64
+    inference: true
+    enable_stoc_rounding: true
+    data_parallel: false
+    num_workers: 7
+    mode: eval
+    run_args: "run --yaml-path"
+    output: 
+        log_dir: output
+data:
+    # Path to image data dir.
+    data_dir: null
+checkpoint:
+    ckpt_dir: null
+task: 
+    task_name: csv

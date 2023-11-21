@@ -1,0 +1,42 @@
+{
+    "split_info":{
+        "model__linear__linear_t_input0":{
+            "dim": 0,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "model__linear__linear":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "model__linear__linear_t_output0":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "model__linear__linear_t_output0_bwd_loss":{
+            "dim": 0,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "model__linear__linear_bwd_loss":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "model__linear__linear_bwd_weight":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "model__linear__linear_t_input0_bwd_loss":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        }
+    },
+    "squeeze_constant_tensor":[
+        "model__linear__linear__outputs__0__grad"
+    ]
+}

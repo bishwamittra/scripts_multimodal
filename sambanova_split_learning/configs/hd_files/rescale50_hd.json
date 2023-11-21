@@ -1,0 +1,127 @@
+{
+    "section_boundaries": [
+        ["rescale__conv1__conv2d"],
+        ["rescale__addbias1__add"],
+        ["rescale__maxpool__maxpool2d"],
+        ["rescale__layer1__0__relu"],
+        ["rescale__layer1__0__relu_1"],
+        ["rescale__layer1__0__add"],
+
+        ["rescale__layer1__1__relu"],
+        ["rescale__layer1__1__relu_1"],
+        ["rescale__layer1__1__add"],
+
+        ["rescale__layer1__2__relu"],
+        ["rescale__layer1__2__relu_1"],
+        ["rescale__layer1__2__add"],
+
+        ["rescale__layer2__0__relu"],
+        ["rescale__layer2__0__relu_1"],
+        ["rescale__layer2__0__add"],
+
+        ["rescale__layer2__1__relu"],
+        ["rescale__layer2__1__relu_1"],
+        ["rescale__layer2__1__add"],
+
+        ["rescale__layer2__2__relu"],
+        ["rescale__layer2__2__relu_1"],
+        ["rescale__layer2__2__add"],
+
+        ["rescale__layer2__3__relu"],
+        ["rescale__layer2__3__relu_1"],
+        ["rescale__layer2__3__add"],
+
+        ["rescale__layer3__0__relu"],
+        ["rescale__layer3__0__relu_1"],
+        ["rescale__layer3__0__add"],
+
+        ["rescale__layer3__1__relu"],
+        ["rescale__layer3__1__relu_1"],
+        ["rescale__layer3__1__add"],
+
+        ["rescale__layer3__2__relu"],
+        ["rescale__layer3__2__relu_1"],
+        ["rescale__layer3__2__add"],
+
+        ["rescale__layer3__3__relu"],
+        ["rescale__layer3__3__relu_1"],
+        ["rescale__layer3__3__add"],
+
+        ["rescale__layer3__4__relu"],
+        ["rescale__layer3__4__relu_1"],
+        ["rescale__layer3__4__add"],
+
+        ["rescale__layer3__5__relu"],
+        ["rescale__layer3__5__relu_1"],
+        ["rescale__layer3__5__add"],
+        
+        ["rescale__layer4__0__downsample__1__add"],
+        ["rescale__layer4__0__downsample__2__conv2d"],
+        ["rescale__layer4__0__relu"],
+        ["rescale__layer4__0__relu_1"],
+        ["rescale__layer4__0__add"],
+
+        ["rescale__layer4__1__relu"],
+        ["rescale__layer4__1__relu_1"],
+        ["rescale__layer4__1__add"],
+
+        ["rescale__layer4__2__relu"],
+        ["rescale__layer4__2__relu_1"],
+        ["rescale__layer4__2__add"],
+        ["rescale__fc__linear_t_output0"]
+    ],
+    "mac_resources_scale": {
+        "fwd" : 0.75,
+        "bwd" : 0.75
+    },
+    "split_info":{
+        "rescale__drop__dropout_t_input0":{
+            "dim": 0,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "rescale__drop__dropout":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "rescale__fc__linear":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "rescale__fc__linear_t_output0":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "rescale__fc__linear_t_output0_bwd_loss":{
+            "dim": 0,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "rescale__fc__linear_bwd_loss":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "rescale__fc__linear_bwd_weight":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "rescale__drop__dropout_bwd_loss":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        },
+        "rescale__drop__dropout_t_input0_bwd_loss":{
+            "dim": 1,
+            "degree": "b",
+            "is_squeezed":false
+        }
+    },
+    "squeeze_constant_tensor":[
+        "rescale__fc__linear__outputs__0__grad"
+    ]
+}

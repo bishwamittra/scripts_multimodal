@@ -1,0 +1,6 @@
+{
+  "verbose": false,
+  "gen-tensorboard": true,
+  "arc_flags": "--skip-buffer-max-depth=4 --maximum-group-latency-factor=1.0",
+  "prism_flags": " --threads=64  --enable-inst-group-place --bandwidth-scaling-by-stage-latency=false --fatal-agcu-scalar-overlap=false"
+}

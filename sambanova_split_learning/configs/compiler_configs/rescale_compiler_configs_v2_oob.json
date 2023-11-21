@@ -1,0 +1,4 @@
+{
+    "verbose": false,
+    "prism_flags": " --threads=64  --enable-inst-group-place --bandwidth-scaling-by-stage-latency=false  "
+}

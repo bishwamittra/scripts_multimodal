@@ -1,0 +1,8 @@
+{
+    "mac_resources_scale": {
+        "fwd" : 0.70,
+        "bwd" : 0.75,
+        "opt" : 0.75
+    }
+}
+

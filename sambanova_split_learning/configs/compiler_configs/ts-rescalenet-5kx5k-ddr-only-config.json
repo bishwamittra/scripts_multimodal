@@ -1,0 +1,9 @@
+{
+  "verbose": false,
+  "gen_tensorboard": true,
+  "prefer_tbuffer_concat": true,
+  "prefer_tbuffer_split": true,
+  "disable_auto_grouping": false,
+  "arc_flags": "--maximum-group-latency-factor=1.0  --conv-box-layout-size=large_box --conv-box-layout-type=row_par ",
+  "prism_flags": " --threads=64 --ctrl-over-scalar=true --enable-inst-group-place  --fatal-agcu-scalar-overlap=false --auto-box-opt=i"
+}

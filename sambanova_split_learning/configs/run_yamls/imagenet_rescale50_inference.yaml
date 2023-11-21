@@ -1,0 +1,21 @@
+meta:
+    pod_name: vision
+    script: rescale_hook
+    pef: rescalenet50_imagenet
+model:
+    model: rescale50
+    drop_conv: 0.0
+    drop_fc: 0.0
+    num_classes: 1000
+task: 
+    task_name: imagenet
+run: 
+    mode: eval
+    inference: True
+    num_workers: 7
+    run_args: "run --yaml-path"
+data:
+    data_dir: null
+    data_transform_config: ../configs/datapipeline/imagenet_data_transforms.yaml
+checkpoint:
+    ckpt_file: null

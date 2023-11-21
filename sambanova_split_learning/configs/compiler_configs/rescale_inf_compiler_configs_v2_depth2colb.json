@@ -1,0 +1,35 @@
+{
+    "verbose": false,
+    "gen_tensorboard" : true,
+    "prefer_tbuffer_concat": true,
+    "prefer_tbuffer_split": true,
+    "arc_flags": "--maximum-group-latency-factor=1.0  --conv-box-layout-size=large_box --conv-box-layout-type=row_par ",
+    "prism_flags": " --threads=64 --ctrl-over-scalar=true --sa-lse-placement-cost=false --enable-inst-group-place  --fatal-agcu-scalar-overlap=false --auto-box-opt=i",
+    "Partition{0, 0}": {
+        "VAG alloc": {
+          "reassign-vag-input-bw-limit" :0.1,
+          "reassign-vag-output-bw-limit" :0.1,
+          "agcu-input-bw-weight" : 100,
+          "agcu-output-bw-weight" : 100,
+          "reassign-vag-bw-over-limit-penalty" : 10
+        }
+       },
+      "Partition{0, 1}": {
+        "VAG alloc": {
+          "reassign-vag-input-bw-limit" :0.1,
+          "reassign-vag-output-bw-limit" :0.1,
+          "agcu-input-bw-weight" : 100,
+          "agcu-output-bw-weight" : 100,
+          "reassign-vag-bw-over-limit-penalty" : 10
+        }
+      },
+      "Partition{0, 3}": {
+        "VAG alloc": {
+          "reassign-vag-input-bw-limit" :0.1,
+          "reassign-vag-output-bw-limit" :0.1,
+          "agcu-input-bw-weight" : 100,
+          "agcu-output-bw-weight" : 100,
+          "reassign-vag-bw-over-limit-penalty" : 10
+        }
+      } 
+}

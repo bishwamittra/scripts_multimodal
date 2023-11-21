@@ -1,0 +1,37 @@
+meta:
+    pod_name: vision
+    script: rescale_hook
+    kind: MPIJob
+    num_sockets: 32
+    pef: rescalenet50_tcga6144
+model:
+    model: rescale50
+    in_height: 6144
+    in_width: 6144
+    drop_conv: 0.0
+    drop_fc: 0.0
+    num_classes: 1000
+    num_flexible_classes: 3
+task: 
+    task_name: msi
+run: 
+    batch_size: 8
+    epochs: 1
+    mode: train
+    data_parallel: true
+    reduce_on_rdu: true
+    num_workers: 2
+    use_distributed_val: True
+    run_args: "run --yaml-path" 
+    pinned_memory: true
+    use_sambaloader: true
+    optim:
+        learning_rate: 0.0001
+        weight_decay: 0.0001
+    output:
+        log_dir: output
+data:
+    data_dir: null
+    data_transform_config: ../configs/datapipeline/tcga_rescale_data_transforms.yaml
+checkpoint: 
+    ckpt_file: null

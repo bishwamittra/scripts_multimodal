@@ -1,0 +1,2673 @@
+{
+    "enable_convrelu_fuse": false,
+    "fwd_section_boundaries": [
+        [
+            "rescale__layer1__1__relu_2"
+        ],
+        [
+            "rescale__layer2__0__relu_2"
+        ],
+        [
+            "rescale__layer2__2__relu_2"
+        ],
+        [
+            "rescale__layer3__0__relu_2"
+        ],
+        [
+            "rescale__layer3__2__relu_2"
+        ],
+        [
+            "rescale__layer3__4__relu_2"
+        ],
+        [
+            "rescale__layer4__0__relu_2"
+        ],
+        [
+            "rescale__mean_pool__avgpool2d"
+        ],
+        [
+            "rescale__fc__linear_t_output0"
+        ]
+    ],
+    "bwd_section_boundaries": [
+        [
+            "rescale__fc__linear_bwd_weight",
+            "rescale__mean_pool__avgpool2d_bwd"
+        ],
+        [
+            "rescale__addbias2__add_bwd_bias",
+            "rescale__layer4__2__scale_1bwd_sum",
+            "rescale__layer4__2__addbias3__add_bwd_bias",
+            "rescale__layer4__2__addbias2__add_bwd_bias",
+            "rescale__layer4__2__relu_bwd",
+            "rescale__layer4__2__addbias1__add_bwd_bias",
+            "rescale__layer4__1__relu_2_bwd"
+        ],
+        [
+            "rescale__layer4__1__scale_1bwd_sum",
+            "rescale__layer4__1__addbias3__add_bwd_bias",
+            "rescale__layer4__1__addbias2__add_bwd_bias",
+            "rescale__layer4__1__relu_bwd",
+            "rescale__layer4__1__addbias1__add_bwd_bias",
+            "rescale__layer4__0__relu_2_bwd"
+        ],
+        [
+            "rescale__layer4__0__scale_1bwd_sum",
+            "rescale__layer4__0__addbias3__add_bwd_bias",
+            "rescale__layer4__0__addbias2__add_bwd_bias",
+            "rescale__layer4__0__relu_bwd"
+        ],
+        [
+            "rescale__layer4__0__addbias1__add_bwd_bias",
+            "rescale__layer4__0__downsample__1__add_bwd_bias",
+            "rescale__layer3__5__relu_2_bwd"
+        ],
+        [
+            "rescale__layer3__5__scale_1bwd_sum",
+            "rescale__layer3__5__addbias3__add_bwd_bias",
+            "rescale__layer3__5__addbias2__add_bwd_bias",
+            "rescale__layer3__5__addbias1__add_bwd_bias",
+            "rescale__layer3__4__relu_2_bwd"
+        ],
+        [
+            "rescale__layer3__4__scale_1bwd_sum",
+            "rescale__layer3__4__addbias3__add_bwd_bias",
+            "rescale__layer3__4__addbias2__add_bwd_bias",
+            "rescale__layer3__4__addbias1__add_bwd_bias",
+            "rescale__layer3__3__relu_2_bwd"
+        ],
+        [
+            "rescale__layer3__3__scale_1bwd_sum",
+            "rescale__layer3__3__addbias3__add_bwd_bias",
+            "rescale__layer3__3__addbias2__add_bwd_bias",
+            "rescale__layer3__3__addbias1__add_bwd_bias",
+            "rescale__layer3__2__relu_2_bwd"
+        ],
+        [
+            "rescale__layer3__2__scale_1bwd_sum",
+            "rescale__layer3__2__addbias3__add_bwd_bias",
+            "rescale__layer3__2__addbias2__add_bwd_bias",
+            "rescale__layer3__2__addbias1__add_bwd_bias",
+            "rescale__layer3__1__relu_2_bwd"
+        ],
+        [
+            "rescale__layer3__1__scale_1bwd_sum",
+            "rescale__layer3__1__addbias3__add_bwd_bias",
+            "rescale__layer3__1__addbias2__add_bwd_bias",
+            "rescale__layer3__1__addbias1__add_bwd_bias",
+            "rescale__layer3__0__relu_2_bwd"
+        ],
+        [
+            "rescale__layer3__0__scale_1bwd_sum",
+            "rescale__layer3__0__addbias3__add_bwd_bias",
+            "rescale__layer3__0__addbias2__add_bwd_bias",
+            "rescale__layer3__0__relu_bwd"
+        ],
+        [
+            "rescale__layer3__0__addbias1__add_bwd_bias",
+            "rescale__layer3__0__downsample__1__add_bwd_bias",
+            "rescale__layer2__3__relu_2_bwd"
+        ],
+        [
+            "rescale__layer2__3__scale_1bwd_sum",
+            "rescale__layer2__3__addbias3__add_bwd_bias",
+            "rescale__layer2__3__addbias2__add_bwd_bias",
+            "rescale__layer2__3__addbias1__add_bwd_bias",
+            "rescale__layer2__2__relu_2_bwd"
+        ],
+        [
+            "rescale__layer2__2__scale_1bwd_sum",
+            "rescale__layer2__2__addbias3__add_bwd_bias",
+            "rescale__layer2__2__addbias2__add_bwd_bias",
+            "rescale__layer2__2__addbias1__add_bwd_bias",
+            "rescale__layer2__1__relu_2_bwd"
+        ],
+        [
+            "rescale__layer2__1__scale_1bwd_sum",
+            "rescale__layer2__1__addbias3__add_bwd_bias",
+            "rescale__layer2__1__addbias2__add_bwd_bias",
+            "rescale__layer2__1__addbias1__add_bwd_bias",
+            "rescale__layer2__0__relu_2_bwd"
+        ],
+        [
+            "rescale__layer2__0__scale_1bwd_sum",
+            "rescale__layer2__0__addbias3__add_bwd_bias",
+            "rescale__layer2__0__addbias2__add_bwd_bias",
+            "rescale__layer2__0__relu_bwd"
+        ],
+        [
+            "rescale__layer2__0__addbias1__add_bwd_bias",
+            "rescale__layer2__0__downsample__1__add_bwd_bias",
+            "rescale__layer1__2__relu_2_bwd"
+        ],
+        [
+            "rescale__layer1__2__scale_1bwd_sum",
+            "rescale__layer1__2__addbias3__add_bwd_bias",
+            "rescale__layer1__2__addbias2__add_bwd_bias",
+            "rescale__layer1__2__addbias1__add_bwd_bias",
+            "rescale__layer1__1__relu_2_bwd"
+        ],
+        [
+            "rescale__layer1__1__scale_1bwd_sum",
+            "rescale__layer1__1__addbias3__add_bwd_bias",
+            "rescale__layer1__1__addbias2__add_bwd_bias",
+            "rescale__layer1__1__addbias1__add_bwd_bias",
+            "rescale__layer1__0__relu_2_bwd"
+        ],
+        [
+            "rescale__layer1__0__scale_1bwd_sum",
+            "rescale__layer1__0__addbias3__add_bwd_bias",
+            "rescale__layer1__0__addbias2__add_bwd_bias",
+            "rescale__layer1__0__addbias1__add_bwd_bias",
+            "rescale__layer1__0__downsample__1__add_bwd_bias",
+            "rescale__maxpool__maxpool2d_bwd"
+        ],
+        [
+            "rescale__conv1__conv2d_bwd",
+            "rescale__addbias1__add_bwd_bias"
+        ]
+    ],
+    "opt_section_boundaries": [
+        [
+            "rescale__addbias2___bias_opt",
+            "rescale__layer4__2___scale_opt",
+            "rescale__layer4__2__conv3__weight_opt",
+            "rescale__layer4__2__addbias3___bias_opt",
+            "rescale__fc__weight_opt",
+            "rescale__fc__bias_opt",
+            "rescale__layer4__2__conv2__weight_opt",
+            "rescale__layer4__2__addbias2___bias_opt",
+            "rescale__layer4__2__conv1__weight_opt",
+            "rescale__layer4__2__addbias1___bias_opt",
+            "rescale__layer4__1___scale_opt",
+            "rescale__layer4__1__conv3__weight_opt",
+            "rescale__layer4__1__addbias3___bias_opt",
+            "rescale__layer4__1__conv2__weight_opt",
+            "rescale__layer4__1__addbias2___bias_opt",
+            "rescale__layer4__1__conv1__weight_opt",
+            "rescale__layer4__1__addbias1___bias_opt",
+            "rescale__layer4__0___scale_opt",
+            "rescale__layer4__0__downsample__2__weight_opt",
+            "rescale__layer4__0__conv3__weight_opt",
+            "rescale__layer4__0__downsample__1___bias_opt",
+            "rescale__layer4__0__addbias3___bias_opt",
+            "rescale__layer4__0__conv2__weight_opt",
+            "rescale__layer4__0__addbias2___bias_opt",
+            "rescale__layer4__0__conv1__weight_opt",
+            "rescale__layer4__0__addbias1___bias_opt",
+            "rescale__layer3__5___scale_opt",
+            "rescale__layer3__5__conv3__weight_opt",
+            "rescale__layer3__5__addbias3___bias_opt",
+            "rescale__layer3__5__conv2__weight_opt",
+            "rescale__layer3__5__addbias2___bias_opt",
+            "rescale__layer3__5__conv1__weight_opt",
+            "rescale__layer3__5__addbias1___bias_opt",
+            "rescale__layer3__4___scale_opt",
+            "rescale__layer3__4__conv3__weight_opt",
+            "rescale__layer3__4__addbias3___bias_opt",
+            "rescale__layer3__4__conv2__weight_opt",
+            "rescale__layer3__4__addbias2___bias_opt",
+            "rescale__layer3__4__conv1__weight_opt",
+            "rescale__layer3__4__addbias1___bias_opt"
+           ],
+            [
+            "rescale__layer3__3___scale_opt",
+            "rescale__layer3__3__conv3__weight_opt",
+            "rescale__layer3__3__addbias3___bias_opt",
+            "rescale__layer3__3__conv2__weight_opt",
+            "rescale__layer3__3__addbias2___bias_opt",
+            "rescale__layer3__3__conv1__weight_opt",
+            "rescale__layer3__3__addbias1___bias_opt",
+            "rescale__layer3__2___scale_opt",
+            "rescale__layer3__2__conv3__weight_opt",
+            "rescale__layer3__2__addbias3___bias_opt",
+            "rescale__layer3__2__conv2__weight_opt",
+            "rescale__layer3__2__addbias2___bias_opt",
+            "rescale__layer3__2__conv1__weight_opt",
+            "rescale__layer3__2__addbias1___bias_opt",
+            "rescale__layer3__1___scale_opt",
+            "rescale__layer3__1__conv3__weight_opt",
+            "rescale__layer3__1__addbias3___bias_opt",
+            "rescale__layer3__1__conv2__weight_opt",
+            "rescale__layer3__1__addbias2___bias_opt",
+            "rescale__layer3__1__conv1__weight_opt",
+            "rescale__layer3__1__addbias1___bias_opt",
+            "rescale__layer3__0___scale_opt",
+            "rescale__layer3__0__downsample__2__weight_opt",
+            "rescale__layer3__0__conv3__weight_opt",
+            "rescale__layer3__0__downsample__1___bias_opt",
+            "rescale__layer3__0__addbias3___bias_opt",
+            "rescale__layer3__0__conv2__weight_opt",
+            "rescale__layer3__0__addbias2___bias_opt",
+            "rescale__layer3__0__conv1__weight_opt",
+            "rescale__layer3__0__addbias1___bias_opt",
+            "rescale__layer2__3___scale_opt",
+            "rescale__layer2__3__conv3__weight_opt",
+            "rescale__layer2__3__addbias3___bias_opt",
+            "rescale__layer2__3__conv2__weight_opt",
+            "rescale__layer2__3__addbias2___bias_opt",
+            "rescale__layer2__3__conv1__weight_opt",
+            "rescale__layer2__3__addbias1___bias_opt",
+            "rescale__layer2__2___scale_opt",
+            "rescale__layer2__2__conv3__weight_opt",
+            "rescale__layer2__2__addbias3___bias_opt",
+            "rescale__layer2__2__conv2__weight_opt",
+            "rescale__layer2__2__addbias2___bias_opt",
+            "rescale__layer2__2__conv1__weight_opt",
+            "rescale__layer2__2__addbias1___bias_opt"
+            ],
+            [
+            "rescale__layer2__1___scale_opt",
+            "rescale__layer2__1__conv3__weight_opt",
+            "rescale__layer2__1__addbias3___bias_opt",
+            "rescale__layer2__1__conv2__weight_opt",
+            "rescale__layer2__1__addbias2___bias_opt",
+            "rescale__layer2__1__conv1__weight_opt",
+            "rescale__layer2__1__addbias1___bias_opt",
+            "rescale__layer2__0___scale_opt",
+            "rescale__layer2__0__downsample__2__weight_opt",
+            "rescale__layer2__0__conv3__weight_opt",
+            "rescale__layer2__0__downsample__1___bias_opt",
+            "rescale__layer2__0__addbias3___bias_opt",
+            "rescale__layer2__0__conv2__weight_opt",
+            "rescale__layer2__0__addbias2___bias_opt",
+            "rescale__layer2__0__conv1__weight_opt",
+            "rescale__layer2__0__addbias1___bias_opt",
+            "rescale__layer1__2___scale_opt",
+            "rescale__layer1__2__conv3__weight_opt",
+            "rescale__layer1__2__addbias3___bias_opt",
+            "rescale__layer1__2__conv2__weight_opt",
+            "rescale__layer1__2__addbias2___bias_opt",
+            "rescale__layer1__2__conv1__weight_opt",
+            "rescale__layer1__2__addbias1___bias_opt",
+            "rescale__layer1__1___scale_opt",
+            "rescale__layer1__1__conv3__weight_opt",
+            "rescale__layer1__1__addbias3___bias_opt",
+            "rescale__layer1__1__conv2__weight_opt",
+            "rescale__layer1__1__addbias2___bias_opt",
+            "rescale__layer1__1__conv1__weight_opt",
+            "rescale__layer1__1__addbias1___bias_opt",
+            "rescale__layer1__0___scale_opt",
+            "rescale__layer1__0__downsample__2__weight_opt",
+            "rescale__layer1__0__conv3__weight_opt",
+            "rescale__layer1__0__downsample__1___bias_opt",
+            "rescale__layer1__0__addbias3___bias_opt",
+            "rescale__layer1__0__conv2__weight_opt",
+            "rescale__layer1__0__addbias2___bias_opt",
+            "rescale__layer1__0__conv1__weight_opt",
+            "rescale__layer1__0__addbias1___bias_opt",
+            "rescale__addbias1___bias_opt",
+            "rescale__conv1__weight_opt"
+        ]
+    ],
+    "recompute_nodes": [
+        "rescale__layer1__0__downsample__1__add",
+        "rescale__layer1__0__addbias1__add",
+        "rescale__layer1__0__addbias2__add",
+        "rescale__layer1__0__addbias3__add",
+        "rescale__layer1__0__conv3__conv2d",
+        "rescale__layer1__0__conv1__conv2d",
+        "rescale__layer1__0__conv2__conv2d",
+        "rescale__layer1__0__scale",
+        "rescale__layer1__0__scale_1",
+        "rescale__layer1__0__scale_2",
+        "rescale__layer1__1__addbias1__add",
+        "rescale__layer1__1__addbias2__add",
+        "rescale__layer1__1__addbias3__add",
+        "rescale__layer1__1__conv3__conv2d",
+        "rescale__layer1__1__conv1__conv2d",
+        "rescale__layer1__1__scale",
+        "rescale__layer1__1__scale_1",
+        "rescale__layer1__1__scale_2",
+        "rescale__layer1__2__addbias1__add",
+        "rescale__layer1__2__addbias2__add",
+        "rescale__layer1__2__addbias3__add",
+        "rescale__layer1__2__conv1__conv2d",
+        "rescale__layer1__2__conv3__conv2d",
+        "rescale__layer1__2__scale",
+        "rescale__layer1__2__scale_1",
+        "rescale__layer1__2__scale_2",
+        "rescale__layer2__0__downsample__0__avgpool2d",
+        "rescale__layer2__0__downsample__1__add",
+        "rescale__layer2__0__addbias1__add",
+        "rescale__layer2__0__addbias2__add",
+        "rescale__layer2__0__addbias3__add",
+        "rescale__layer2__0__conv1__conv2d",
+        "rescale__layer2__0__conv3__conv2d",
+        "rescale__layer2__0__scale",
+        "rescale__layer2__0__scale_1",
+        "rescale__layer2__0__scale_2",
+        "rescale__layer2__1__addbias1__add",
+        "rescale__layer2__1__addbias2__add",
+        "rescale__layer2__1__addbias3__add",
+        "rescale__layer2__1__conv3__conv2d",
+        "rescale__layer2__1__scale",
+        "rescale__layer2__1__scale_1",
+        "rescale__layer2__1__scale_2",
+        "rescale__layer2__2__addbias1__add",
+        "rescale__layer2__2__addbias2__add",
+        "rescale__layer2__2__addbias3__add",
+        "rescale__layer2__2__conv1__conv2d",
+        "rescale__layer2__2__conv3__conv2d",
+        "rescale__layer2__2__scale",
+        "rescale__layer2__2__scale_1",
+        "rescale__layer2__2__scale_2",
+        "rescale__layer2__3__addbias1__add",
+        "rescale__layer2__3__addbias2__add",
+        "rescale__layer2__3__addbias3__add",
+        "rescale__layer2__3__conv1__conv2d",
+        "rescale__layer2__3__conv3__conv2d",
+        "rescale__layer2__3__scale",
+        "rescale__layer2__3__scale_1",
+        "rescale__layer2__3__scale_2",
+        "rescale__layer3__0__downsample__0__avgpool2d",
+        "rescale__layer3__0__downsample__1__add",
+        "rescale__layer3__0__addbias1__add",
+        "rescale__layer3__0__addbias2__add",
+        "rescale__layer3__0__addbias3__add",
+        "rescale__layer3__0__conv1__conv2d",
+        "rescale__layer3__0__conv3__conv2d",
+        "rescale__layer3__0__scale",
+        "rescale__layer3__0__scale_1",
+        "rescale__layer3__0__scale_2",
+        "rescale__layer3__1__addbias1__add",
+        "rescale__layer3__1__addbias2__add",
+        "rescale__layer3__1__addbias3__add",
+        "rescale__layer3__1__conv3__conv2d",
+        "rescale__layer3__1__scale",
+        "rescale__layer3__1__scale_1",
+        "rescale__layer3__2__addbias1__add",
+        "rescale__layer3__2__addbias2__add",
+        "rescale__layer3__2__addbias3__add",
+        "rescale__layer3__2__conv3__conv2d",
+        "rescale__layer3__2__scale",
+        "rescale__layer3__2__scale_1",
+        "rescale__layer3__3__addbias1__add",
+        "rescale__layer3__3__addbias2__add",
+        "rescale__layer3__3__addbias3__add",
+        "rescale__layer3__3__conv1__conv2d",
+        "rescale__layer3__3__conv3__conv2d",
+        "rescale__layer3__3__scale",
+        "rescale__layer3__3__scale_1",
+        "rescale__layer3__4__addbias1__add",
+        "rescale__layer3__4__addbias2__add",
+        "rescale__layer3__4__addbias3__add",
+        "rescale__layer3__4__conv1__conv2d",
+        "rescale__layer3__4__conv3__conv2d",
+        "rescale__layer3__4__scale",
+        "rescale__layer3__4__scale_1",
+        "rescale__layer3__5__addbias1__add",
+        "rescale__layer3__5__addbias2__add",
+        "rescale__layer3__5__addbias3__add",
+        "rescale__layer3__5__conv1__conv2d",
+        "rescale__layer3__5__conv3__conv2d",
+        "rescale__layer3__5__scale",
+        "rescale__layer3__5__scale_1",
+        "rescale__layer4__0__downsample__0__avgpool2d",
+        "rescale__layer4__0__downsample__1__add",
+        "rescale__layer4__0__addbias1__add",
+        "rescale__layer4__0__addbias2__add",
+        "rescale__layer4__0__addbias3__add",
+        "rescale__layer4__0__conv1__conv2d",
+        "rescale__layer4__0__conv3__conv2d",
+        "rescale__layer4__0__scale",
+        "rescale__layer4__0__scale_1",
+        "rescale__layer4__1__addbias1__add",
+        "rescale__layer4__1__addbias2__add",
+        "rescale__layer4__1__addbias3__add",
+        "rescale__layer4__1__scale",
+        "rescale__layer4__1__scale_1",
+        "rescale__layer4__2__addbias1__add",
+        "rescale__layer4__2__addbias2__add",
+        "rescale__layer4__2__addbias3__add",
+        "rescale__layer4__2__scale",
+        "rescale__layer4__2__scale_1"
+    ],
+    "par_factors": {
+        "rescale__layer1__0__conv3__conv2d_bwd": [
+            [
+                3,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer1__0__conv2__conv2d_bwd": [
+            [
+                3,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                6,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer1__0__conv1__conv2d_bwd": [
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer1__0__downsample__2__conv2d_bwd": [
+            [
+                3,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__maxpool__maxpool2d_bwd": [
+            6,
+            1
+        ],
+        "rescale__conv1__conv2d_bwd": [
+            [
+                null,
+                1
+            ],
+            [
+                null,
+                1
+            ],
+            [
+                null,
+                3
+            ],
+            [
+                null,
+                25
+            ],
+            [
+                null,
+                true
+            ]
+        ],
+        "rescale__conv1__conv2d": [
+            12,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__maxpool__maxpool2d": [
+            4,
+            1
+        ],
+        "rescale__layer1__0__conv1__conv2d": [
+            1,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer1__0__downsample__2__conv2d": [
+            3,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer1__0__conv2__conv2d": [
+            19,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__layer1__0__conv3__conv2d": [
+            3,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer1__0__downsample__0__avgpool2d": [
+            4,
+            1
+        ],
+        "rescale__layer1__1__conv1__conv2d": [
+            2,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer1__1__conv2__conv2d": [
+            16,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__layer1__1__conv3__conv2d": [
+            1,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer1__2__conv1__conv2d": [
+            6,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__layer1__2__conv2__conv2d": [
+            8,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer1__2__conv3__conv2d": [
+            5,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer2__0__conv1__conv2d": [
+            8,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer2__0__downsample__2__conv2d": [
+            4,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer2__0__conv2__conv2d": [
+            4,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer2__0__conv3__conv2d": [
+            1,
+            1,
+            7,
+            1,
+            true
+        ],
+        "rescale__layer2__0__downsample__0__avgpool2d": [
+            4,
+            1
+        ],
+        "rescale__layer2__0__downsample__0__avgpool2d_recompute_": [
+            4,
+            1
+        ],
+        "rescale__layer2__1__conv1__conv2d": [
+            8,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__layer2__1__conv2__conv2d": [
+            3,
+            1,
+            6,
+            1,
+            true
+        ],
+        "rescale__layer2__1__conv3__conv2d": [
+            3,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer2__2__conv1__conv2d": [
+            5,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer2__2__conv2__conv2d": [
+            5,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer2__2__conv3__conv2d": [
+            5,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer2__3__conv1__conv2d": [
+            7,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__layer2__3__conv2__conv2d": [
+            7,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer2__3__conv3__conv2d": [
+            2,
+            1,
+            6,
+            1,
+            true
+        ],
+        "rescale__layer3__0__conv1__conv2d": [
+            10,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer3__0__downsample__2__conv2d": [
+            2,
+            1,
+            7,
+            1,
+            true
+        ],
+        "rescale__layer3__0__conv2__conv2d": [
+            4,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer3__0__conv3__conv2d": [
+            3,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer3__0__downsample__0__avgpool2d": [
+            4,
+            1
+        ],
+        "rescale__layer3__0__downsample__0__avgpool2d_recompute_": [
+            2,
+            1
+        ],
+        "rescale__layer3__1__conv1__conv2d": [
+            3,
+            1,
+            8,
+            1,
+            true
+        ],
+        "rescale__layer3__1__conv2__conv2d": [
+            8,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer3__1__conv3__conv2d": [
+            4,
+            1,
+            5,
+            1,
+            true
+        ],
+        "rescale__layer3__2__conv1__conv2d": [
+            8,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer3__2__conv2__conv2d": [
+            8,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer3__2__conv3__conv2d": [
+            4,
+            1,
+            5,
+            1,
+            true
+        ],
+        "rescale__layer3__3__conv1__conv2d": [
+            4,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer3__3__conv2__conv2d": [
+            11,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer3__3__conv3__conv2d": [
+            4,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer3__4__conv1__conv2d": [
+            4,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer3__4__conv2__conv2d": [
+            4,
+            1,
+            6,
+            1,
+            true
+        ],
+        "rescale__layer3__4__conv3__conv2d": [
+            3,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer3__5__conv1__conv2d": [
+            4,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer3__5__conv2__conv2d": [
+            4,
+            1,
+            8,
+            1,
+            true
+        ],
+        "rescale__layer3__5__conv3__conv2d": [
+            4,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer4__0__conv1__conv2d": [
+            6,
+            1,
+            5,
+            1,
+            true
+        ],
+        "rescale__layer4__0__downsample__2__conv2d": [
+            2,
+            1,
+            7,
+            1,
+            true
+        ],
+        "rescale__layer4__0__conv2__conv2d": [
+            2,
+            1,
+            9,
+            1,
+            true
+        ],
+        "rescale__layer4__0__conv3__conv2d": [
+            2,
+            1,
+            5,
+            1,
+            true
+        ],
+        "rescale__layer4__0__downsample__0__avgpool2d": [
+            2,
+            1
+        ],
+        "rescale__layer4__0__downsample__0__avgpool2d_recompute_": [
+            2,
+            1
+        ],
+        "rescale__layer4__1__conv1__conv2d": [
+            3,
+            1,
+            9,
+            1,
+            true
+        ],
+        "rescale__layer4__1__conv2__conv2d": [
+            4,
+            1,
+            9,
+            1,
+            true
+        ],
+        "rescale__layer4__1__conv3__conv2d": [
+            2,
+            1,
+            10,
+            1,
+            true
+        ],
+        "rescale__layer4__2__conv1__conv2d": [
+            2,
+            1,
+            9,
+            1,
+            true
+        ],
+        "rescale__layer4__2__conv2__conv2d": [
+            2,
+            1,
+            8,
+            1,
+            true
+        ],
+        "rescale__layer4__2__conv3__conv2d": [
+            2,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer4__2__conv3__conv2d_bwd": [
+            [
+                2,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                7,
+                5
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer4__2__conv2__conv2d_bwd": [
+            [
+                4,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                9,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer4__2__conv1__conv2d_bwd": [
+            [
+                2,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                8,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer4__1__conv3__conv2d_bwd": [
+            [
+                2,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                7,
+                5
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer4__1__conv2__conv2d_bwd": [
+            [
+                4,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                9,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer4__1__conv1__conv2d_bwd": [
+            [
+                2,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                8,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer4__0__conv3__conv2d_bwd": [
+            [
+                2,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                6,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer4__0__conv2__conv2d_bwd": [
+            [
+                5,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                15,
+                11
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__5__conv3__conv2d_recompute_": [
+            1,
+            1,
+            11,
+            1,
+            true
+        ],
+        "rescale__layer4__0__downsample__2__conv2d_bwd": [
+            [
+                2,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                10,
+                9
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer4__0__downsample__0__avgpool2d_bwd": [
+            8,
+            1
+        ],
+        "rescale__layer4__0__downsample__0__avgpool2d_recompute": [
+            2,
+            1
+        ],
+        "rescale__layer4__0__conv1__conv2d_bwd": [
+            [
+                4,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                7,
+                9
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__4__conv3__conv2d_recompute_": [
+            1,
+            1,
+            10,
+            1,
+            true
+        ],
+        "rescale__layer3__5__conv3__conv2d_bwd": [
+            [
+                2,
+                1
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                5,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__5__conv2__conv2d_bwd": [
+            [
+                3,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                8,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__5__conv1__conv2d_bwd": [
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                10,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__3__conv3__conv2d_recompute_": [
+            1,
+            1,
+            11,
+            1,
+            true
+        ],
+        "rescale__layer3__4__conv3__conv2d_bwd": [
+            [
+                2,
+                1
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                5,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__4__conv2__conv2d_bwd": [
+            [
+                3,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                8,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__4__conv1__conv2d_bwd": [
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                10,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__3__conv3__conv2d_bwd": [
+            [
+                2,
+                1
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                5,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__3__conv2__conv2d_bwd": [
+            [
+                3,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                8,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__3__conv1__conv2d_bwd": [
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                10,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__1__conv3__conv2d_recompute_": [
+            1,
+            1,
+            13,
+            1,
+            true
+        ],
+        "rescale__layer3__2__conv3__conv2d_bwd": [
+            [
+                3,
+                1
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                9
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__2__conv2__conv2d_bwd": [
+            [
+                3,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                8,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__2__conv1__conv2d_bwd": [
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                10,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__0__conv3__conv2d_recompute_": [
+            1,
+            1,
+            13,
+            1,
+            true
+        ],
+        "rescale__layer3__1__conv3__conv2d_bwd": [
+            [
+                2,
+                1
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                5,
+                9
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__1__conv2__conv2d_bwd": [
+            [
+                3,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                8,
+                5
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__1__conv1__conv2d_bwd": [
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                10,
+                5
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__0__conv3__conv2d_bwd": [
+            [
+                2,
+                1
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                5,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__0__conv2__conv2d_bwd": [
+            [
+                6,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                8,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__0__downsample__2__conv2d_bwd": [
+            [
+                8,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                4,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer3__0__downsample__0__avgpool2d_bwd": [
+            8,
+            1
+        ],
+        "rescale__layer3__0__downsample__0__avgpool2d_recompute": [
+            4,
+            1
+        ],
+        "rescale__layer3__0__conv1__conv2d_bwd": [
+            [
+                7,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                4,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__3__conv3__conv2d_recompute_": [
+            7,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__layer2__3__conv1__conv2d_recompute_": [
+            5,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__layer2__2__conv3__conv2d_recompute_": [
+            7,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__layer2__2__conv1__conv2d_recompute_": [
+            5,
+            1,
+            1,
+            1,
+            true
+        ],
+        "rescale__layer2__1__conv3__conv2d_recompute_": [
+            1,
+            1,
+            4,
+            1,
+            true
+        ],
+        "rescale__layer2__3__conv3__conv2d_bwd": [
+            [
+                4,
+                1
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                4,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__3__conv2__conv2d_bwd": [
+            [
+                5,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__3__conv1__conv2d_bwd": [
+            [
+                2,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__2__conv3__conv2d_bwd": [
+            [
+                4,
+                1
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                4,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__2__conv2__conv2d_bwd": [
+            [
+                5,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                6
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__2__conv1__conv2d_bwd": [
+            [
+                2,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__1__conv3__conv2d_bwd": [
+            [
+                5,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                9
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__1__conv2__conv2d_bwd": [
+            [
+                5,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__1__conv1__conv2d_bwd": [
+            [
+                3,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                6,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__0__conv3__conv2d_recompute_": [
+            2,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer2__0__conv1__conv2d_recompute_": [
+            5,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer2__0__conv3__conv2d_bwd": [
+            [
+                4,
+                1
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__0__conv2__conv2d_bwd": [
+            [
+                13,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                4,
+                6
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__0__conv1__conv2d_bwd": [
+            [
+                8,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__0__downsample__2__conv2d_bwd": [
+            [
+                8,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer2__0__downsample__0__avgpool2d_bwd": [
+            8,
+            1
+        ],
+        "rescale__layer1__2__conv3__conv2d_recompute_": [
+            7,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer1__2__conv1__conv2d_recompute_": [
+            3,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer1__2__conv3__conv2d_bwd": [
+            [
+                3,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer1__2__conv2__conv2d_bwd": [
+            [
+                4,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                6,
+                1
+            ],
+            [
+                1,
+                9
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer1__2__conv1__conv2d_bwd": [
+            [
+                5,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer1__1__conv3__conv2d_recompute_": [
+            7,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer1__1__conv1__conv2d_recompute_": [
+            3,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer1__1__conv3__conv2d_bwd": [
+            [
+                3,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                8
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer1__1__conv2__conv2d_bwd": [
+            [
+                4,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                6,
+                1
+            ],
+            [
+                1,
+                9
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer1__1__conv1__conv2d_bwd": [
+            [
+                5,
+                2
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                true,
+                true
+            ]
+        ],
+        "rescale__layer1__0__conv3__conv2d_recompute_": [
+            5,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer1__0__conv1__conv2d_recompute_": [
+            1,
+            1,
+            3,
+            1,
+            true
+        ],
+        "rescale__layer4__0__conv3__conv2d_recompute_": [
+            2,
+            1,
+            18,
+            1,
+            true
+        ],
+        "rescale__layer3__5__conv1__conv2d_recompute_": [
+            2,
+            1,
+            5,
+            1,
+            true
+        ],
+        "rescale__layer3__4__conv1__conv2d_recompute_": [
+            2,
+            1,
+            5,
+            1,
+            true
+        ],
+        "rescale__layer3__3__conv1__conv2d_recompute_": [
+            2,
+            1,
+            5,
+            1,
+            true
+        ],
+        "rescale__layer4__0__conv3__conv2d_recompute_": [
+            1,
+            1,
+            11,
+            1,
+            true
+        ],
+        "rescale__layer3__5__conv3__conv2d_recompute_": [
+            1,
+            1,
+            7,
+            1,
+            true
+        ],
+        "rescale__layer3__4__conv3__conv2d_recompute_": [
+            1,
+            1,
+            7,
+            1,
+            true
+        ],
+        "rescale__layer3__3__conv3__conv2d_recompute_": [
+            1,
+            1,
+            7,
+            1,
+            true
+        ],
+        "rescale__layer3__2__conv3__conv2d_recompute_": [
+            4,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer3__1__conv3__conv2d_recompute_": [
+            1,
+            1,
+            9,
+            1,
+            true
+        ],
+        "rescale__layer3__0__conv3__conv2d_recompute_": [
+            1,
+            1,
+            7,
+            1,
+            true
+        ],
+        "rescale__layer4__0__conv1__conv2d_recompute_": [
+            1,
+            1,
+            15,
+            1,
+            true
+        ],
+        "rescale__layer3__0__conv1__conv2d_recompute_": [
+            8,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__layer1__0__conv2__conv2d_recompute_": [
+            2,
+            1,
+            6,
+            1,
+            true
+        ]
+    },
+    "mac_resources_scale": {
+        "fwd": 10.25,
+        "bwd": 10.7,
+        "opt": 10.0
+    },
+    "conv2d_tile_size_maximum": 128,
+    "conv_num_tiles": {
+        "rescale__conv1__conv2d": [
+            40,
+            40
+        ],
+        "rescale__layer1__0__conv1__conv2d": [
+            40,
+            40
+        ],
+        "rescale__layer1__0__downsample__2__conv2d": [
+            40,
+            40
+        ],
+        "rescale__layer1__0__conv2__conv2d": [
+            40,
+            40
+        ],
+        "rescale__layer1__1__conv1__conv2d": [
+            40,
+            40
+        ],
+        "rescale__layer1__2__conv1__conv2d": [
+            40,
+            40
+        ],
+        "rescale__layer2__0__conv1__conv2d": [
+            40,
+            40
+        ],
+        "rescale__layer2__0__downsample__2__conv2d": [
+            40,
+            40
+        ],
+        "rescale__layer2__1__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer2__2__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer2__3__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer3__0__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer3__0__downsample__2__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer3__1__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer3__2__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer3__3__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer3__4__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer3__5__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__downsample__2__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__conv2__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__conv3__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__conv2__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__conv3__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__conv1__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__conv2__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__conv3__conv2d": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__addbias2__add_bwd_bias": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__addbias1__add_bwd_bias": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__addbias3__add_bwd_bias": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__addbias2__add_bwd_bias": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__addbias3__add_bwd_bias": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__addbias2__add_bwd_bias": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__addbias1__add_bwd_bias": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__addbias2__add_bwd_bias": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer4__2__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer4__1__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__downsample__2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer4__0__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__5__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer3__5__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__5__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__5__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__4__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer3__4__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__4__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__4__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__3__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer3__3__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__3__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__3__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__2__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer3__2__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__2__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__2__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__1__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer3__1__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__1__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__1__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__0__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer3__0__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__0__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__0__downsample__2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer3__0__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__3__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer2__3__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__3__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__3__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__2__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer2__2__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__2__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__2__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__1__scale_recompute_": [
+            20,
+            20
+        ],
+        "rescale__layer2__1__conv3__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__1__conv2__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__1__conv1__conv2d_bwd": [
+            20,
+            20
+        ],
+        "rescale__layer2__0__scale_recompute_": [
+            40,
+            40
+        ],
+        "rescale__layer2__0__conv3__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer2__0__conv2__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer2__0__downsample__2__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer2__0__conv1__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__2__scale_recompute_": [
+            40,
+            40
+        ],
+        "rescale__layer1__2__conv3__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__2__conv2__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__2__conv1__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__1__scale_recompute_": [
+            40,
+            40
+        ],
+        "rescale__layer1__1__conv3__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__1__conv2__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__1__conv1__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__0__scale_recompute_": [
+            40,
+            40
+        ],
+        "rescale__layer1__0__conv3__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__0__conv2__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__0__downsample__2__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__layer1__0__conv1__conv2d_bwd": [
+            40,
+            40
+        ],
+        "rescale__conv1__conv2d_bwd": [
+            40,
+            40
+        ]
+    }
+}

@@ -12,3 +12,4 @@ split_learning/pytorch_resnet_cifar10/pretrained_models/*
 split_learning/result*/*
 models/*
 fusionnet_split_learning/result*/*
+cifar10_data/*

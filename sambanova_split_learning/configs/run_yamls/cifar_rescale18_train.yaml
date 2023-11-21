@@ -1,0 +1,29 @@
+meta:
+    pod_name: vision
+    script: rescale_hook
+    pef: rescalenet18_cifar10
+model:
+    model: rescale18
+    in_height: 32
+    in_width: 32
+    drop_conv: 0.0
+    drop_fc: 0.0
+    num_classes: 10
+task: 
+    task_name: cifar
+run:
+    batch_size: 256
+    epochs: 1
+    mode: train
+    acc_test: True
+    acc_thresh: 0.73
+    loss_thresh: 0.76
+    optim:
+        learning_rate: 0.0001
+        weight_decay: 0.0
+    run_args: "run --yaml-path"
+data:
+    data_dir: null
+    data_transform_config: ../configs/datapipeline/cifar_data_transforms.yaml
+checkpoint:
+    ckpt_file: null

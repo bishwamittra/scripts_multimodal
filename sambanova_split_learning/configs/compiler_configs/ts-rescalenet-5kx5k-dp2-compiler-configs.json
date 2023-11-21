@@ -1,0 +1,8 @@
+{
+  "verbose": false,
+  "gen_tensorboard" : true,
+  "prefer_tbuffer_concat": true,
+  "prefer_tbuffer_split": true,
+  "arc_flags": "--all-regions-hbm --maximum-group-latency-factor=1.0 --conv-box-layout-size=medium_box --conv-box-layout-type=row_par",
+  "prism_flags": "--section-range=0-17 --num-sections-per-phase=39 --hbm-gc-strategy=general --threads=64 --enable-inst-group-place --bandwidth-scaling-by-stage-latency=true"
+}

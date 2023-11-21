@@ -1,0 +1,38 @@
+meta:
+    pod_name: vision
+    kind: MPIJob
+    num_sockets: 8
+    script: rescale_hook
+    pef: ''
+model:
+    # Constants for the model. Please do not modify any of the below params.
+    model: rescale50
+    drop_conv: 0.0
+    drop_fc: 0.0
+    num_classes: 1000
+    in_height: 512
+    in_width: 512
+    num_flexible_classes: 257
+# Variables to change based on training job
+run:
+    batch_size: 64
+    mode: train
+    epochs: 10
+    data_parallel: true
+    use_distributed_val: true
+    reduce_on_rdu: true
+    enable_stoc_rounding: true
+    optim: 
+        learning_rate: 0.0001
+        weight_decay: 0.0
+    output: 
+        log_dir: output
+    run_args: "run --yaml-path"
+    num_workers: 7
+task:
+    task_name: csv
+data:
+    # Path to image data dir.
+    data_dir: null
+checkpoint:
+    ckpt_dir: null

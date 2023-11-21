@@ -1,0 +1,369 @@
+{
+    "fwd_section_boundaries": [
+        [
+            "rescale__maxpool__maxpool2d"
+        ],
+        [
+            "rescale__layer1__1__relu_1"
+        ],
+        [
+            "rescale__layer2__1__relu_1"
+        ],
+        [
+            "rescale__layer3__1__relu_1"
+        ],
+        [
+            "rescale__mean_pool__avgpool2d"
+        ],
+        [
+            "rescale__fc__linear_t_output0"
+        ]
+    ],
+    "bwd_section_boundaries": [
+        [
+            "rescale__fc__linear_bwd_weight",
+            "rescale__mean_pool__avgpool2d_bwd"
+        ],
+        [
+            "rescale__addbias2__add_bwd_bias",
+            "rescale__layer4__1__relu_1_bwd",
+            "rescale__layer4__1__scale_1bwd_sum",
+            "rescale__layer4__1__addbias2__add_bwd_bias",
+            "rescale__layer4__1__relu_bwd",
+            "rescale__layer4__1__addbias1__add_bwd_bias",
+            "rescale__layer4__0__relu_1_bwd"
+        ],
+        [
+            "rescale__layer4__0__scale_1bwd_sum",
+            "rescale__layer4__0__addbias2__add_bwd_bias",
+            "rescale__layer4__0__relu_bwd"
+        ],
+        [
+            "rescale__layer4__0__addbias1__add_bwd_bias",
+            "rescale__layer4__0__downsample__1__add_bwd_bias",
+            "rescale__layer3__1__relu_1_bwd"
+        ],
+        [
+            "rescale__layer3__1__scale_1bwd_sum",
+            "rescale__layer3__1__addbias2__add_bwd_bias",
+            "rescale__layer3__1__addbias1__add_bwd_bias",
+            "rescale__layer3__0__relu_1_bwd"
+        ],
+        [
+            "rescale__layer3__0__scale_1bwd_sum",
+            "rescale__layer3__0__addbias2__add_bwd_bias",
+            "rescale__layer3__0__relu_bwd"
+        ],
+        [
+            "rescale__layer3__0__addbias1__add_bwd_bias",
+            "rescale__layer3__0__downsample__1__add_bwd_bias",
+            "rescale__layer2__1__relu_1_bwd"
+        ],
+        [
+            "rescale__layer2__1__scale_1bwd_sum",
+            "rescale__layer2__1__addbias2__add_bwd_bias",
+            "rescale__layer2__1__addbias1__add_bwd_bias",
+            "rescale__layer2__0__relu_1_bwd"
+        ],
+        [
+            "rescale__layer2__0__scale_1bwd_sum",
+            "rescale__layer2__0__addbias2__add_bwd_bias",
+            "rescale__layer2__0__relu_bwd"
+        ],
+        [
+            "rescale__layer2__0__addbias1__add_bwd_bias",
+            "rescale__layer2__0__downsample__1__add_bwd_bias",
+            "rescale__layer1__1__relu_1_bwd"
+        ],
+        [
+            "rescale__layer1__1__scale_1bwd_sum",
+            "rescale__layer1__1__addbias2__add_bwd_bias",
+            "rescale__layer1__1__addbias1__add_bwd_bias",
+            "rescale__layer1__0__relu_1_bwd"
+        ],
+        [
+            "rescale__layer1__0__scale_1bwd_sum",
+            "rescale__layer1__0__addbias2__add_bwd_bias",
+            "rescale__layer1__0__relu_bwd"
+        ],
+        [
+            "rescale__layer1__0__addbias1__add_bwd_bias",
+            "rescale__maxpool__maxpool2d_bwd"
+        ],
+        [
+            "rescale__conv1__conv2d_bwd",
+            "rescale__addbias1__add_bwd_bias"
+        ]
+    ],
+    "opt_section_boundaries": [
+        [
+            "rescale__addbias2___bias_opt",
+            "rescale__fc__weight_opt",
+            "rescale__fc__bias_opt",
+            "rescale__layer4__1___scale_opt",
+            "rescale__layer4__1__conv2__weight_opt",
+            "rescale__layer4__1__addbias2___bias_opt",
+            "rescale__layer4__1__conv1__weight_opt",
+            "rescale__layer4__1__addbias1___bias_opt",
+            "rescale__layer4__0___scale_opt",
+            "rescale__layer4__0__downsample__2__weight_opt",
+            "rescale__layer4__0__downsample__1___bias_opt",
+            "rescale__layer4__0__conv2__weight_opt",
+            "rescale__layer4__0__addbias2___bias_opt",
+            "rescale__layer4__0__conv1__weight_opt",
+            "rescale__layer4__0__addbias1___bias_opt"
+        ],
+        [
+            "rescale__layer3__1___scale_opt",
+            "rescale__layer3__1__conv2__weight_opt",
+            "rescale__layer3__1__addbias2___bias_opt",
+            "rescale__layer3__1__conv1__weight_opt",
+            "rescale__layer3__1__addbias1___bias_opt",
+            "rescale__layer3__0___scale_opt",
+            "rescale__layer3__0__downsample__2__weight_opt",
+            "rescale__layer3__0__downsample__1___bias_opt",
+            "rescale__layer3__0__conv2__weight_opt",
+            "rescale__layer3__0__addbias2___bias_opt",
+            "rescale__layer3__0__conv1__weight_opt",
+            "rescale__layer3__0__addbias1___bias_opt",
+            "rescale__layer2__1___scale_opt",
+            "rescale__layer2__1__conv2__weight_opt",
+            "rescale__layer2__1__addbias2___bias_opt",
+            "rescale__layer2__1__conv1__weight_opt",
+            "rescale__layer2__1__addbias1___bias_opt",
+            "rescale__layer2__0___scale_opt",
+            "rescale__layer2__0__downsample__2__weight_opt",
+            "rescale__layer2__0__downsample__1___bias_opt",
+            "rescale__layer2__0__conv2__weight_opt",
+            "rescale__layer2__0__addbias2___bias_opt",
+            "rescale__layer2__0__conv1__weight_opt",
+            "rescale__layer2__0__addbias1___bias_opt",
+            "rescale__layer1__1___scale_opt",
+            "rescale__layer1__1__conv2__weight_opt",
+            "rescale__layer1__1__addbias2___bias_opt",
+            "rescale__layer1__1__conv1__weight_opt",
+            "rescale__layer1__1__addbias1___bias_opt",
+            "rescale__layer1__0___scale_opt",
+            "rescale__layer1__0__conv2__weight_opt",
+            "rescale__layer1__0__addbias2___bias_opt",
+            "rescale__layer1__0__conv1__weight_opt",
+            "rescale__layer1__0__addbias1___bias_opt",
+            "rescale__addbias1___bias_opt",
+            "rescale__conv1__weight_opt"
+        ]
+    ],
+    "recompute_nodes": [
+        "rescale__layer1__0__addbias1__add",
+        "rescale__layer1__0__addbias2__add",
+        "rescale__layer1__0__conv1__conv2d",
+        "rescale__layer1__0__scale",
+        "rescale__layer1__0__scale_1",
+        "rescale__layer1__1__addbias1__add",
+        "rescale__layer1__1__addbias2__add",
+        "rescale__layer1__1__conv1__conv2d",
+        "rescale__layer1__1__scale",
+        "rescale__layer1__1__scale_1",
+        "rescale__layer2__0__downsample__0__avgpool2d",
+        "rescale__layer2__0__downsample__1__add",
+        "rescale__layer2__0__addbias1__add",
+        "rescale__layer2__0__addbias2__add",
+        "rescale__layer2__0__conv1__conv2d",
+        "rescale__layer2__0__scale",
+        "rescale__layer2__0__scale_1",
+        "rescale__layer2__1__addbias1__add",
+        "rescale__layer2__1__addbias2__add",
+        "rescale__layer2__1__conv1__conv2d",
+        "rescale__layer2__1__relu",
+        "rescale__layer2__1__conv1__conv2d",
+        "rescale__layer2__1__scale",
+        "rescale__layer2__1__scale_1",
+        "rescale__layer3__0__downsample__0__avgpool2d",
+        "rescale__layer3__0__downsample__1__add",
+        "rescale__layer3__0__addbias1__add",
+        "rescale__layer3__0__addbias2__add",
+        "rescale__layer3__0__conv1__conv2d",
+        "rescale__layer3__0__scale",
+        "rescale__layer3__0__scale_1",
+        "rescale__layer3__1__addbias1__add",
+        "rescale__layer3__1__addbias2__add",
+        "rescale__layer3__1__conv1__conv2d",
+        "rescale__layer3__1__scale",
+        "rescale__layer3__1__scale_1",
+        "rescale__layer4__0__downsample__0__avgpool2d",
+        "rescale__layer4__0__downsample__1__add",
+        "rescale__layer4__0__addbias1__add",
+        "rescale__layer4__0__addbias2__add",
+        "rescale__layer4__0__conv1__conv2d",
+        "rescale__layer4__0__scale",
+        "rescale__layer4__0__scale_1",
+        "rescale__layer4__1__addbias1__add",
+        "rescale__layer4__1__addbias2__add",
+        "rescale__layer4__1__scale",
+        "rescale__layer4__1__scale_1"
+    ],
+    "par_factors": {
+        "rescale__maxpool__maxpool2d_bwd": [
+            4,
+            1
+        ],
+        "rescale__conv1__conv2d_bwd": [
+            [
+                null,
+                1
+            ],
+            [
+                null,
+                1
+            ],
+            [
+                null,
+                3
+            ],
+            [
+                null,
+                25
+            ],
+            [
+                null,
+                true
+            ]
+        ],
+        "rescale__conv1__conv2d": [
+            20,
+            1,
+            2,
+            1,
+            true
+        ],
+        "rescale__maxpool__maxpool2d": [
+            4,
+            1
+        ]
+
+    },
+        "mac_resources_scale": {
+        "fwd": 0.85,
+        "bwd": 0.8,
+        "opt": 1.0
+    },
+    "conv2d_tile_size_maximum": 128,
+   "conv_num_tiles": {
+   "rescale__conv1__conv2d": [
+            4,4
+        ],
+        "rescale__layer1__0__conv1__conv2d": [
+            4,4
+        ],
+        "rescale__layer1__0__conv2__conv2d": [
+            4,4
+        ],
+        "rescale__layer1__1__conv1__conv2d": [
+            4,4
+        ],
+        "rescale__layer2__0__conv1__conv2d": [
+            4,4
+        ],
+        "rescale__layer2__0__downsample__2__conv2d": [
+            4,4
+        ],
+        "rescale__layer3__0__conv1__conv2d": [
+            2,2
+        ],
+        "rescale__layer3__0__downsample__2__conv2d": [
+            2,2
+        ],
+        "rescale__layer3__1__conv1__conv2d": [
+            2,2
+        ],
+        "rescale__layer4__0__downsample__2__conv2d": [
+            2,2
+        ],
+        "rescale__layer4__0__conv2__conv2d": [
+            2,2
+        ],
+        "rescale__layer4__1__conv1__conv2d": [
+            2,2
+        ],
+        "rescale__layer4__1__conv2__conv2d": [
+            2,2
+        ],
+        "rescale__layer4__1__addbias2__add_bwd_bias": [
+            2,2
+        ],
+        "rescale__layer4__1__addbias1__add_bwd_bias": [
+            2,2
+        ],
+        "rescale__layer4__0__addbias2__add_bwd_bias": [
+            2,2
+        ],
+        "rescale__layer4__1__conv2__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer4__1__conv1__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer4__0__conv2__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer4__0__downsample__2__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer4__0__conv1__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer3__1__conv2__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer3__1__conv1__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer3__0__conv2__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer3__0__downsample__2__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer3__0__conv1__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer2__1__conv2__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer2__1__conv1__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer2__0__conv2__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer2__0__downsample__2__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer2__0__conv1__conv2d_bwd": [
+            2,2
+        ],
+        "rescale__layer1__1__scale_recompute_": [
+            4,4
+        ],
+        "rescale__layer1__1__conv2__conv2d_bwd": [
+            4,4
+        ],
+        "rescale__layer1__1__conv1__conv2d_bwd": [
+            4,4
+        ],
+        "rescale__layer1__0__scale_recompute_": [
+            4,4
+        ],
+        "rescale__layer1__0__conv2__conv2d_bwd": [
+            4,4
+        ],
+        "rescale__layer1__0__conv1__conv2d_bwd": [
+            4,4
+        ],
+        "rescale__conv1__conv2d_bwd": [
+            8,8
+        ]
+     
+   
+   
+   }
+}

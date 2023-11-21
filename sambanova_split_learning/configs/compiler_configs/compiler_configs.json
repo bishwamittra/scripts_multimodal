@@ -1,0 +1,6 @@
+{
+    "arc_flags" : "--legalize_dataflow=false",
+    "verbose": false,
+    "gen_tensorboard" : true,
+    "prism_flags": " --threads=64  --enable-inst-group-place --bandwidth-scaling-by-stage-latency=false  --enable-box-layout=true --sa-control-weight=50"
+}

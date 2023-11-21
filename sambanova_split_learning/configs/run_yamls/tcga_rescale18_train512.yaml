@@ -1,0 +1,31 @@
+meta:
+    pod_name: vision
+    script: rescale_hook
+    pef: rescalenet18_tcga512
+model:
+    model: rescale18
+    in_height: 512
+    in_width: 512
+    drop_conv: 0.0
+    drop_fc: 0.0
+    num_classes: 2
+    hot_layers: [4]
+task: 
+    task_name: msi_v1
+run: 
+    batch_size: 8
+    epochs: 1
+    mode: train
+    acc_test: True
+    acc_thresh: 0.65
+    loss_thresh: 0.57
+    use_distributed_val: True
+    run_args: "run --yaml-path"
+    optim:
+        learning_rate: 0.000002
+        weight_decay: 0.0001
+data:
+    data_dir: null
+    data_transform_config: ../configs/datapipeline/tcga_rescale_data_transforms.yaml
+checkpoint:
+    ckpt_file: null

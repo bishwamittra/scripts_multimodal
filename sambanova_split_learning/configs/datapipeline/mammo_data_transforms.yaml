@@ -1,0 +1,44 @@
+train:
+    ToPILImage: true
+    Resize: 
+      size: [{height}, {width}]
+    RandomAffine:
+      degrees: 0
+      scale: [1.111, 1.111]
+    RandomCrop:
+      size: [{height}, {width}]
+    RandomHorizontalFlip: 
+      p: 0.5
+    RandomVerticalFlip: 
+      p: 0.5
+    ToTensor: true
+    Normalize:
+      mean: [.5, .5, .5]
+      std: [.5, .5, .5]
+validation:
+    ToPILImage: true
+    Resize:
+      size: [{height}, {width}]
+      interpolation: bicubic
+    ToTensor: true
+    Normalize:
+      mean: [.5, .5, .5]
+      std: [.5, .5, .5]
+test:
+    ToPILImage: true
+    Resize:
+      size: [{height}, {width}]
+      interpolation: bicubic
+    ToTensor: true
+    Normalize:
+      mean: [.5, .5, .5]
+      std: [.5, .5, .5]
+all:
+    ToPILImage: true
+    Resize:
+      size: [{height}, {width}]
+      interpolation: bicubic
+    ToTensor: true
+    Normalize:
+      mean: [.5, .5, .5]
+      std: [.5, .5, .5]

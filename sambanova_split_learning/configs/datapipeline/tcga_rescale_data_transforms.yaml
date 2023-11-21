@@ -1,0 +1,26 @@
+train:
+    ToPILImage: true
+    Resize: 
+      size: [{height}, {width}]
+    RandomHorizontalFlip: 
+      p: 0.5
+    RandomVerticalFlip: 
+      p: 0.5
+    RandomRotation:
+      degrees: 20
+    ToTensor: true
+validation:
+    ToPILImage: true
+    Resize:
+      size: [{height}, {width}]
+    ToTensor: true
+test:
+    ToPILImage: true
+    Resize:
+      size: [{height}, {width}]
+    ToTensor: true
+all:
+    ToPILImage: true
+    Resize:
+      size: [{height}, {width}]
+    ToTensor: true

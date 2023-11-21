@@ -1,0 +1,155 @@
+{
+    "fwd_section_boundaries": [
+        [
+            "rescale__maxpool__maxpool2d",
+            "rescale__layer1__0__scale_2"
+        ],
+        [
+            "rescale__layer1__0__relu"
+        ],
+        [
+            "rescale__layer1__0__relu_1",
+            "rescale__layer1__1__scale_2"
+        ],
+        [
+            "rescale__layer1__1__relu_1"
+        ],
+        [
+            "rescale__layer2__0__relu"
+        ],
+        [
+            "rescale__layer2__0__relu_1",
+            "rescale__layer2__1__scale_2"
+        ],
+        [
+            "rescale__layer2__1__relu"
+        ],
+        [
+            "rescale__layer2__1__relu_1"
+        ],
+        [
+            "rescale__layer3__0__relu"
+        ],
+        [
+            "rescale__layer3__0__relu_1",
+            "rescale__layer3__1__scale_2"
+        ],
+        [
+            "rescale__layer3__1__relu"
+        ],
+        [
+            "rescale__layer3__1__relu_1"
+        ],
+        [
+            "rescale__layer4__0__downsample__1__add"
+        ],
+        [
+            "rescale__layer4__0__scale_2"
+        ],
+        [
+            "rescale__layer4__0__relu"
+        ],
+        [
+            "rescale__layer4__0__relu_1",
+            "rescale__layer4__1__scale_2"
+        ],
+        [
+            "rescale__layer4__1__relu"
+        ],
+        [
+            "rescale__layer4__1__relu_1"
+        ],
+        [
+            "rescale__addbias2__add"
+        ],
+        [
+            "rescale__fc__linear_t_output0"
+        ]
+    ],
+    "bwd_section_boundaries": [
+        ["rescale__mean_pool__avgpool2d_bwd", "rescale__fc__linear_bwd_weight"],
+        ["rescale__addbias2__add_bwd"],
+        ["rescale__layer4__1__scale_1bwd_sum", "rescale__layer4__1__scale_bwd", "rescale__layer4__1__scale_2_bwd"],
+        ["rescale__layer4__1__addbias1__add_bwd"],
+        ["rescale__layer4__0__scale_1bwd_sum", "rescale__layer4__0__scale_bwd", "rescale__layer4__0__scale_2_bwd"],
+        ["rescale__layer4__0__addbias1__add_bwd"],
+        ["rescale__layer4__0__downsample__0__avgpool2d_bwd"],
+        ["rescale__layer3__1__scale_1bwd_sum", "rescale__layer3__1__scale_bwd", "rescale__layer3__1__scale_2_bwd"],
+        ["rescale__layer3__1__addbias1__add_bwd"],
+        ["rescale__layer3__0__scale_1bwd_sum", "rescale__layer3__0__scale_bwd", "rescale__layer3__0__scale_2_bwd"],
+        ["rescale__layer3__0__addbias1__add_bwd", "rescale__layer3__0__downsample__0__avgpool2d_bwd"],
+        ["rescale__layer2__1__scale_1bwd_sum", "rescale__layer2__1__scale_bwd", "rescale__layer2__1__scale_2_bwd"],
+        ["rescale__layer2__1__addbias1__add_bwd"],
+        ["rescale__layer2__0__scale_1bwd_sum", "rescale__layer2__0__scale_bwd", "rescale__layer2__0__scale_2_bwd"],
+        ["rescale__layer2__0__addbias1__add_bwd"], 
+        ["rescale__layer2__0__downsample__0__avgpool2d_bwd"],
+        ["rescale__layer1__1__scale_1bwd_sum", "rescale__layer1__1__scale_bwd", "rescale__layer1__1__scale_2_bwd"],
+        ["rescale__layer1__1__addbias1__add_bwd"],
+        ["rescale__layer1__0__scale_1bwd_sum", "rescale__layer1__0__scale_bwd", "rescale__layer1__0__scale_2_bwd"],
+        ["rescale__layer1__0__addbias1__add_bwd"],
+        ["rescale__conv1__conv2d_bwd"]
+
+    ],
+    "opt_section_boundaries": [
+        [
+            "rescale__addbias2__bias_opt",
+            "rescale__fc__weight_opt",
+            "rescale__fc__bias_opt",
+            "rescale__layer4__1__conv2__weight_opt",
+            "rescale__layer4__1___scale_opt",
+            "rescale__layer4__1__addbias2__bias_opt",
+            "rescale__layer4__1__conv1__weight_opt",
+            "rescale__layer4__1__addbias1__bias_opt",
+            "rescale__layer4__0__downsample__2__weight_opt",
+            "rescale__layer4__0__conv2__weight_opt",
+            "rescale__layer4__0___scale_opt",
+            "rescale__layer4__0__downsample__1__bias_opt",
+            "rescale__layer4__0__addbias2__bias_opt",
+            "rescale__layer4__0__conv1__weight_opt",
+            "rescale__layer4__0__addbias1__bias_opt",
+            "rescale__layer3__1__conv2__weight_opt",
+            "rescale__layer3__1___scale_opt",
+            "rescale__layer3__1__addbias2__bias_opt",
+            "rescale__layer3__1__conv1__weight_opt",
+            "rescale__layer3__1__addbias1__bias_opt",
+            "rescale__layer3__0__downsample__2__weight_opt",
+            "rescale__layer3__0__conv2__weight_opt",
+            "rescale__layer3__0___scale_opt",
+            "rescale__layer3__0__downsample__1__bias_opt",
+            "rescale__layer3__0__addbias2__bias_opt",
+            "rescale__layer3__0__conv1__weight_opt",
+            "rescale__layer3__0__addbias1__bias_opt",
+            "rescale__layer2__1__conv2__weight_opt",
+            "rescale__layer2__1___scale_opt",
+            "rescale__layer2__1__addbias2__bias_opt",
+            "rescale__layer2__1__conv1__weight_opt",
+            "rescale__layer2__1__addbias1__bias_opt"],
+        [
+            "rescale__layer2__0__downsample__2__weight_opt",
+            "rescale__layer2__0__conv2__weight_opt",
+            "rescale__layer2__0___scale_opt",
+            "rescale__layer2__0__downsample__1__bias_opt",
+            "rescale__layer2__0__addbias2__bias_opt",
+            "rescale__layer2__0__conv1__weight_opt",
+            "rescale__layer2__0__addbias1__bias_opt",
+            "rescale__layer1__1__conv2__weight_opt",
+            "rescale__layer1__1___scale_opt",
+            "rescale__layer1__1__addbias2__bias_opt",
+            "rescale__layer1__1__conv1__weight_opt",
+            "rescale__layer1__1__addbias1__bias_opt",
+            "rescale__layer1__0__conv2__weight_opt",
+            "rescale__layer1__0___scale_opt",
+            "rescale__layer1__0__addbias2__bias_opt",
+            "rescale__layer1__0__conv1__weight_opt",
+            "rescale__layer1__0__addbias1__bias_opt",
+            "rescale__addbias1__bias_opt",
+            "rescale__conv1__weight_opt"
+        ]
+    ],
+    "mac_resources_scale": {
+        "fwd": 0.9,
+        "bwd": 0.9,
+        "opt": 0.9
+    },
+    "conv2d_tile_size_maximum": 64
+}

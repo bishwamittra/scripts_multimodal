@@ -1,0 +1,5 @@
+{
+    "verbose": false,
+    "gen_tensorboard" : true,
+    "prism_flags": " --threads=64  --enable-inst-group-place --gen-slam-file --stage-instrumentation=metapipe_stage_cycles --bandwidth-scaling-by-stage-latency=false  --error-limit=10000" 
+}
