@@ -9,7 +9,7 @@ python compile_u_shaped.py compile \
 --drop-conv 0.0 \
 --drop-fc 0.0 \
 --mac-v2 \
---pef-name rescale18_split_u_shaped \
+--pef-name pef_rescale18_split_u_shaped \
 --output-folder ./ \
 --orig-in-height 32 \
 --orig-in-width 32 \
