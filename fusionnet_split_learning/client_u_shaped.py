@@ -3,6 +3,7 @@ import struct
 import socket
 import pickle
 import time
+import pandas as pd
 from model_client_u_shaped import FusionNet_client_first, FusionNet_client_last
 from model_server_u_shaped import FusionNet_server_middle
 from tqdm import tqdm
@@ -21,6 +22,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--connection_start_from_client', action='store_true', default=False)
 parser.add_argument('--epoch', type=int, default=2, help='Number of epochs')
+parser.add_argument('--architecture_choice', type=int, default=1, help='Index of architecture choice')
 parser.add_argument('--client_in_sambanova', action='store_true', default=False)
 parser.add_argument('--seed', type=int, default=42, help='random seed')
 args = parser.parse_args()
@@ -163,6 +165,7 @@ else:
 
 start_time = time.time()
 total_training_time = 0
+total_server_training_time = 0
 total_validation_time = 0
 total_test_time = 0
 total_communication_time_server_to_client = 0
@@ -177,6 +180,7 @@ msg = {
     'epoch': epochs,
     'num_batch': len(train_dataloader),
     'lr': lr,
+    'architecture_choice': args.architecture_choice
 }
 
 
@@ -185,7 +189,10 @@ logger.info(f"Epoch: {epochs}, Batch Size: {batch_size}, Learning Rate: {lr}")
 send_msg(s1, msg)  # send 'epoch' and 'batch size' to server
 
 best_val_mean_acc = 0
+
+
 for epc in range(epochs):
+    entry = {}
     print("running epoch ", epc)
     sync_time(s1, logger)
     epoch_start_time = time.time()
@@ -194,6 +201,7 @@ for epc in range(epochs):
     epoch_size_server_output = 0
     epoch_size_client_first_gradient = 0
     epoch_communication_time_server_to_client = 0
+    is_best_val = False
 
 
     train_loss = 0
@@ -296,6 +304,8 @@ for epc in range(epochs):
     # logger.info("Received server model")
     server_load_start_time = time.time()
     server_model_state_dict = rmsg['server model']
+    epoch_server_training_time = rmsg['server training time']
+    total_server_training_time += epoch_server_training_time
     server_model = FusionNet_server_middle().to(device)
     server_model.load_state_dict(server_model_state_dict)
     server_load_time = time.time() - server_load_start_time
@@ -318,36 +328,46 @@ for epc in range(epochs):
 
     
 
-    # test mode
-    test_start_time = time.time()
-    test_loss, test_dia_acc, test_sps_acc = validation_u_shaped(client_model_first, client_model_last, server_model, test_dataloader, device)
-    test_mean_acc = (test_dia_acc*1 + test_sps_acc*7)/8
-    test_time = time.time() - test_start_time
-    msg = {
-            'test loss': test_loss,
-            'test dia acc': test_dia_acc,
-            'test sps acc': test_sps_acc,
-            'test mean acc': test_mean_acc,
-            'test time': test_time,
-    }
-    total_test_time += test_time
-    send_msg(s1, msg)
-
-
-
     
+
+
+
     logger.info(f'Valid Loss: {round(val_loss, 4)}, Valid Dia Acc: {round(val_dia_acc, 4)}, Valid SPS Acc: {round(val_sps_acc, 4)} Valid Mean Acc: {round(val_mean_acc, 4)}')
-    logger.info(f'Test Loss: {round(test_loss, 4)}, Test Dia Acc: {round(test_dia_acc, 4)}, Test SPS Acc: {round(test_sps_acc, 4)} Test Mean Acc: {round(test_mean_acc, 4)}')
 
     # save the best model
     if val_mean_acc > best_mean_acc:
         best_mean_acc = val_mean_acc
+        is_best_val = True
         # torch.save(client_model_first.state_dict(), f'{save_path}/checkpoint/fusionnet_first_stage_client_first.pth')
         # torch.save(server_model.state_dict(), f'{save_path}/checkpoint/fusionnet_first_stage_server_middle.pth')
         # torch.save(client_model_last.state_dict(), f'{save_path}/checkpoint/fusionnet_first_stage_client_last.pth') 
         logger.info(f'Current Best Mean Validation Acc is {round(best_mean_acc, 4)}')
 
-    
+    if(is_best_val):
+        # test mode
+        test_start_time = time.time()
+        test_loss, test_dia_acc, test_sps_acc = validation_u_shaped(client_model_first, client_model_last, server_model, test_dataloader, device)
+        test_mean_acc = (test_dia_acc*1 + test_sps_acc*7)/8
+        test_time = time.time() - test_start_time
+        msg = {
+                'is_best_val': is_best_val,
+                'test loss': test_loss,
+                'test dia acc': test_dia_acc,
+                'test sps acc': test_sps_acc,
+                'test mean acc': test_mean_acc,
+                'test time': test_time,
+        }
+        logger.info(f'Test Loss: {round(test_loss, 4)}, Test Dia Acc: {round(test_dia_acc, 4)}, Test SPS Acc: {round(test_sps_acc, 4)} Test Mean Acc: {round(test_mean_acc, 4)}')
+    else:
+        test_time = 0
+        msg = {
+            'is_best_val': is_best_val,
+            'test time': test_time,
+        }   
+    total_test_time += test_time
+    send_msg(s1, msg)
+
+
     # communicating time
     send_msg(s1, {'server_to_client_communication_time': epoch_communication_time_server_to_client})
     rmsg = recv_msg(s1)
@@ -358,17 +378,18 @@ for epc in range(epochs):
     total_communication_time_server_to_client += epoch_communication_time_server_to_client    
     total_communication_time_client_to_server += epoch_communication_time_client_to_server
     logger.info(f"Epoch: training time client: {round(epoch_training_time, 2)}")
+    logger.info(f"Epoch: training time server: {round(epoch_server_training_time, 2)}")
     # logger.info(f"Epoch: training time server (over-approximation): {round(epoch_training_time_server, 2)}")
     logger.info(f"Epoch: validation time: {round(validation_time, 2)}")
     logger.info(f"Epoch: test time: {round(test_time, 2)}")
     logger.info(f"Eopch: server load time: {round(server_load_time, 2)}")
-    logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
+    epoch_end_time = time.time()
+    logger.info(f"Epoch: total time: {round(epoch_end_time - epoch_start_time, 2)}")
     
     
     
     logger.info("")
     logger.info(f"Epoch: received msg len from server: {round((received_msg_len - epoch_received_msg_len)/1024/1024, 2)} MB")
-    epoch_received_msg_len = received_msg_len
     logger.info(f"Epoch: size of client gradient: {round(epoch_size_server_output/1024/1024, 2)} MB")
     total_size_server_output += epoch_size_server_output
     logger.info(f"Epoch: size of client first gradient: {round(epoch_size_client_first_gradient/1024/1024, 2)} MB")
@@ -376,8 +397,70 @@ for epc in range(epochs):
     logger.info(f"Epoch: server model size: {round(server_model_size/1024/1024, 2)} MB")
 
 
+
+    # store result in a csv file
+    entry['exp_seq'] = exp_seq
+    entry['epoch'] = epc
+    entry['total_epochs'] = epochs
+    entry['learning_rate'] = lr
+    entry['architecture_choice'] = args.architecture_choice
+
+    entry['batch_size'] = batch_size
+    entry['len_train_dataset'] = len(train_dataloader.dataset)
+    entry['len_val_dataset'] = len(val_dataloader.dataset)
+    entry['len_test_dataset'] = len(test_dataloader.dataset)
     
+    entry['train_loss'] = train_loss
+    entry['train_dia_acc'] = train_dia_acc
+    entry['train_sps_acc'] = train_sps_acc
+    entry['val_loss'] = val_loss
+    entry['val_dia_acc'] = val_dia_acc
+    entry['val_sps_acc'] = val_sps_acc
+    entry['val_mean_acc'] = val_mean_acc
+    entry['is_best_val'] = is_best_val
+    if(is_best_val):
+        entry['test_loss'] = test_loss
+        entry['test_dia_acc'] = test_dia_acc
+        entry['test_sps_acc'] = test_sps_acc
+        entry['test_mean_acc'] = test_mean_acc
+    else:
+        entry['test_loss'] = None
+        entry['test_dia_acc'] = None
+        entry['test_sps_acc'] = None
+        entry['test_mean_acc'] = None
+    entry['time_server_load'] = server_load_time
+    entry['time_client_training'] = epoch_training_time
+    entry['time_server_training'] = epoch_server_training_time
+    entry['time_validation'] = validation_time
+    entry['time_test'] = test_time
+    entry['time_communication_server_to_client'] = epoch_communication_time_server_to_client
+    entry['time_communication_client_to_server'] = epoch_communication_time_client_to_server
+    entry['time_total'] = epoch_end_time - epoch_start_time
+
+    entry['size_server_msg'] = received_msg_len - epoch_received_msg_len
+    entry['size_server_output'] = epoch_size_server_output
+    entry['size_client_head_gradient'] = epoch_size_client_first_gradient
+    entry['size_server_model'] = server_model_size
+
+    rmsg = recv_msg(s1)
+    for key in rmsg.keys():
+        if(key == 'communication_time_stamp'):
+            continue
+        entry[key] = rmsg[key]
+
+    # from pprint import pprint
+    # pprint(entry)
     
+    # store results
+    result = pd.DataFrame(entry, index=[0])
+    result.to_csv(f'{save_path}/result.csv', header=False, index=False, mode='a')
+
+
+    epoch_received_msg_len = received_msg_len
+
+    if(epc == epochs-1):
+        logger.info(", ".join(["\'" + column + "\'" for column in result.columns.tolist()]))
+     
 
 send_msg(s1, {'server_to_client_communication_time': total_communication_time_server_to_client})       
 rmsg = recv_msg(s1)

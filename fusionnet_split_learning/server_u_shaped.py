@@ -27,7 +27,7 @@ args = parser.parse_args()
 
 
 # Setup CUDA
-device = "cuda:1"
+device = "cuda:0"
 seed = args.seed
 random.seed(seed)
 np.random.seed(seed)
@@ -238,7 +238,8 @@ for epc in range(epochs):
     # for validation and test, send server model to client
     server_encode_start_time = time.time()
     msg = {
-        "server model": {k: v.cpu() for k, v in server_model.state_dict().items()}
+        "server model": {k: v.cpu() for k, v in server_model.state_dict().items()},
+        "server training time": epoch_training_time
     }
     server_encode_time = time.time() - server_encode_start_time
 
@@ -258,8 +259,11 @@ for epc in range(epochs):
 
     # test
     rmsg = recv_msg(conn)
-    logger.info(f"Test loss: {round(rmsg['test loss'], 4)}, Test dia acc: {round(rmsg['test dia acc'], 4)}, Test sps acc: {round(rmsg['test sps acc'], 4)}, Test mean acc: {round(rmsg['test mean acc'], 4)}")
-    test_time = rmsg['test time']
+    if(rmsg['is_best_val']):
+        logger.info(f"Test loss: {round(rmsg['test loss'], 4)}, Test dia acc: {round(rmsg['test dia acc'], 4)}, Test sps acc: {round(rmsg['test sps acc'], 4)}, Test mean acc: {round(rmsg['test mean acc'], 4)}")
+        test_time = rmsg['test time']
+    else:
+        test_time = 0
     total_test_time += test_time
 
     # show time
@@ -283,6 +287,14 @@ for epc in range(epochs):
     logger.info(f"Epoch: received msg len from client: {round((received_msg_len - epoch_received_msg_len)/1024/1024, 2)} MB")
     logger.info(f"Epoch: size of client head output: {round(epoch_size_client_head_output/1024/1024, 2)} MB")
     logger.info(f"Epoch: size of server gradient: {round(epoch_size_server_gradient/1024/1024, 2)} MB")
+
+    msg = {
+        'size_client_msg': received_msg_len - epoch_received_msg_len,
+        'size_client_head_output': epoch_size_client_head_output,
+        'size_server_gradient': epoch_size_server_gradient
+    }
+    send_msg(conn, msg)
+
     total_size_client_head_output += epoch_size_client_head_output
     total_size_server_gradient += epoch_size_server_gradient
     epoch_received_msg_len = received_msg_len

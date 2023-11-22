@@ -1,9 +1,9 @@
-client_start=True
+client_start=False
 
 
 
 client_seed="42"
-epoch="200"
+epoch="10"
 
 if [ "$client_start" = True ] ; then
     client_wait_time="60"
