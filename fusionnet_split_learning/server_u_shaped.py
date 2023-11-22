@@ -140,10 +140,11 @@ rmsg = recv_msg(conn)
 epochs = rmsg['epoch']
 num_batch = rmsg['num_batch']
 lr = rmsg['lr']
-logger.info(f"received epoch: {rmsg['epoch']}, num_batch: {rmsg['num_batch']}, learning rate: {rmsg['lr']}")
+architecture_choice = rmsg['architecture_choice']
+logger.info(f"received epoch: {rmsg['epoch']}, num_batch: {rmsg['num_batch']}, learning rate: {rmsg['lr']}, architecture_choice: {rmsg['architecture_choice']}")
 
 
-server_model = FusionNet_server_middle().to(device)
+server_model = FusionNet_server_middle(architecture_choice=architecture_choice).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(server_model.parameters(), lr=lr)
 

@@ -118,10 +118,10 @@ train_dataloader, val_dataloader, test_dataloader = generate_dataloader(
 
 
 # Definition of client side model (input layer only)
-client_model_first = FusionNet_client_first().to(device)
+client_model_first = FusionNet_client_first(architecture_choice=args.architecture_choice).to(device)
 optimizer_first = optim.Adam(client_model_first.parameters(), lr=lr)
 
-client_model_last = FusionNet_client_last(class_list).to(device)
+client_model_last = FusionNet_client_last(class_list, architecture_choice=args.architecture_choice).to(device)
 optimizer_last = optim.Adam(client_model_last.parameters(), lr=lr)
 
 
@@ -184,7 +184,7 @@ msg = {
 }
 
 
-logger.info(f"Epoch: {epochs}, Batch Size: {batch_size}, Learning Rate: {lr}")
+logger.info(f"Epoch: {epochs}, Batch Size: {batch_size}, Learning Rate: {lr}, Architecture Choice: {args.architecture_choice}")
 
 send_msg(s1, msg)  # send 'epoch' and 'batch size' to server
 
@@ -306,7 +306,7 @@ for epc in range(epochs):
     server_model_state_dict = rmsg['server model']
     epoch_server_training_time = rmsg['server training time']
     total_server_training_time += epoch_server_training_time
-    server_model = FusionNet_server_middle().to(device)
+    server_model = FusionNet_server_middle(architecture_choice=args.architecture_choice).to(device)
     server_model.load_state_dict(server_model_state_dict)
     server_load_time = time.time() - server_load_start_time
 
@@ -390,7 +390,7 @@ for epc in range(epochs):
     
     logger.info("")
     logger.info(f"Epoch: received msg len from server: {round((received_msg_len - epoch_received_msg_len)/1024/1024, 2)} MB")
-    logger.info(f"Epoch: size of client gradient: {round(epoch_size_server_output/1024/1024, 2)} MB")
+    logger.info(f"Epoch: size of server output: {round(epoch_size_server_output/1024/1024, 2)} MB")
     total_size_server_output += epoch_size_server_output
     logger.info(f"Epoch: size of client first gradient: {round(epoch_size_client_first_gradient/1024/1024, 2)} MB")
     total_size_client_first_gradient += epoch_size_client_first_gradient
@@ -409,6 +409,10 @@ for epc in range(epochs):
     entry['len_train_dataset'] = len(train_dataloader.dataset)
     entry['len_val_dataset'] = len(val_dataloader.dataset)
     entry['len_test_dataset'] = len(test_dataloader.dataset)
+
+    entry['param_client_first'] = sum(p.numel() for p in client_model_first.parameters() if p.requires_grad)
+    entry['param_server_middle'] = sum(p.numel() for p in server_model.parameters() if p.requires_grad)
+    entry['param_client_last'] = sum(p.numel() for p in client_model_last.parameters() if p.requires_grad)
     
     entry['train_loss'] = train_loss
     entry['train_dia_acc'] = train_dia_acc
@@ -482,7 +486,7 @@ logger.info(f"Total time: {round(end_time - start_time, 2)}")
 
 logger.info("")
 logger.info(f"Received msg len from server: {round(received_msg_len/1024/1024, 2)} MB")
-logger.info(f"Total size of client gradient: {round(total_size_server_output/1024/1024, 2)} MB")
+logger.info(f"Total size of server output: {round(total_size_server_output/1024/1024, 2)} MB")
 logger.info(f"Total size of client first gradient: {round(total_size_client_first_gradient/1024/1024, 2)} MB")
 logger.info(f"Total size of server model: {round(total_size_server_model/1024/1024, 2)} MB")
 # 
