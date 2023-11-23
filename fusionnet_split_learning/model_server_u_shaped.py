@@ -38,28 +38,28 @@ class FusionNet_server_middle(nn.Module):
 
         
         # from pretrained resnet50
-        self.model_clinic = torchvision.models.resnet50(pretrained=True)
-        self.model_derm = torchvision.models.resnet50(pretrained=True)
+        model_clinic = torchvision.models.resnet50(pretrained=True)
+        model_derm = torchvision.models.resnet50(pretrained=True)
 
         if(self.architecture_choice in [1, 2, 3, 4]):
             self.dropout = nn.Dropout(0.3)
 
             # define the clinic model
             if(self.architecture_choice not in [2, 4]):
-                self.layer1_cli = self.model_clinic.layer1
-            self.layer2_cli = self.model_clinic.layer2
-            self.layer3_cli = self.model_clinic.layer3
-            self.layer4_cli = self.model_clinic.layer4
-            self.avgpool_cli = self.model_clinic.avgpool
+                self.layer1_cli = model_clinic.layer1
+            self.layer2_cli = model_clinic.layer2
+            self.layer3_cli = model_clinic.layer3
+            self.layer4_cli = model_clinic.layer4
+            self.avgpool_cli = model_clinic.avgpool
             # self.avgpool_cli = nn.MaxPool2d(7, 7)
 
             # define the derm model
             if(self.architecture_choice not in  [2, 4]):
-                self.layer1_derm = self.model_derm.layer1        
-            self.layer2_derm = self.model_derm.layer2
-            self.layer3_derm = self.model_derm.layer3
-            self.layer4_derm = self.model_derm.layer4
-            self.avgpool_derm = self.model_derm.avgpool
+                self.layer1_derm = model_derm.layer1        
+            self.layer2_derm = model_derm.layer2
+            self.layer3_derm = model_derm.layer3
+            self.layer4_derm = model_derm.layer4
+            self.avgpool_derm = model_derm.avgpool
             # self.avgpool_derm = nn.MaxPool2d(7, 7)
         
             if(self.architecture_choice not in [3, 4]):

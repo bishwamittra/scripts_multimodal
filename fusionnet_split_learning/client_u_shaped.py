@@ -251,7 +251,7 @@ for epc in range(epochs):
         x_clic_server = x_clic_server_gpu.to(device)
         x_derm_server = x_derm_server_gpu.to(device)
         x_fusion_server = x_fusion_server_gpu.to(device)
-        loss, dia_acc, sps_acc = client_model_last.forward_propagate_and_loss_compute((x_clic_server, x_derm_server, x_fusion_server), label, batch_size, device)        
+        loss, dia_acc, _,  sps_acc, _, _, _ = client_model_last.forward_propagate_and_loss_compute((x_clic_server, x_derm_server, x_fusion_server), label, batch_size, device)        
         train_loss += loss.item()
         train_dia_acc += dia_acc.item()
         train_sps_acc += sps_acc.item()
@@ -290,10 +290,12 @@ for epc in range(epochs):
     train_sps_acc = train_sps_acc / (i + 1)
     total_training_time += epoch_training_time
 
+    train_mean_acc = (train_dia_acc*1 + train_sps_acc*7)/8
+
     # logging
     logger.info("")
     logger.info(f"Epoch {epc+1}/{epochs} results:")
-    logger.info(f"Train Loss: {round(train_loss, 4)}, Train Dia Acc: {round(train_dia_acc, 4)}, Train SPS Acc: {round(train_sps_acc, 4)}")
+    logger.info(f"Train Loss: {round(train_loss, 4)}, Train Dia Acc: {round(train_dia_acc, 4)}, Train SPS Acc: {round(train_sps_acc, 4)}, Train Mean Acc: {round(train_mean_acc, 4)}")
     
 
     # validation
@@ -312,8 +314,24 @@ for epc in range(epochs):
 
     # validation mode
     validation_start_time = time.time()
-    val_loss, val_dia_acc, val_sps_acc = validation_u_shaped(client_model_first, client_model_last, server_model, val_dataloader, device)
-    val_mean_acc = (val_dia_acc*1 + val_sps_acc*7)/8
+    # val_loss, val_dia_acc, val_sps_acc = validation_u_shaped(client_model_first, client_model_last, server_model, val_dataloader, device)
+    val_loss, \
+    val_dia_acc, \
+    [val_dia_acc_clic, val_dia_acc_derm, val_dia_acc_fusion], \
+    val_sps_acc, \
+    [val_sps_acc_clic, val_sps_acc_derm, val_sps_acc_fusion], \
+    [val_pn_acc, val_str_acc, val_pig_acc, val_rs_acc, val_dag_acc, val_bwv_acc, val_vs_acc], \
+    [
+        [val_pn_clic_acc, val_pn_derm_acc, val_pn_fusion_acc], 
+        [val_str_clic_acc, val_str_derm_acc, val_str_fusion_acc], 
+        [val_pig_clic_acc, val_pig_derm_acc, val_pig_fusion_acc], 
+        [val_rs_clic_acc, val_rs_derm_acc, val_rs_fusion_acc], 
+        [val_dag_clic_acc, val_dag_derm_acc, val_dag_fusion_acc], 
+        [val_bwv_clic_acc, val_bwv_derm_acc, val_bwv_fusion_acc], 
+        [val_vs_clic_acc, val_vs_derm_acc, val_vs_fusion_acc]
+    ] = validation_u_shaped(client_model_first, client_model_last, server_model, val_dataloader, device)
+    
+    val_mean_acc = (val_dia_acc * 1 + val_sps_acc * 7) / 8
     validation_time = time.time() - validation_start_time
     msg = {
             'validation loss': val_loss,
@@ -332,7 +350,19 @@ for epc in range(epochs):
 
 
 
+    # logger.info(f'Valid Loss: {round(val_loss, 4)}, Valid Dia Acc: {round(val_dia_acc, 4)}, Valid SPS Acc: {round(val_sps_acc, 4)} Valid Mean Acc: {round(val_mean_acc, 4)}')
     logger.info(f'Valid Loss: {round(val_loss, 4)}, Valid Dia Acc: {round(val_dia_acc, 4)}, Valid SPS Acc: {round(val_sps_acc, 4)} Valid Mean Acc: {round(val_mean_acc, 4)}')
+    # breakdown accuracy
+    logger.info(f'Valid Dia Acc breakdown: mean {round(val_dia_acc, 4)} clic {round(val_dia_acc_clic, 4)}, derm {round(val_dia_acc_derm, 4)}, fusion {round(val_dia_acc_fusion, 4)}')
+    logger.info(f'Valid PN Acc breakdown: mean {round(val_pn_acc, 4)}, clic {round(val_pn_clic_acc, 4)}, derm {round(val_pn_derm_acc, 4)}, fusion {round(val_pn_fusion_acc, 4)}')
+    logger.info(f'Valid STR Acc breakdown: mean {round(val_str_acc, 4)}, clic {round(val_str_clic_acc, 4)}, derm {round(val_str_derm_acc, 4)}, fusion {round(val_str_fusion_acc, 4)}')
+    logger.info(f'Valid PIG Acc breakdown: mean {round(val_pig_acc, 4)}, clic {round(val_pig_clic_acc, 4)}, derm {round(val_pig_derm_acc, 4)}, fusion {round(val_pig_fusion_acc, 4)}')
+    logger.info(f'Valid RS Acc breakdown: mean {round(val_rs_acc, 4)}, clic {round(val_rs_clic_acc, 4)}, derm {round(val_rs_derm_acc, 4)}, fusion {round(val_rs_fusion_acc, 4)}')
+    logger.info(f'Valid DAG Acc breakdown: mean {round(val_dag_acc, 4)}, clic {round(val_dag_clic_acc, 4)}, derm {round(val_dag_derm_acc, 4)}, fusion {round(val_dag_fusion_acc, 4)}')
+    logger.info(f'Valid BWV Acc breakdown: mean {round(val_bwv_acc, 4)}, clic {round(val_bwv_clic_acc, 4)}, derm {round(val_bwv_derm_acc, 4)}, fusion {round(val_bwv_fusion_acc, 4)}')
+    logger.info(f'Valid VS Acc breakdown: mean {round(val_vs_acc, 4)}, clic {round(val_vs_clic_acc, 4)}, derm {round(val_vs_derm_acc, 4)}, fusion {round(val_vs_fusion_acc, 4)}')
+    logger.info(f'Thus, valid SPS Acc breakdown: mean {round(val_sps_acc, 4)}, clic {round(val_sps_acc_clic, 4)}, derm {round(val_sps_acc_derm, 4)}, fusion {round(val_sps_acc_fusion, 4)}')    
+    
 
     # save the best model
     if val_mean_acc > best_mean_acc:
@@ -342,11 +372,28 @@ for epc in range(epochs):
         # torch.save(server_model.state_dict(), f'{save_path}/checkpoint/fusionnet_first_stage_server_middle.pth')
         # torch.save(client_model_last.state_dict(), f'{save_path}/checkpoint/fusionnet_first_stage_client_last.pth') 
         logger.info(f'Current Best Mean Validation Acc is {round(best_mean_acc, 4)}')
+    logger.info("")
 
     if(is_best_val):
         # test mode
         test_start_time = time.time()
-        test_loss, test_dia_acc, test_sps_acc = validation_u_shaped(client_model_first, client_model_last, server_model, test_dataloader, device)
+        test_loss, \
+        test_dia_acc, \
+        [test_dia_acc_clic, test_dia_acc_derm, test_dia_acc_fusion], \
+        test_sps_acc, \
+        [test_sps_acc_clic, test_sps_acc_derm, test_sps_acc_fusion], \
+        [test_pn_acc, test_str_acc, test_pig_acc, test_rs_acc, test_dag_acc, test_bwv_acc, test_vs_acc], \
+        [
+            [test_pn_clic_acc, test_pn_derm_acc, test_pn_fusion_acc], 
+            [test_str_clic_acc, test_str_derm_acc, test_str_fusion_acc], 
+            [test_pig_clic_acc, test_pig_derm_acc, test_pig_fusion_acc], 
+            [test_rs_clic_acc, test_rs_derm_acc, test_rs_fusion_acc], 
+            [test_dag_clic_acc, test_dag_derm_acc, test_dag_fusion_acc], 
+            [test_bwv_clic_acc, test_bwv_derm_acc, test_bwv_fusion_acc], 
+            [test_vs_clic_acc, test_vs_derm_acc, test_vs_fusion_acc]
+        ] = validation_u_shaped(client_model_first, client_model_last, server_model, test_dataloader, device)
+
+        # test_loss, test_dia_acc, test_sps_acc = validation_u_shaped(client_model_first, client_model_last, server_model, test_dataloader, device)
         test_mean_acc = (test_dia_acc*1 + test_sps_acc*7)/8
         test_time = time.time() - test_start_time
         msg = {
@@ -358,6 +405,17 @@ for epc in range(epochs):
                 'test time': test_time,
         }
         logger.info(f'Test Loss: {round(test_loss, 4)}, Test Dia Acc: {round(test_dia_acc, 4)}, Test SPS Acc: {round(test_sps_acc, 4)} Test Mean Acc: {round(test_mean_acc, 4)}')
+        # breakdown accuracy
+        logger.info(f'Test Dia Acc breakdown: mean {round(test_dia_acc, 4)} clic {round(test_dia_acc_clic, 4)}, derm {round(test_dia_acc_derm, 4)}, fusion {round(test_dia_acc_fusion, 4)}')
+        logger.info(f'Test PN Acc breakdown: mean {round(test_pn_acc, 4)}, clic {round(test_pn_clic_acc, 4)}, derm {round(test_pn_derm_acc, 4)}, fusion {round(test_pn_fusion_acc, 4)}')
+        logger.info(f'Test STR Acc breakdown: mean {round(test_str_acc, 4)}, clic {round(test_str_clic_acc, 4)}, derm {round(test_str_derm_acc, 4)}, fusion {round(test_str_fusion_acc, 4)}')
+        logger.info(f'Test PIG Acc breakdown: mean {round(test_pig_acc, 4)}, clic {round(test_pig_clic_acc, 4)}, derm {round(test_pig_derm_acc, 4)}, fusion {round(test_pig_fusion_acc, 4)}')
+        logger.info(f'Test RS Acc breakdown: mean {round(test_rs_acc, 4)}, clic {round(test_rs_clic_acc, 4)}, derm {round(test_rs_derm_acc, 4)}, fusion {round(test_rs_fusion_acc, 4)}')
+        logger.info(f'Test DAG Acc breakdown: mean {round(test_dag_acc, 4)}, clic {round(test_dag_clic_acc, 4)}, derm {round(test_dag_derm_acc, 4)}, fusion {round(test_dag_fusion_acc, 4)}')
+        logger.info(f'Test BWV Acc breakdown: mean {round(test_bwv_acc, 4)}, clic {round(test_bwv_clic_acc, 4)}, derm {round(test_bwv_derm_acc, 4)}, fusion {round(test_bwv_fusion_acc, 4)}')
+        logger.info(f'Test VS Acc breakdown: mean {round(test_vs_acc, 4)}, clic {round(test_vs_clic_acc, 4)}, derm {round(test_vs_derm_acc, 4)}, fusion {round(test_vs_fusion_acc, 4)}')
+        logger.info(f'Thus, test SPS Acc breakdown: mean {round(test_sps_acc, 4)}, clic {round(test_sps_acc_clic, 4)}, derm {round(test_sps_acc_derm, 4)}, fusion {round(test_sps_acc_fusion, 4)}')
+        logger.info("")
     else:
         test_time = 0
         msg = {
@@ -417,21 +475,135 @@ for epc in range(epochs):
     entry['train_loss'] = train_loss
     entry['train_dia_acc'] = train_dia_acc
     entry['train_sps_acc'] = train_sps_acc
+    entry['train_mean_acc'] = train_mean_acc
     entry['val_loss'] = val_loss
     entry['val_dia_acc'] = val_dia_acc
     entry['val_sps_acc'] = val_sps_acc
     entry['val_mean_acc'] = val_mean_acc
     entry['is_best_val'] = is_best_val
+
+    # breakdown
+    entry['val_dia_acc_clic'] = val_dia_acc_clic
+    entry['val_dia_acc_derm'] = val_dia_acc_derm
+    entry['val_dia_acc_fusion'] = val_dia_acc_fusion
+    entry['val_sps_acc_clic'] = val_sps_acc_clic
+    entry['val_sps_acc_derm'] = val_sps_acc_derm
+    entry['val_sps_acc_fusion'] = val_sps_acc_fusion
+    entry['val_pn_acc'] = val_pn_acc
+    entry['val_str_acc'] = val_str_acc
+    entry['val_pig_acc'] = val_pig_acc
+    entry['val_rs_acc'] = val_rs_acc
+    entry['val_dag_acc'] = val_dag_acc
+    entry['val_bwv_acc'] = val_bwv_acc
+    entry['val_vs_acc'] = val_vs_acc
+    entry['val_pn_clic_acc'] = val_pn_clic_acc
+    entry['val_pn_derm_acc'] = val_pn_derm_acc
+    entry['val_pn_fusion_acc'] = val_pn_fusion_acc
+    entry['val_str_clic_acc'] = val_str_clic_acc
+    entry['val_str_derm_acc'] = val_str_derm_acc
+    entry['val_str_fusion_acc'] = val_str_fusion_acc
+    entry['val_pig_clic_acc'] = val_pig_clic_acc
+    entry['val_pig_derm_acc'] = val_pig_derm_acc
+    entry['val_pig_fusion_acc'] = val_pig_fusion_acc
+    entry['val_rs_clic_acc'] = val_rs_clic_acc
+    entry['val_rs_derm_acc'] = val_rs_derm_acc
+    entry['val_rs_fusion_acc'] = val_rs_fusion_acc
+    entry['val_dag_clic_acc'] = val_dag_clic_acc
+    entry['val_dag_derm_acc'] = val_dag_derm_acc
+    entry['val_dag_fusion_acc'] = val_dag_fusion_acc
+    entry['val_bwv_clic_acc'] = val_bwv_clic_acc
+    entry['val_bwv_derm_acc'] = val_bwv_derm_acc
+    entry['val_bwv_fusion_acc'] = val_bwv_fusion_acc
+    entry['val_vs_clic_acc'] = val_vs_clic_acc
+    entry['val_vs_derm_acc'] = val_vs_derm_acc
+    entry['val_vs_fusion_acc'] = val_vs_fusion_acc
+
     if(is_best_val):
         entry['test_loss'] = test_loss
         entry['test_dia_acc'] = test_dia_acc
         entry['test_sps_acc'] = test_sps_acc
         entry['test_mean_acc'] = test_mean_acc
+
+        # breakdown
+        entry['test_dia_acc_clic'] = test_dia_acc_clic
+        entry['test_dia_acc_derm'] = test_dia_acc_derm
+        entry['test_dia_acc_fusion'] = test_dia_acc_fusion
+        entry['test_sps_acc_clic'] = test_sps_acc_clic
+        entry['test_sps_acc_derm'] = test_sps_acc_derm
+        entry['test_sps_acc_fusion'] = test_sps_acc_fusion
+        entry['test_pn_acc'] = test_pn_acc
+        entry['test_str_acc'] = test_str_acc
+        entry['test_pig_acc'] = test_pig_acc
+        entry['test_rs_acc'] = test_rs_acc
+        entry['test_dag_acc'] = test_dag_acc
+        entry['test_bwv_acc'] = test_bwv_acc
+        entry['test_vs_acc'] = test_vs_acc
+        entry['test_pn_clic_acc'] = test_pn_clic_acc
+        entry['test_pn_derm_acc'] = test_pn_derm_acc
+        entry['test_pn_fusion_acc'] = test_pn_fusion_acc
+        entry['test_str_clic_acc'] = test_str_clic_acc
+        entry['test_str_derm_acc'] = test_str_derm_acc
+        entry['test_str_fusion_acc'] = test_str_fusion_acc
+        entry['test_pig_clic_acc'] = test_pig_clic_acc
+        entry['test_pig_derm_acc'] = test_pig_derm_acc
+        entry['test_pig_fusion_acc'] = test_pig_fusion_acc
+        entry['test_rs_clic_acc'] = test_rs_clic_acc
+        entry['test_rs_derm_acc'] = test_rs_derm_acc
+        entry['test_rs_fusion_acc'] = test_rs_fusion_acc
+        entry['test_dag_clic_acc'] = test_dag_clic_acc
+        entry['test_dag_derm_acc'] = test_dag_derm_acc
+        entry['test_dag_fusion_acc'] = test_dag_fusion_acc
+        entry['test_bwv_clic_acc'] = test_bwv_clic_acc
+        entry['test_bwv_derm_acc'] = test_bwv_derm_acc
+        entry['test_bwv_fusion_acc'] = test_bwv_fusion_acc
+        entry['test_vs_clic_acc'] = test_vs_clic_acc
+        entry['test_vs_derm_acc'] = test_vs_derm_acc
+        entry['test_vs_fusion_acc'] = test_vs_fusion_acc
+
+
     else:
         entry['test_loss'] = None
         entry['test_dia_acc'] = None
         entry['test_sps_acc'] = None
         entry['test_mean_acc'] = None
+
+        # breakdown
+        entry['test_dia_acc_clic'] = None
+        entry['test_dia_acc_derm'] = None
+        entry['test_dia_acc_fusion'] = None
+        entry['test_sps_acc_clic'] = None
+        entry['test_sps_acc_derm'] = None
+        entry['test_sps_acc_fusion'] = None
+        entry['test_pn_acc'] = None
+        entry['test_str_acc'] = None
+        entry['test_pig_acc'] = None
+        entry['test_rs_acc'] = None
+        entry['test_dag_acc'] = None
+        entry['test_bwv_acc'] = None
+        entry['test_vs_acc'] = None
+        entry['test_pn_clic_acc'] = None
+        entry['test_pn_derm_acc'] = None
+        entry['test_pn_fusion_acc'] = None
+        entry['test_str_clic_acc'] = None
+        entry['test_str_derm_acc'] = None
+        entry['test_str_fusion_acc'] = None
+        entry['test_pig_clic_acc'] = None
+        entry['test_pig_derm_acc'] = None
+        entry['test_pig_fusion_acc'] = None
+        entry['test_rs_clic_acc'] = None
+        entry['test_rs_derm_acc'] = None
+        entry['test_rs_fusion_acc'] = None
+        entry['test_dag_clic_acc'] = None
+        entry['test_dag_derm_acc'] = None
+        entry['test_dag_fusion_acc'] = None
+        entry['test_bwv_clic_acc'] = None
+        entry['test_bwv_derm_acc'] = None
+        entry['test_bwv_fusion_acc'] = None
+        entry['test_vs_clic_acc'] = None
+        entry['test_vs_derm_acc'] = None
+        entry['test_vs_fusion_acc'] = None
+        
+
     entry['time_server_load'] = server_load_time
     entry['time_client_training'] = epoch_training_time
     entry['time_server_training'] = epoch_server_training_time

@@ -36,6 +36,10 @@ class FusionNet_client_first(nn.Module):
         super(FusionNet_client_first, self).__init__()
 
         self.architecture_choice = architecture_choice
+        # from pretrained resnet50
+        model_clinic = torchvision.models.resnet50(pretrained=True)
+        model_derm = torchvision.models.resnet50(pretrained=True)
+
         if(self.architecture_choice in [1, 2, 3, 4]):
             # self.num_label = class_list[0]
             # self.num_pn = class_list[1]
@@ -47,34 +51,33 @@ class FusionNet_client_first(nn.Module):
             # self.num_vs = class_list[7]
             # self.dropout = nn.Dropout(0.3)
 
-            # from pretrained resnet50
-            self.model_clinic = torchvision.models.resnet50(pretrained=True)
-            self.model_derm = torchvision.models.resnet50(pretrained=True)
-
+            
             # define the clinic model
-            self.conv1_cli = self.model_clinic.conv1
-            self.bn1_cli = self.model_clinic.bn1
-            self.relu_cli = self.model_clinic.relu
-            self.maxpool_cli = self.model_clinic.maxpool
+            self.conv1_cli = model_clinic.conv1
+            self.bn1_cli = model_clinic.bn1
+            self.relu_cli = model_clinic.relu
+            self.maxpool_cli = model_clinic.maxpool
             if(self.architecture_choice in  [2, 4]):
-                self.layer1_cli = self.model_clinic.layer1
+                self.layer1_cli = model_clinic.layer1
+            
     
-            # self.layer2_cli = self.model_clinic.layer2
-            # self.layer3_cli = self.model_clinic.layer3
-            # self.layer4_cli = self.model_clinic.layer4
-            # self.avgpool_cli = self.model_clinic.avgpool
+            # self.layer2_cli = model_clinic.layer2
+            # self.layer3_cli = model_clinic.layer3
+            # self.layer4_cli = model_clinic.layer4
+            # self.avgpool_cli = model_clinic.avgpool
             # # self.avgpool_cli = nn.MaxPool2d(7, 7)
 
-            self.conv1_derm = self.model_derm.conv1
-            self.bn1_derm = self.model_derm.bn1
-            self.relu_derm = self.model_derm.relu
-            self.maxpool_derm = self.model_derm.maxpool
+            self.conv1_derm = model_derm.conv1
+            self.bn1_derm = model_derm.bn1
+            self.relu_derm = model_derm.relu
+            self.maxpool_derm = model_derm.maxpool
             if(self.architecture_choice in  [2, 4]):
-                self.layer1_derm = self.model_derm.layer1
-            # self.layer2_derm = self.model_derm.layer2
-            # self.layer3_derm = self.model_derm.layer3
-            # self.layer4_derm = self.model_derm.layer4
-            # self.avgpool_derm = self.model_derm.avgpool
+                self.layer1_derm = model_derm.layer1
+            
+            # self.layer2_derm = model_derm.layer2
+            # self.layer3_derm = model_derm.layer3
+            # self.layer4_derm = model_derm.layer4
+            # self.avgpool_derm = model_derm.avgpool
             # # self.avgpool_derm = nn.MaxPool2d(7, 7)
             # # self.fc = self.model.fc
 
@@ -270,30 +273,30 @@ class FusionNet_client_last(nn.Module):
             self.dropout = nn.Dropout(0.3)
 
             # from pretrained resnet50
-            # self.model_clinic = torchvision.models.resnet50(pretrained=True)
-            # self.model_derm = torchvision.models.resnet50(pretrained=True)
+            # model_clinic = torchvision.models.resnet50(pretrained=True)
+            # model_derm = torchvision.models.resnet50(pretrained=True)
 
             # define the clinic model
-            # self.conv1_cli = self.model_clinic.conv1
-            # self.bn1_cli = self.model_clinic.bn1
-            # self.relu_cli = self.model_clinic.relu
-            # self.maxpool_cli = self.model_clinic.maxpool
-            # self.layer1_cli = self.model_clinic.layer1
-            # self.layer2_cli = self.model_clinic.layer2
-            # self.layer3_cli = self.model_clinic.layer3
-            # self.layer4_cli = self.model_clinic.layer4
-            # self.avgpool_cli = self.model_clinic.avgpool
+            # self.conv1_cli = model_clinic.conv1
+            # self.bn1_cli = model_clinic.bn1
+            # self.relu_cli = model_clinic.relu
+            # self.maxpool_cli = model_clinic.maxpool
+            # self.layer1_cli = model_clinic.layer1
+            # self.layer2_cli = model_clinic.layer2
+            # self.layer3_cli = model_clinic.layer3
+            # self.layer4_cli = model_clinic.layer4
+            # self.avgpool_cli = model_clinic.avgpool
             # # self.avgpool_cli = nn.MaxPool2d(7, 7)
 
-            # self.conv1_derm = self.model_derm.conv1
-            # self.bn1_derm = self.model_derm.bn1
-            # self.relu_derm = self.model_derm.relu
-            # self.maxpool_derm = self.model_derm.maxpool
-            # self.layer1_derm = self.model_derm.layer1
-            # self.layer2_derm = self.model_derm.layer2
-            # self.layer3_derm = self.model_derm.layer3
-            # self.layer4_derm = self.model_derm.layer4
-            # self.avgpool_derm = self.model_derm.avgpool
+            # self.conv1_derm = model_derm.conv1
+            # self.bn1_derm = model_derm.bn1
+            # self.relu_derm = model_derm.relu
+            # self.maxpool_derm = model_derm.maxpool
+            # self.layer1_derm = model_derm.layer1
+            # self.layer2_derm = model_derm.layer2
+            # self.layer3_derm = model_derm.layer3
+            # self.layer4_derm = model_derm.layer4
+            # self.avgpool_derm = model_derm.avgpool
             # # self.avgpool_derm = nn.MaxPool2d(7, 7)
             # # self.fc = self.model.fc
 
@@ -536,38 +539,106 @@ class FusionNet_client_last(nn.Module):
         # average accuracy for diagnostic
         dia_acc = torch.true_divide(
             dia_acc_fusion + dia_acc_clic + dia_acc_derm, 3)
+        
 
-        # seven-point accuracy of fusion
-        sps_acc_fusion = torch.true_divide(self.metric(logit_pn_fusion, pn_label)
-                                           + self.metric(logit_str_fusion, str_label)
-                                           + self.metric(logit_pig_fusion, pig_label)
-                                           + self.metric(logit_rs_fusion, rs_label)
-                                           + self.metric(logit_dag_fusion, dag_label)
-                                           + self.metric(logit_bwv_fusion, bwv_label)
-                                           + self.metric(logit_vs_fusion, vs_label), 
-                                                7 * batch_size)
+        # disentangled accuracy for seven-point checklist
+        pn_fusion_acc = torch.true_divide(self.metric(logit_pn_fusion, pn_label), batch_size)
+        str_fusion_acc = torch.true_divide(self.metric(logit_str_fusion, str_label), batch_size)
+        pig_fusion_acc = torch.true_divide(self.metric(logit_pig_fusion, pig_label), batch_size)
+        rs_fusion_acc = torch.true_divide(self.metric(logit_rs_fusion, rs_label), batch_size)
+        dag_fusion_acc = torch.true_divide(self.metric(logit_dag_fusion, dag_label), batch_size)
+        bwv_fusion_acc = torch.true_divide(self.metric(logit_bwv_fusion, bwv_label), batch_size)
+        vs_fusion_acc = torch.true_divide(self.metric(logit_vs_fusion, vs_label), batch_size)
 
-        # seven-point accuracy of clic
-        sps_acc_clic = torch.true_divide(self.metric(logit_pn_clic, pn_label)
-                                         + self.metric(logit_str_clic, str_label)
-                                         + self.metric(logit_pig_clic, pig_label)
-                                         + self.metric(logit_rs_clic, rs_label)
-                                         + self.metric(logit_dag_clic, dag_label)
-                                         + self.metric(logit_bwv_clic, bwv_label)
-                                         + self.metric(logit_vs_clic, vs_label), 
-                                                7 * batch_size)
-        # seven-point accuracy of derm
-        sps_acc_derm = torch.true_divide(self.metric(logit_pn_derm, pn_label)
-                                         + self.metric(logit_str_derm, str_label)
-                                         + self.metric(logit_pig_derm, pig_label)
-                                         + self.metric(logit_rs_derm, rs_label)
-                                         + self.metric(logit_dag_derm, dag_label)
-                                         + self.metric(logit_bwv_derm, bwv_label)
-                                         + self.metric(logit_vs_derm, vs_label), 
-                                                7 * batch_size)
+        pn_clic_acc = torch.true_divide(self.metric(logit_pn_clic, pn_label), batch_size)
+        str_clic_acc = torch.true_divide(self.metric(logit_str_clic, str_label), batch_size)
+        pig_clic_acc = torch.true_divide(self.metric(logit_pig_clic, pig_label), batch_size)
+        rs_clic_acc = torch.true_divide(self.metric(logit_rs_clic, rs_label), batch_size)
+        dag_clic_acc = torch.true_divide(self.metric(logit_dag_clic, dag_label), batch_size)
+        bwv_clic_acc = torch.true_divide(self.metric(logit_bwv_clic, bwv_label), batch_size)
+        vs_clic_acc = torch.true_divide(self.metric(logit_vs_clic, vs_label), batch_size)
+
+        pn_derm_acc = torch.true_divide(self.metric(logit_pn_derm, pn_label), batch_size)
+        str_derm_acc = torch.true_divide(self.metric(logit_str_derm, str_label), batch_size)
+        pig_derm_acc = torch.true_divide(self.metric(logit_pig_derm, pig_label), batch_size)
+        rs_derm_acc = torch.true_divide(self.metric(logit_rs_derm, rs_label), batch_size)
+        dag_derm_acc = torch.true_divide(self.metric(logit_dag_derm, dag_label), batch_size)
+        bwv_derm_acc = torch.true_divide(self.metric(logit_bwv_derm, bwv_label), batch_size)
+        vs_derm_acc = torch.true_divide(self.metric(logit_vs_derm, vs_label), batch_size)
+
+
+        # average of each seven-point checklist accuracy
+        pn_acc = torch.true_divide(pn_fusion_acc + pn_clic_acc + pn_derm_acc, 3)
+        str_acc = torch.true_divide(str_fusion_acc + str_clic_acc + str_derm_acc, 3)
+        pig_acc = torch.true_divide(pig_fusion_acc + pig_clic_acc + pig_derm_acc, 3)
+        rs_acc = torch.true_divide(rs_fusion_acc + rs_clic_acc + rs_derm_acc, 3)
+        dag_acc = torch.true_divide(dag_fusion_acc + dag_clic_acc + dag_derm_acc, 3)
+        bwv_acc = torch.true_divide(bwv_fusion_acc + bwv_clic_acc + bwv_derm_acc, 3)
+        vs_acc = torch.true_divide(vs_fusion_acc + vs_clic_acc + vs_derm_acc, 3)
+
+        # print(f"pn: {pn_acc}, str: {str_acc}, pig: {pig_acc}, rs: {rs_acc}, dag: {dag_acc}, bwv: {bwv_acc}, vs: {vs_acc}")
+
+
         # average seven-point accuracy
+        sps_acc_fusion = torch.true_divide(pn_fusion_acc + str_fusion_acc + pig_fusion_acc + rs_fusion_acc + dag_fusion_acc + bwv_fusion_acc + vs_fusion_acc, 7)
+        sps_acc_clic = torch.true_divide(pn_clic_acc + str_clic_acc + pig_clic_acc + rs_clic_acc + dag_clic_acc + bwv_clic_acc + vs_clic_acc, 7)
+        sps_acc_derm = torch.true_divide(pn_derm_acc + str_derm_acc + pig_derm_acc + rs_derm_acc + dag_derm_acc + bwv_derm_acc + vs_derm_acc, 7)
+
+        
+
+        # average seven-point accuracy by fusion, clic, derm
         sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
 
 
+        # print(f"fusion: {sps_acc_fusion}, clic: {sps_acc_clic}, derm: {sps_acc_derm}")
+        # print(f"sps_acc: {sps_acc}")
 
-        return loss, dia_acc, sps_acc
+        # print(torch.true_divide(pn_acc + str_acc + pig_acc + rs_acc + dag_acc + bwv_acc + vs_acc, 7), sps_acc_fusion)
+
+
+        # # seven-point accuracy of fusion
+        # sps_acc_fusion = torch.true_divide(self.metric(logit_pn_fusion, pn_label)
+        #                                    + self.metric(logit_str_fusion, str_label)
+        #                                    + self.metric(logit_pig_fusion, pig_label)
+        #                                    + self.metric(logit_rs_fusion, rs_label)
+        #                                    + self.metric(logit_dag_fusion, dag_label)
+        #                                    + self.metric(logit_bwv_fusion, bwv_label)
+        #                                    + self.metric(logit_vs_fusion, vs_label), 
+        #                                         7 * batch_size)
+
+        # # seven-point accuracy of clic
+        # sps_acc_clic = torch.true_divide(self.metric(logit_pn_clic, pn_label)
+        #                                  + self.metric(logit_str_clic, str_label)
+        #                                  + self.metric(logit_pig_clic, pig_label)
+        #                                  + self.metric(logit_rs_clic, rs_label)
+        #                                  + self.metric(logit_dag_clic, dag_label)
+        #                                  + self.metric(logit_bwv_clic, bwv_label)
+        #                                  + self.metric(logit_vs_clic, vs_label), 
+        #                                         7 * batch_size)
+        # # seven-point accuracy of derm
+        # sps_acc_derm = torch.true_divide(self.metric(logit_pn_derm, pn_label)
+        #                                  + self.metric(logit_str_derm, str_label)
+        #                                  + self.metric(logit_pig_derm, pig_label)
+        #                                  + self.metric(logit_rs_derm, rs_label)
+        #                                  + self.metric(logit_dag_derm, dag_label)
+        #                                  + self.metric(logit_bwv_derm, bwv_label)
+        #                                  + self.metric(logit_vs_derm, vs_label), 
+        #                                         7 * batch_size)
+        # # average seven-point accuracy
+        # sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
+
+
+
+        return loss, \
+                dia_acc, \
+                [dia_acc_clic, dia_acc_derm, dia_acc_fusion], \
+                sps_acc, \
+                [sps_acc_clic, sps_acc_derm, sps_acc_fusion], \
+                [pn_acc, str_acc, pig_acc, rs_acc, dag_acc, bwv_acc, vs_acc], \
+                [[pn_clic_acc, pn_derm_acc, pn_fusion_acc], 
+                 [str_clic_acc, str_derm_acc, str_fusion_acc], 
+                 [pig_clic_acc, pig_derm_acc, pig_fusion_acc], 
+                 [rs_clic_acc, rs_derm_acc, rs_fusion_acc], 
+                 [dag_clic_acc, dag_derm_acc, dag_fusion_acc], 
+                 [bwv_clic_acc, bwv_derm_acc, bwv_fusion_acc], 
+                 [vs_clic_acc, vs_derm_acc, vs_fusion_acc]]

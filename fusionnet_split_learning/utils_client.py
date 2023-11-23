@@ -132,6 +132,44 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
     val_loss = 0
     val_dia_acc = 0
     val_sps_acc = 0
+    val_pn_acc = 0
+    val_str_acc = 0
+    val_pig_acc = 0
+    val_rs_acc = 0
+    val_dag_acc = 0
+    val_bwv_acc = 0
+    val_vs_acc = 0
+
+    val_dia_acc_clic = 0
+    val_sps_acc_clic = 0
+    val_pn_clic_acc = 0
+    val_str_clic_acc = 0
+    val_pig_clic_acc = 0
+    val_rs_clic_acc = 0
+    val_dag_clic_acc = 0
+    val_bwv_clic_acc = 0
+    val_vs_clic_acc = 0
+
+    val_dia_acc_derm = 0
+    val_sps_acc_derm = 0
+    val_pn_derm_acc = 0
+    val_str_derm_acc = 0
+    val_pig_derm_acc = 0
+    val_rs_derm_acc = 0
+    val_dag_derm_acc = 0
+    val_bwv_derm_acc = 0
+    val_vs_derm_acc = 0
+
+    val_dia_acc_fusion = 0
+    val_sps_acc_fusion = 0
+    val_pn_fusion_acc = 0
+    val_str_fusion_acc = 0
+    val_pig_fusion_acc = 0
+    val_rs_fusion_acc = 0
+    val_dag_fusion_acc = 0
+    val_bwv_fusion_acc = 0
+    val_vs_fusion_acc = 0
+
     for (clinic_image, derm_image, meta_data, label) in tqdm(val_dataloader):
 
         clinic_image = clinic_image.to(device)
@@ -143,11 +181,62 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
             
             client_first_output = client_first_model((clinic_image, derm_image))
             server_middle_output = server_middle_model(client_first_output)
-            loss, dia_acc, sps_acc = client_last_model.forward_propagate_and_loss_compute(server_middle_output, label, clinic_image.size(0), device)
+            loss, \
+            dia_acc, \
+            [dia_acc_clic, dia_acc_derm, dia_acc_fusion], \
+            sps_acc, \
+            [sps_acc_clic, sps_acc_derm, sps_acc_fusion], \
+            [pn_acc, str_acc, pig_acc, rs_acc, dag_acc, bwv_acc, vs_acc], \
+            [[pn_clic_acc, pn_derm_acc, pn_fusion_acc], 
+                [str_clic_acc, str_derm_acc, str_fusion_acc], 
+                [pig_clic_acc, pig_derm_acc, pig_fusion_acc], 
+                [rs_clic_acc, rs_derm_acc, rs_fusion_acc], 
+                [dag_clic_acc, dag_derm_acc, dag_fusion_acc], 
+                [bwv_clic_acc, bwv_derm_acc, bwv_fusion_acc], 
+                [vs_clic_acc, vs_derm_acc, vs_fusion_acc]
+            ] = client_last_model.forward_propagate_and_loss_compute(server_middle_output, label, clinic_image.size(0), device)
             
             val_loss += loss.item()
             val_dia_acc += dia_acc.item()
             val_sps_acc += sps_acc.item()
+            val_pn_acc += pn_acc.item()
+            val_str_acc += str_acc.item()
+            val_pig_acc += pig_acc.item()
+            val_rs_acc += rs_acc.item()
+            val_dag_acc += dag_acc.item()
+            val_bwv_acc += bwv_acc.item()
+            val_vs_acc += vs_acc.item()
+
+            val_dia_acc_clic += dia_acc_clic.item()
+            val_sps_acc_clic += sps_acc_clic.item()
+            val_pn_clic_acc += pn_clic_acc.item()
+            val_str_clic_acc += str_clic_acc.item()
+            val_pig_clic_acc += pig_clic_acc.item()
+            val_rs_clic_acc += rs_clic_acc.item()
+            val_dag_clic_acc += dag_clic_acc.item()
+            val_bwv_clic_acc += bwv_clic_acc.item()
+            val_vs_clic_acc += vs_clic_acc.item()
+
+            val_dia_acc_derm += dia_acc_derm.item()
+            val_sps_acc_derm += sps_acc_derm.item()
+            val_pn_derm_acc += pn_derm_acc.item()
+            val_str_derm_acc += str_derm_acc.item()
+            val_pig_derm_acc += pig_derm_acc.item()
+            val_rs_derm_acc += rs_derm_acc.item()
+            val_dag_derm_acc += dag_derm_acc.item()
+            val_bwv_derm_acc += bwv_derm_acc.item()
+            val_vs_derm_acc += vs_derm_acc.item()
+            
+            val_dia_acc_fusion += dia_acc_fusion.item()
+            val_sps_acc_fusion += sps_acc_fusion.item()
+            val_pn_fusion_acc += pn_fusion_acc.item()
+            val_str_fusion_acc += str_fusion_acc.item()
+            val_pig_fusion_acc += pig_fusion_acc.item()
+            val_rs_fusion_acc += rs_fusion_acc.item()
+            val_dag_fusion_acc += dag_fusion_acc.item()
+            val_bwv_fusion_acc += bwv_fusion_acc.item()
+            val_vs_fusion_acc += vs_fusion_acc.item()
+
 
             
 
@@ -155,4 +244,56 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
     val_loss = val_loss / num_batch
     val_dia_acc = val_dia_acc / num_batch
     val_sps_acc = val_sps_acc / num_batch
-    return val_loss, val_dia_acc, val_sps_acc
+    val_pn_acc = val_pn_acc / num_batch
+    val_str_acc = val_str_acc / num_batch
+    val_pig_acc = val_pig_acc / num_batch
+    val_rs_acc = val_rs_acc / num_batch
+    val_dag_acc = val_dag_acc / num_batch
+    val_bwv_acc = val_bwv_acc / num_batch
+    val_vs_acc = val_vs_acc / num_batch
+
+    val_dia_acc_clic = val_dia_acc_clic / num_batch
+    val_sps_acc_clic = val_sps_acc_clic / num_batch
+    val_pn_clic_acc = val_pn_clic_acc / num_batch
+    val_str_clic_acc = val_str_clic_acc / num_batch
+    val_pig_clic_acc = val_pig_clic_acc / num_batch
+    val_rs_clic_acc = val_rs_clic_acc / num_batch
+    val_dag_clic_acc = val_dag_clic_acc / num_batch
+    val_bwv_clic_acc = val_bwv_clic_acc / num_batch
+    val_vs_clic_acc = val_vs_clic_acc / num_batch
+
+    val_dia_acc_derm = val_dia_acc_derm / num_batch
+    val_sps_acc_derm = val_sps_acc_derm / num_batch
+    val_pn_derm_acc = val_pn_derm_acc / num_batch
+    val_str_derm_acc = val_str_derm_acc / num_batch
+    val_pig_derm_acc = val_pig_derm_acc / num_batch
+    val_rs_derm_acc = val_rs_derm_acc / num_batch
+    val_dag_derm_acc = val_dag_derm_acc / num_batch
+    val_bwv_derm_acc = val_bwv_derm_acc / num_batch
+    val_vs_derm_acc = val_vs_derm_acc / num_batch
+
+    val_dia_acc_fusion = val_dia_acc_fusion / num_batch
+    val_sps_acc_fusion = val_sps_acc_fusion / num_batch
+    val_pn_fusion_acc = val_pn_fusion_acc / num_batch
+    val_str_fusion_acc = val_str_fusion_acc / num_batch
+    val_pig_fusion_acc = val_pig_fusion_acc / num_batch
+    val_rs_fusion_acc = val_rs_fusion_acc / num_batch
+    val_dag_fusion_acc = val_dag_fusion_acc / num_batch
+    val_bwv_fusion_acc = val_bwv_fusion_acc / num_batch
+    val_vs_fusion_acc = val_vs_fusion_acc / num_batch
+
+    # return val_loss, val_dia_acc, val_sps_acc
+
+    return val_loss, \
+        val_dia_acc, \
+        [val_dia_acc_clic, val_dia_acc_derm, val_dia_acc_fusion], \
+        val_sps_acc, \
+        [val_sps_acc_clic, val_sps_acc_derm, val_sps_acc_fusion], \
+        [val_pn_acc, val_str_acc, val_pig_acc, val_rs_acc, val_dag_acc, val_bwv_acc, val_vs_acc], \
+        [[val_pn_clic_acc, val_pn_derm_acc, val_pn_fusion_acc], 
+            [val_str_clic_acc, val_str_derm_acc, val_str_fusion_acc], 
+            [val_pig_clic_acc, val_pig_derm_acc, val_pig_fusion_acc], 
+            [val_rs_clic_acc, val_rs_derm_acc, val_rs_fusion_acc], 
+            [val_dag_clic_acc, val_dag_derm_acc, val_dag_fusion_acc], 
+            [val_bwv_clic_acc, val_bwv_derm_acc, val_bwv_fusion_acc], 
+            [val_vs_clic_acc, val_vs_derm_acc, val_vs_fusion_acc]]
