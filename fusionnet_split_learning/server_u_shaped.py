@@ -290,7 +290,7 @@ for epc in range(epochs):
     logger.info(f"Epoch: size of server gradient: {round(epoch_size_server_gradient/1024/1024, 2)} MB")
 
     msg = {
-        'size_client_msg': received_msg_len - epoch_received_msg_len,
+        'size_client_to_server_msg': received_msg_len - epoch_received_msg_len,
         'size_client_head_output': epoch_size_client_head_output,
         'size_server_gradient': epoch_size_server_gradient
     }

@@ -237,7 +237,7 @@ class FusionNet_client_first(nn.Module):
         _, prediction = torch.max(logit.data, 1)
         acc = torch.sum(prediction == truth)
         # acc = accuracy_score(y_pred=prediction.numpy(), y_true=truth.numpy())
-        # auc = roc_auc_score(truth.numpy(), prob.numpy(), multi_class='ovr')
+        auc = roc_auc_score(truth.numpy(), prob.numpy(), multi_class='ovr')
         # bal_acc = balanced_accuracy_score(y_pred=prediction.numpy(), y_true=truth.numpy())
         # return acc, auc, bal_acc
         return acc
@@ -529,16 +529,16 @@ class FusionNet_client_last(nn.Module):
         loss = loss_fusion*0.33 + loss_clic*0.33 + loss_derm*0.33
 
         # fusion, clic, derm accuracy for diagnostic
-        dia_acc_fusion = torch.true_divide(self.metric(
+        dia_fusion_acc = torch.true_divide(self.metric(
             logit_diagnosis_fusion, diagnosis_label), batch_size)
-        dia_acc_clic = torch.true_divide(self.metric(
+        dia_clic_acc = torch.true_divide(self.metric(
             logit_diagnosis_clic, diagnosis_label), batch_size)
-        dia_acc_derm = torch.true_divide(self.metric(
+        dia_derm_acc = torch.true_divide(self.metric(
             logit_diagnosis_derm, diagnosis_label), batch_size)
 
         # average accuracy for diagnostic
         dia_acc = torch.true_divide(
-            dia_acc_fusion + dia_acc_clic + dia_acc_derm, 3)
+            dia_fusion_acc + dia_clic_acc + dia_derm_acc, 3)
         
 
         # disentangled accuracy for seven-point checklist
@@ -580,24 +580,24 @@ class FusionNet_client_last(nn.Module):
 
 
         # average seven-point accuracy
-        sps_acc_fusion = torch.true_divide(pn_fusion_acc + str_fusion_acc + pig_fusion_acc + rs_fusion_acc + dag_fusion_acc + bwv_fusion_acc + vs_fusion_acc, 7)
-        sps_acc_clic = torch.true_divide(pn_clic_acc + str_clic_acc + pig_clic_acc + rs_clic_acc + dag_clic_acc + bwv_clic_acc + vs_clic_acc, 7)
-        sps_acc_derm = torch.true_divide(pn_derm_acc + str_derm_acc + pig_derm_acc + rs_derm_acc + dag_derm_acc + bwv_derm_acc + vs_derm_acc, 7)
+        sps_fusion_acc = torch.true_divide(pn_fusion_acc + str_fusion_acc + pig_fusion_acc + rs_fusion_acc + dag_fusion_acc + bwv_fusion_acc + vs_fusion_acc, 7)
+        sps_clic_acc = torch.true_divide(pn_clic_acc + str_clic_acc + pig_clic_acc + rs_clic_acc + dag_clic_acc + bwv_clic_acc + vs_clic_acc, 7)
+        sps_derm_acc = torch.true_divide(pn_derm_acc + str_derm_acc + pig_derm_acc + rs_derm_acc + dag_derm_acc + bwv_derm_acc + vs_derm_acc, 7)
 
         
 
         # average seven-point accuracy by fusion, clic, derm
-        sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
+        sps_acc = torch.true_divide(sps_fusion_acc + sps_clic_acc + sps_derm_acc, 3)
 
 
-        # print(f"fusion: {sps_acc_fusion}, clic: {sps_acc_clic}, derm: {sps_acc_derm}")
+        # print(f"fusion: {sps_fusion_acc}, clic: {sps_clic_acc}, derm: {sps_derm_acc}")
         # print(f"sps_acc: {sps_acc}")
 
-        # print(torch.true_divide(pn_acc + str_acc + pig_acc + rs_acc + dag_acc + bwv_acc + vs_acc, 7), sps_acc_fusion)
+        # print(torch.true_divide(pn_acc + str_acc + pig_acc + rs_acc + dag_acc + bwv_acc + vs_acc, 7), sps_fusion_acc)
 
 
         # # seven-point accuracy of fusion
-        # sps_acc_fusion = torch.true_divide(self.metric(logit_pn_fusion, pn_label)
+        # sps_fusion_acc = torch.true_divide(self.metric(logit_pn_fusion, pn_label)
         #                                    + self.metric(logit_str_fusion, str_label)
         #                                    + self.metric(logit_pig_fusion, pig_label)
         #                                    + self.metric(logit_rs_fusion, rs_label)
@@ -607,7 +607,7 @@ class FusionNet_client_last(nn.Module):
         #                                         7 * batch_size)
 
         # # seven-point accuracy of clic
-        # sps_acc_clic = torch.true_divide(self.metric(logit_pn_clic, pn_label)
+        # sps_clic_acc = torch.true_divide(self.metric(logit_pn_clic, pn_label)
         #                                  + self.metric(logit_str_clic, str_label)
         #                                  + self.metric(logit_pig_clic, pig_label)
         #                                  + self.metric(logit_rs_clic, rs_label)
@@ -616,7 +616,7 @@ class FusionNet_client_last(nn.Module):
         #                                  + self.metric(logit_vs_clic, vs_label), 
         #                                         7 * batch_size)
         # # seven-point accuracy of derm
-        # sps_acc_derm = torch.true_divide(self.metric(logit_pn_derm, pn_label)
+        # sps_derm_acc = torch.true_divide(self.metric(logit_pn_derm, pn_label)
         #                                  + self.metric(logit_str_derm, str_label)
         #                                  + self.metric(logit_pig_derm, pig_label)
         #                                  + self.metric(logit_rs_derm, rs_label)
@@ -625,15 +625,15 @@ class FusionNet_client_last(nn.Module):
         #                                  + self.metric(logit_vs_derm, vs_label), 
         #                                         7 * batch_size)
         # # average seven-point accuracy
-        # sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
+        # sps_acc = torch.true_divide(sps_fusion_acc + sps_clic_acc + sps_derm_acc, 3)
 
 
 
         return loss, \
                 dia_acc, \
-                [dia_acc_clic, dia_acc_derm, dia_acc_fusion], \
+                [dia_clic_acc, dia_derm_acc, dia_fusion_acc], \
                 sps_acc, \
-                [sps_acc_clic, sps_acc_derm, sps_acc_fusion], \
+                [sps_clic_acc, sps_derm_acc, sps_fusion_acc], \
                 [pn_acc, str_acc, pig_acc, rs_acc, dag_acc, bwv_acc, vs_acc], \
                 [[pn_clic_acc, pn_derm_acc, pn_fusion_acc], 
                  [str_clic_acc, str_derm_acc, str_fusion_acc], 

@@ -317,9 +317,9 @@ for epc in range(epochs):
     # val_loss, val_dia_acc, val_sps_acc = validation_u_shaped(client_model_first, client_model_last, server_model, val_dataloader, device)
     val_loss, \
     val_dia_acc, \
-    [val_dia_acc_clic, val_dia_acc_derm, val_dia_acc_fusion], \
+    [val_dia_clic_acc, val_dia_derm_acc, val_dia_fusion_acc], \
     val_sps_acc, \
-    [val_sps_acc_clic, val_sps_acc_derm, val_sps_acc_fusion], \
+    [val_sps_clic_acc, val_sps_derm_acc, val_sps_fusion_acc], \
     [val_pn_acc, val_str_acc, val_pig_acc, val_rs_acc, val_dag_acc, val_bwv_acc, val_vs_acc], \
     [
         [val_pn_clic_acc, val_pn_derm_acc, val_pn_fusion_acc], 
@@ -353,7 +353,7 @@ for epc in range(epochs):
     # logger.info(f'Valid Loss: {round(val_loss, 4)}, Valid Dia Acc: {round(val_dia_acc, 4)}, Valid SPS Acc: {round(val_sps_acc, 4)} Valid Mean Acc: {round(val_mean_acc, 4)}')
     logger.info(f'Valid Loss: {round(val_loss, 4)}, Valid Dia Acc: {round(val_dia_acc, 4)}, Valid SPS Acc: {round(val_sps_acc, 4)} Valid Mean Acc: {round(val_mean_acc, 4)}')
     # breakdown accuracy
-    logger.info(f'Valid Dia Acc breakdown: mean {round(val_dia_acc, 4)} clic {round(val_dia_acc_clic, 4)}, derm {round(val_dia_acc_derm, 4)}, fusion {round(val_dia_acc_fusion, 4)}')
+    logger.info(f'Valid Dia Acc breakdown: mean {round(val_dia_acc, 4)} clic {round(val_dia_clic_acc, 4)}, derm {round(val_dia_derm_acc, 4)}, fusion {round(val_dia_fusion_acc, 4)}')
     logger.info(f'Valid PN Acc breakdown: mean {round(val_pn_acc, 4)}, clic {round(val_pn_clic_acc, 4)}, derm {round(val_pn_derm_acc, 4)}, fusion {round(val_pn_fusion_acc, 4)}')
     logger.info(f'Valid STR Acc breakdown: mean {round(val_str_acc, 4)}, clic {round(val_str_clic_acc, 4)}, derm {round(val_str_derm_acc, 4)}, fusion {round(val_str_fusion_acc, 4)}')
     logger.info(f'Valid PIG Acc breakdown: mean {round(val_pig_acc, 4)}, clic {round(val_pig_clic_acc, 4)}, derm {round(val_pig_derm_acc, 4)}, fusion {round(val_pig_fusion_acc, 4)}')
@@ -361,7 +361,7 @@ for epc in range(epochs):
     logger.info(f'Valid DAG Acc breakdown: mean {round(val_dag_acc, 4)}, clic {round(val_dag_clic_acc, 4)}, derm {round(val_dag_derm_acc, 4)}, fusion {round(val_dag_fusion_acc, 4)}')
     logger.info(f'Valid BWV Acc breakdown: mean {round(val_bwv_acc, 4)}, clic {round(val_bwv_clic_acc, 4)}, derm {round(val_bwv_derm_acc, 4)}, fusion {round(val_bwv_fusion_acc, 4)}')
     logger.info(f'Valid VS Acc breakdown: mean {round(val_vs_acc, 4)}, clic {round(val_vs_clic_acc, 4)}, derm {round(val_vs_derm_acc, 4)}, fusion {round(val_vs_fusion_acc, 4)}')
-    logger.info(f'Thus, valid SPS Acc breakdown: mean {round(val_sps_acc, 4)}, clic {round(val_sps_acc_clic, 4)}, derm {round(val_sps_acc_derm, 4)}, fusion {round(val_sps_acc_fusion, 4)}')    
+    logger.info(f'Thus, valid SPS Acc breakdown: mean {round(val_sps_acc, 4)}, clic {round(val_sps_clic_acc, 4)}, derm {round(val_sps_derm_acc, 4)}, fusion {round(val_sps_fusion_acc, 4)}')    
     
 
     # save the best model
@@ -379,9 +379,9 @@ for epc in range(epochs):
         test_start_time = time.time()
         test_loss, \
         test_dia_acc, \
-        [test_dia_acc_clic, test_dia_acc_derm, test_dia_acc_fusion], \
+        [test_dia_clic_acc, test_dia_derm_acc, test_dia_fusion_acc], \
         test_sps_acc, \
-        [test_sps_acc_clic, test_sps_acc_derm, test_sps_acc_fusion], \
+        [test_sps_clic_acc, test_sps_derm_acc, test_sps_fusion_acc], \
         [test_pn_acc, test_str_acc, test_pig_acc, test_rs_acc, test_dag_acc, test_bwv_acc, test_vs_acc], \
         [
             [test_pn_clic_acc, test_pn_derm_acc, test_pn_fusion_acc], 
@@ -406,7 +406,7 @@ for epc in range(epochs):
         }
         logger.info(f'Test Loss: {round(test_loss, 4)}, Test Dia Acc: {round(test_dia_acc, 4)}, Test SPS Acc: {round(test_sps_acc, 4)} Test Mean Acc: {round(test_mean_acc, 4)}')
         # breakdown accuracy
-        logger.info(f'Test Dia Acc breakdown: mean {round(test_dia_acc, 4)} clic {round(test_dia_acc_clic, 4)}, derm {round(test_dia_acc_derm, 4)}, fusion {round(test_dia_acc_fusion, 4)}')
+        logger.info(f'Test Dia Acc breakdown: mean {round(test_dia_acc, 4)} clic {round(test_dia_clic_acc, 4)}, derm {round(test_dia_derm_acc, 4)}, fusion {round(test_dia_fusion_acc, 4)}')
         logger.info(f'Test PN Acc breakdown: mean {round(test_pn_acc, 4)}, clic {round(test_pn_clic_acc, 4)}, derm {round(test_pn_derm_acc, 4)}, fusion {round(test_pn_fusion_acc, 4)}')
         logger.info(f'Test STR Acc breakdown: mean {round(test_str_acc, 4)}, clic {round(test_str_clic_acc, 4)}, derm {round(test_str_derm_acc, 4)}, fusion {round(test_str_fusion_acc, 4)}')
         logger.info(f'Test PIG Acc breakdown: mean {round(test_pig_acc, 4)}, clic {round(test_pig_clic_acc, 4)}, derm {round(test_pig_derm_acc, 4)}, fusion {round(test_pig_fusion_acc, 4)}')
@@ -414,7 +414,7 @@ for epc in range(epochs):
         logger.info(f'Test DAG Acc breakdown: mean {round(test_dag_acc, 4)}, clic {round(test_dag_clic_acc, 4)}, derm {round(test_dag_derm_acc, 4)}, fusion {round(test_dag_fusion_acc, 4)}')
         logger.info(f'Test BWV Acc breakdown: mean {round(test_bwv_acc, 4)}, clic {round(test_bwv_clic_acc, 4)}, derm {round(test_bwv_derm_acc, 4)}, fusion {round(test_bwv_fusion_acc, 4)}')
         logger.info(f'Test VS Acc breakdown: mean {round(test_vs_acc, 4)}, clic {round(test_vs_clic_acc, 4)}, derm {round(test_vs_derm_acc, 4)}, fusion {round(test_vs_fusion_acc, 4)}')
-        logger.info(f'Thus, test SPS Acc breakdown: mean {round(test_sps_acc, 4)}, clic {round(test_sps_acc_clic, 4)}, derm {round(test_sps_acc_derm, 4)}, fusion {round(test_sps_acc_fusion, 4)}')
+        logger.info(f'Thus, test SPS Acc breakdown: mean {round(test_sps_acc, 4)}, clic {round(test_sps_clic_acc, 4)}, derm {round(test_sps_derm_acc, 4)}, fusion {round(test_sps_fusion_acc, 4)}')
         logger.info("")
     else:
         test_time = 0
@@ -483,12 +483,12 @@ for epc in range(epochs):
     entry['is_best_val'] = is_best_val
 
     # breakdown
-    entry['val_dia_acc_clic'] = val_dia_acc_clic
-    entry['val_dia_acc_derm'] = val_dia_acc_derm
-    entry['val_dia_acc_fusion'] = val_dia_acc_fusion
-    entry['val_sps_acc_clic'] = val_sps_acc_clic
-    entry['val_sps_acc_derm'] = val_sps_acc_derm
-    entry['val_sps_acc_fusion'] = val_sps_acc_fusion
+    entry['val_dia_clic_acc'] = val_dia_clic_acc
+    entry['val_dia_derm_acc'] = val_dia_derm_acc
+    entry['val_dia_fusion_acc'] = val_dia_fusion_acc
+    entry['val_sps_clic_acc'] = val_sps_clic_acc
+    entry['val_sps_derm_acc'] = val_sps_derm_acc
+    entry['val_sps_fusion_acc'] = val_sps_fusion_acc
     entry['val_pn_acc'] = val_pn_acc
     entry['val_str_acc'] = val_str_acc
     entry['val_pig_acc'] = val_pig_acc
@@ -525,12 +525,12 @@ for epc in range(epochs):
         entry['test_mean_acc'] = test_mean_acc
 
         # breakdown
-        entry['test_dia_acc_clic'] = test_dia_acc_clic
-        entry['test_dia_acc_derm'] = test_dia_acc_derm
-        entry['test_dia_acc_fusion'] = test_dia_acc_fusion
-        entry['test_sps_acc_clic'] = test_sps_acc_clic
-        entry['test_sps_acc_derm'] = test_sps_acc_derm
-        entry['test_sps_acc_fusion'] = test_sps_acc_fusion
+        entry['test_dia_clic_acc'] = test_dia_clic_acc
+        entry['test_dia_derm_acc'] = test_dia_derm_acc
+        entry['test_dia_fusion_acc'] = test_dia_fusion_acc
+        entry['test_sps_clic_acc'] = test_sps_clic_acc
+        entry['test_sps_derm_acc'] = test_sps_derm_acc
+        entry['test_sps_fusion_acc'] = test_sps_fusion_acc
         entry['test_pn_acc'] = test_pn_acc
         entry['test_str_acc'] = test_str_acc
         entry['test_pig_acc'] = test_pig_acc
@@ -568,12 +568,12 @@ for epc in range(epochs):
         entry['test_mean_acc'] = None
 
         # breakdown
-        entry['test_dia_acc_clic'] = None
-        entry['test_dia_acc_derm'] = None
-        entry['test_dia_acc_fusion'] = None
-        entry['test_sps_acc_clic'] = None
-        entry['test_sps_acc_derm'] = None
-        entry['test_sps_acc_fusion'] = None
+        entry['test_dia_clic_acc'] = None
+        entry['test_dia_derm_acc'] = None
+        entry['test_dia_fusion_acc'] = None
+        entry['test_sps_clic_acc'] = None
+        entry['test_sps_derm_acc'] = None
+        entry['test_sps_fusion_acc'] = None
         entry['test_pn_acc'] = None
         entry['test_str_acc'] = None
         entry['test_pig_acc'] = None
@@ -613,7 +613,7 @@ for epc in range(epochs):
     entry['time_communication_client_to_server'] = epoch_communication_time_client_to_server
     entry['time_total'] = epoch_end_time - epoch_start_time
 
-    entry['size_server_msg'] = received_msg_len - epoch_received_msg_len
+    entry['size_server_to_client_msg'] = received_msg_len - epoch_received_msg_len
     entry['size_server_output'] = epoch_size_server_output
     entry['size_client_head_gradient'] = epoch_size_client_first_gradient
     entry['size_server_model'] = server_model_size

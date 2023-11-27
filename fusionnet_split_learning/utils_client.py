@@ -74,17 +74,17 @@ def validation(client_net, server_net, val_dataloader, device):
 
             loss = loss_fusion*0.33 + loss_clic*0.33 + loss_derm*0.33
 
-            dia_acc_fusion = torch.true_divide(server_net.metric(
+            dia_fusion_acc = torch.true_divide(server_net.metric(
                 logit_diagnosis_fusion, diagnosis_label), clinic_image.size(0))
-            dia_acc_clic = torch.true_divide(server_net.metric(
+            dia_clic_acc = torch.true_divide(server_net.metric(
                 logit_diagnosis_clic, diagnosis_label), clinic_image.size(0))
-            dia_acc_derm = torch.true_divide(server_net.metric(
+            dia_derm_acc = torch.true_divide(server_net.metric(
                 logit_diagnosis_derm, diagnosis_label), clinic_image.size(0))
 
             dia_acc = torch.true_divide(
-                dia_acc_fusion + dia_acc_clic + dia_acc_derm, 3)
+                dia_fusion_acc + dia_clic_acc + dia_derm_acc, 3)
 
-            sps_acc_fusion = torch.true_divide(server_net.metric(logit_pn_fusion, pn_label)
+            sps_fusion_acc = torch.true_divide(server_net.metric(logit_pn_fusion, pn_label)
                                                + server_net.metric(logit_str_fusion, str_label)
                                                + server_net.metric(logit_pig_fusion, pig_label)
                                                + server_net.metric(logit_rs_fusion, rs_label)
@@ -92,7 +92,7 @@ def validation(client_net, server_net, val_dataloader, device):
                                                + server_net.metric(logit_bwv_fusion, bwv_label)
                                                + server_net.metric(logit_vs_fusion, vs_label), 7 * clinic_image.size(0))
 
-            sps_acc_clic = torch.true_divide(server_net.metric(logit_pn_clic, pn_label)
+            sps_clic_acc = torch.true_divide(server_net.metric(logit_pn_clic, pn_label)
                                              + server_net.metric(logit_str_clic, str_label)
                                              + server_net.metric(logit_pig_clic, pig_label)
                                              + server_net.metric(logit_rs_clic, rs_label)
@@ -100,7 +100,7 @@ def validation(client_net, server_net, val_dataloader, device):
                                              + server_net.metric(logit_bwv_clic, bwv_label)
                                              + server_net.metric(logit_vs_clic, vs_label), 7 * clinic_image.size(0))
 
-            sps_acc_derm = torch.true_divide(server_net.metric(logit_pn_derm, pn_label)
+            sps_derm_acc = torch.true_divide(server_net.metric(logit_pn_derm, pn_label)
                                              + server_net.metric(logit_str_derm, str_label)
                                              + server_net.metric(logit_pig_derm, pig_label)
                                              + server_net.metric(logit_rs_derm, rs_label)
@@ -108,7 +108,7 @@ def validation(client_net, server_net, val_dataloader, device):
                                              + server_net.metric(logit_bwv_derm, bwv_label)
                                              + server_net.metric(logit_vs_derm, vs_label), 7 * clinic_image.size(0))
 
-            sps_acc = torch.true_divide(sps_acc_fusion + sps_acc_clic + sps_acc_derm, 3)
+            sps_acc = torch.true_divide(sps_fusion_acc + sps_clic_acc + sps_derm_acc, 3)
 
             # break
 
@@ -140,8 +140,8 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
     val_bwv_acc = 0
     val_vs_acc = 0
 
-    val_dia_acc_clic = 0
-    val_sps_acc_clic = 0
+    val_dia_clic_acc = 0
+    val_sps_clic_acc = 0
     val_pn_clic_acc = 0
     val_str_clic_acc = 0
     val_pig_clic_acc = 0
@@ -150,8 +150,8 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
     val_bwv_clic_acc = 0
     val_vs_clic_acc = 0
 
-    val_dia_acc_derm = 0
-    val_sps_acc_derm = 0
+    val_dia_derm_acc = 0
+    val_sps_derm_acc = 0
     val_pn_derm_acc = 0
     val_str_derm_acc = 0
     val_pig_derm_acc = 0
@@ -160,8 +160,8 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
     val_bwv_derm_acc = 0
     val_vs_derm_acc = 0
 
-    val_dia_acc_fusion = 0
-    val_sps_acc_fusion = 0
+    val_dia_fusion_acc = 0
+    val_sps_fusion_acc = 0
     val_pn_fusion_acc = 0
     val_str_fusion_acc = 0
     val_pig_fusion_acc = 0
@@ -183,9 +183,9 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
             server_middle_output = server_middle_model(client_first_output)
             loss, \
             dia_acc, \
-            [dia_acc_clic, dia_acc_derm, dia_acc_fusion], \
+            [dia_clic_acc, dia_derm_acc, dia_fusion_acc], \
             sps_acc, \
-            [sps_acc_clic, sps_acc_derm, sps_acc_fusion], \
+            [sps_clic_acc, sps_derm_acc, sps_fusion_acc], \
             [pn_acc, str_acc, pig_acc, rs_acc, dag_acc, bwv_acc, vs_acc], \
             [[pn_clic_acc, pn_derm_acc, pn_fusion_acc], 
                 [str_clic_acc, str_derm_acc, str_fusion_acc], 
@@ -207,8 +207,8 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
             val_bwv_acc += bwv_acc.item()
             val_vs_acc += vs_acc.item()
 
-            val_dia_acc_clic += dia_acc_clic.item()
-            val_sps_acc_clic += sps_acc_clic.item()
+            val_dia_clic_acc += dia_clic_acc.item()
+            val_sps_clic_acc += sps_clic_acc.item()
             val_pn_clic_acc += pn_clic_acc.item()
             val_str_clic_acc += str_clic_acc.item()
             val_pig_clic_acc += pig_clic_acc.item()
@@ -217,8 +217,8 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
             val_bwv_clic_acc += bwv_clic_acc.item()
             val_vs_clic_acc += vs_clic_acc.item()
 
-            val_dia_acc_derm += dia_acc_derm.item()
-            val_sps_acc_derm += sps_acc_derm.item()
+            val_dia_derm_acc += dia_derm_acc.item()
+            val_sps_derm_acc += sps_derm_acc.item()
             val_pn_derm_acc += pn_derm_acc.item()
             val_str_derm_acc += str_derm_acc.item()
             val_pig_derm_acc += pig_derm_acc.item()
@@ -227,8 +227,8 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
             val_bwv_derm_acc += bwv_derm_acc.item()
             val_vs_derm_acc += vs_derm_acc.item()
             
-            val_dia_acc_fusion += dia_acc_fusion.item()
-            val_sps_acc_fusion += sps_acc_fusion.item()
+            val_dia_fusion_acc += dia_fusion_acc.item()
+            val_sps_fusion_acc += sps_fusion_acc.item()
             val_pn_fusion_acc += pn_fusion_acc.item()
             val_str_fusion_acc += str_fusion_acc.item()
             val_pig_fusion_acc += pig_fusion_acc.item()
@@ -252,8 +252,8 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
     val_bwv_acc = val_bwv_acc / num_batch
     val_vs_acc = val_vs_acc / num_batch
 
-    val_dia_acc_clic = val_dia_acc_clic / num_batch
-    val_sps_acc_clic = val_sps_acc_clic / num_batch
+    val_dia_clic_acc = val_dia_clic_acc / num_batch
+    val_sps_clic_acc = val_sps_clic_acc / num_batch
     val_pn_clic_acc = val_pn_clic_acc / num_batch
     val_str_clic_acc = val_str_clic_acc / num_batch
     val_pig_clic_acc = val_pig_clic_acc / num_batch
@@ -262,8 +262,8 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
     val_bwv_clic_acc = val_bwv_clic_acc / num_batch
     val_vs_clic_acc = val_vs_clic_acc / num_batch
 
-    val_dia_acc_derm = val_dia_acc_derm / num_batch
-    val_sps_acc_derm = val_sps_acc_derm / num_batch
+    val_dia_derm_acc = val_dia_derm_acc / num_batch
+    val_sps_derm_acc = val_sps_derm_acc / num_batch
     val_pn_derm_acc = val_pn_derm_acc / num_batch
     val_str_derm_acc = val_str_derm_acc / num_batch
     val_pig_derm_acc = val_pig_derm_acc / num_batch
@@ -272,8 +272,8 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
     val_bwv_derm_acc = val_bwv_derm_acc / num_batch
     val_vs_derm_acc = val_vs_derm_acc / num_batch
 
-    val_dia_acc_fusion = val_dia_acc_fusion / num_batch
-    val_sps_acc_fusion = val_sps_acc_fusion / num_batch
+    val_dia_fusion_acc = val_dia_fusion_acc / num_batch
+    val_sps_fusion_acc = val_sps_fusion_acc / num_batch
     val_pn_fusion_acc = val_pn_fusion_acc / num_batch
     val_str_fusion_acc = val_str_fusion_acc / num_batch
     val_pig_fusion_acc = val_pig_fusion_acc / num_batch
@@ -286,9 +286,9 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
 
     return val_loss, \
         val_dia_acc, \
-        [val_dia_acc_clic, val_dia_acc_derm, val_dia_acc_fusion], \
+        [val_dia_clic_acc, val_dia_derm_acc, val_dia_fusion_acc], \
         val_sps_acc, \
-        [val_sps_acc_clic, val_sps_acc_derm, val_sps_acc_fusion], \
+        [val_sps_clic_acc, val_sps_derm_acc, val_sps_fusion_acc], \
         [val_pn_acc, val_str_acc, val_pig_acc, val_rs_acc, val_dag_acc, val_bwv_acc, val_vs_acc], \
         [[val_pn_clic_acc, val_pn_derm_acc, val_pn_fusion_acc], 
             [val_str_clic_acc, val_str_derm_acc, val_str_fusion_acc], 
