@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--connection_start_from_client', action='store_true', default=False)
 parser.add_argument('--epoch', type=int, default=2, help='Number of epochs')
 parser.add_argument('--device', type=str, default='cpu', help='cpu or cuda', choices=['cpu', 'cuda'])
+parser.add_argument('--cuda_id', type=int, default=1, help='cuda id')
 parser.add_argument('--architecture_choice', type=int, default=0, help='Index of architecture choice')
 parser.add_argument('--client_in_sambanova', action='store_true', default=False)
 parser.add_argument('--seed', type=int, default=42, help='random seed')
@@ -44,7 +45,7 @@ lr = 0.001
 batch_size = 32
 num_workers = 8
 if(args.device == 'cuda'):
-    cuda_id = 1
+    cuda_id = args.cuda_id
     os.environ["CUDA_VISIBLE_DEVICES"] = f"{cuda_id}"
     device = f"cuda:{cuda_id}"
 else:
@@ -137,7 +138,7 @@ for epoch in range(epochs):
     logger.info(f'Valid BWV Acc breakdown: mean {round(val_bwv_acc, 4)}, clic {round(val_bwv_clic_acc, 4)}, derm {round(val_bwv_derm_acc, 4)}, fusion {round(val_bwv_fusion_acc, 4)}')
     logger.info(f'Valid VS Acc breakdown: mean {round(val_vs_acc, 4)}, clic {round(val_vs_clic_acc, 4)}, derm {round(val_vs_derm_acc, 4)}, fusion {round(val_vs_fusion_acc, 4)}')
     logger.info(f'Thus, valid SPS Acc breakdown: mean {round(val_sps_acc, 4)}, clic {round(val_sps_clic_acc, 4)}, derm {round(val_sps_derm_acc, 4)}, fusion {round(val_sps_fusion_acc, 4)}')    
-    logger.info("")
+    
     
     # save the best model
     if val_mean_acc > best_mean_acc:
@@ -165,7 +166,7 @@ for epoch in range(epochs):
         ] = validation(model, test_dataloader, device)
         test_mean_acc = (test_dia_acc*1 + test_sps_acc*7)/8
         epoch_test_time = time.time() - epoch_test_start_time
-        
+        logger.info("")
         logger.info(f'Test Loss: {round(test_loss, 4)}, Test Dia Acc: {round(test_dia_acc, 4)}, Test SPS Acc: {round(test_sps_acc, 4)} Test Mean Acc: {round(test_mean_acc, 4)}')
         # breakdown accuracy
         logger.info(f'Test Dia Acc breakdown: mean {round(test_dia_acc, 4)} clic {round(test_dia_clic_acc, 4)}, derm {round(test_dia_derm_acc, 4)}, fusion {round(test_dia_fusion_acc, 4)}')
@@ -177,7 +178,7 @@ for epoch in range(epochs):
         logger.info(f'Test BWV Acc breakdown: mean {round(test_bwv_acc, 4)}, clic {round(test_bwv_clic_acc, 4)}, derm {round(test_bwv_derm_acc, 4)}, fusion {round(test_bwv_fusion_acc, 4)}')
         logger.info(f'Test VS Acc breakdown: mean {round(test_vs_acc, 4)}, clic {round(test_vs_clic_acc, 4)}, derm {round(test_vs_derm_acc, 4)}, fusion {round(test_vs_fusion_acc, 4)}')
         logger.info(f'Thus, test SPS Acc breakdown: mean {round(test_sps_acc, 4)}, clic {round(test_sps_clic_acc, 4)}, derm {round(test_sps_derm_acc, 4)}, fusion {round(test_sps_fusion_acc, 4)}')
-        logger.info("")
+        
 
     else:
         epoch_test_time = 0

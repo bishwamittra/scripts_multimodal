@@ -45,30 +45,32 @@ class FusionNet(nn.Module):
         self.dropout = nn.Dropout(0.3)
 
         # from pretrained resnet50
-        self.model_clinic = torchvision.models.resnet50(pretrained=True)
-        self.model_derm = torchvision.models.resnet50(pretrained=True)
+        model_clinic = torchvision.models.resnet50(pretrained=True)
+        model_derm = torchvision.models.resnet50(pretrained=True)
+        # model_clinic = torchvision.models.resnet101(pretrained=True)
+        # model_derm = torchvision.models.resnet101(pretrained=True)
 
         # define the clinic model
-        self.conv1_cli = self.model_clinic.conv1
-        self.bn1_cli = self.model_clinic.bn1
-        self.relu_cli = self.model_clinic.relu
-        self.maxpool_cli = self.model_clinic.maxpool
-        self.layer1_cli = self.model_clinic.layer1
-        self.layer2_cli = self.model_clinic.layer2
-        self.layer3_cli = self.model_clinic.layer3
-        self.layer4_cli = self.model_clinic.layer4
-        self.avgpool_cli = self.model_clinic.avgpool
+        self.conv1_cli = model_clinic.conv1
+        self.bn1_cli = model_clinic.bn1
+        self.relu_cli = model_clinic.relu
+        self.maxpool_cli = model_clinic.maxpool
+        self.layer1_cli = model_clinic.layer1
+        self.layer2_cli = model_clinic.layer2
+        self.layer3_cli = model_clinic.layer3
+        self.layer4_cli = model_clinic.layer4
+        self.avgpool_cli = model_clinic.avgpool
         # self.avgpool_cli = nn.MaxPool2d(7, 7)
 
-        self.conv1_derm = self.model_derm.conv1
-        self.bn1_derm = self.model_derm.bn1
-        self.relu_derm = self.model_derm.relu
-        self.maxpool_derm = self.model_derm.maxpool
-        self.layer1_derm = self.model_derm.layer1
-        self.layer2_derm = self.model_derm.layer2
-        self.layer3_derm = self.model_derm.layer3
-        self.layer4_derm = self.model_derm.layer4
-        self.avgpool_derm = self.model_derm.avgpool
+        self.conv1_derm = model_derm.conv1
+        self.bn1_derm = model_derm.bn1
+        self.relu_derm = model_derm.relu
+        self.maxpool_derm = model_derm.maxpool
+        self.layer1_derm = model_derm.layer1
+        self.layer2_derm = model_derm.layer2
+        self.layer3_derm = model_derm.layer3
+        self.layer4_derm = model_derm.layer4
+        self.avgpool_derm = model_derm.avgpool
         # self.avgpool_derm = nn.MaxPool2d(7, 7)
         # self.fc = self.model.fc
 
