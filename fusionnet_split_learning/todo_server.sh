@@ -15,9 +15,11 @@ do
     do
         seed=$((server_seed + i))
         if [ "$client_start" = True ] ; then
-            python server_u_shaped.py --seed ${seed} --connection_start_from_client --client_in_sambanova
+            # python server_u_shaped.py --seed ${seed} --connection_start_from_client --client_in_sambanova --save_root result
+            python server_u_shaped_compress.py --seed ${seed} --connection_start_from_client --client_in_sambanova --save_root result
         else
-            python server_u_shaped.py --seed ${seed}
+            # python server_u_shaped.py --seed ${seed} --save_root result
+            python server_u_shaped_compress.py --seed ${seed} --save_root result
         fi
         sleep ${server_wait_time}
     done

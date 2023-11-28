@@ -1,9 +1,9 @@
-client_start=False
+client_start=True
 
 
 
 client_seed="42"
-epoch="100"
+epoch="3"
 
 if [ "$client_start" = True ] ; then
     client_wait_time="60"
@@ -17,9 +17,11 @@ do
     do
         seed=$((client_seed + i))
         if [ "$client_start" = True ] ; then
-            python client_u_shaped.py --epoch ${epoch} --seed ${seed} --architecture_choice ${architecture_choice} --connection_start_from_client --client_in_sambanova
+            # python client_u_shaped.py --epoch ${epoch} --seed ${seed} --architecture_choice ${architecture_choice} --connection_start_from_client --client_in_sambanova --save_root result
+            python client_u_shaped_compress.py --epoch ${epoch} --seed ${seed} --architecture_choice ${architecture_choice} --connection_start_from_client --client_in_sambanova --save_root result
         else
-            python client_u_shaped.py --epoch ${epoch} --seed ${seed} --architecture_choice ${architecture_choice}
+            # python client_u_shaped.py --epoch ${epoch} --seed ${seed} --architecture_choice ${architecture_choice} --save_root result
+            python client_u_shaped_compress.py --epoch ${epoch} --seed ${seed} --architecture_choice ${architecture_choice} --save_root result
         fi
         sleep ${client_wait_time}
     done

@@ -22,11 +22,12 @@ parser.add_argument('--device', type=str, default='cpu', help='cpu or cuda', cho
 parser.add_argument('--cuda_id', type=int, default=1, help='cuda id')
 parser.add_argument('--architecture_choice', type=int, default=0, help='Index of architecture choice')
 parser.add_argument('--client_in_sambanova', action='store_true', default=False)
+parser.add_argument('--save_root', type=str, default='result_dump', help='root path to save results')
 parser.add_argument('--seed', type=int, default=42, help='random seed')
 args = parser.parse_args()
 
 
-logger, exp_seq, save_path = get_logger(filename_prefix="fusion_net_non_split")
+logger, exp_seq, save_path = get_logger(save_root=args.save_root, filename_prefix="fusion_net_non_split")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
 
 assert args.architecture_choice == 0
@@ -343,6 +344,7 @@ for epoch in range(epochs):
     entry['time_test'] = epoch_test_time
     entry['time_communication_server_to_client'] = None
     entry['time_communication_client_to_server'] = None
+    entry['time_compression_decompression'] = None
     entry['time_total'] = time.time() - epoch_start_time
 
     entry['size_server_to_client_msg'] = None
