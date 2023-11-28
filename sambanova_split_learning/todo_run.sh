@@ -8,7 +8,7 @@ python compile_u_shaped.py run \
 --drop-conv 0.0 \
 --drop-fc 0.0 \
 --mac-v2 \
---pef rescale18_split_u_shaped/rescale18_split_u_shaped.pef \
+--pef pef_rescale18_split_u_shaped/pef_rescale18_split_u_shaped.pef \
 --orig-in-height 32 \
 --orig-in-width 32 \
 --compute-input-grad
