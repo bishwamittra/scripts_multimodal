@@ -187,6 +187,13 @@ for epoch in range(epochs):
 
     logger.info("")
 
+    
+    logger.info(f"Epoch: training time client: {round(epoch_training_time, 2)}")
+    logger.info(f"Epoch: validation time: {round(epoch_validation_time, 2)}")
+    logger.info(f"Epoch: test time: {round(epoch_test_time, 2)}")
+    logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
+    logger.info("")
+
 
     # store result in a csv file
     entry = {}
