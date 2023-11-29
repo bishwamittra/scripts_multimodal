@@ -237,7 +237,7 @@ def validation_u_shaped(client_first_model, client_last_model, server_middle_mod
             val_bwv_fusion_acc += bwv_fusion_acc.item()
             val_vs_fusion_acc += vs_fusion_acc.item()
 
-        break
+        
             
 
     num_batch = len(val_dataloader)
