@@ -643,3 +643,37 @@ def get_logger(save_root='result', filename_prefix=""):
     logger.addHandler(ch)
 
     return logger, exp_seq, save_path
+
+import zlib
+import lz4.frame
+import zstd
+import snappy
+import blosc
+# loss less method
+def compress(data, cd_method):
+    if(cd_method == 'zlib'):
+        return zlib.compress(data)
+    elif(cd_method == 'blosc'):
+        return blosc.compress(data, typesize=8, cname='lz4')
+    elif(cd_method == 'lz4'):
+        return lz4.frame.compress(data)
+    elif(cd_method == 'zstd'):
+        return zstd.compress(data, 1)
+    elif(cd_method == 'snappy'):
+        return snappy.compress(data)
+    else:
+        return data
+    
+def decompress(data, cd_method):
+    if(cd_method == 'zlib'):
+        return zlib.decompress(data)
+    elif(cd_method == 'blosc'):
+        return blosc.decompress(data)
+    elif(cd_method == 'lz4'):
+        return lz4.frame.decompress(data)
+    elif(cd_method == 'zstd'):
+        return zstd.decompress(data)
+    elif(cd_method == 'snappy'):
+        return snappy.decompress(data)
+    else:
+        return data

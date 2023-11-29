@@ -1,7 +1,7 @@
 
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score
 from tqdm import tqdm
-from utils import get_logger
+from utils import get_logger, compress, decompress
 import time
 import torch.optim as optim
 import torch.nn.functional as F
@@ -14,8 +14,10 @@ import random
 import pickle
 import struct
 import socket
-import zlib
 server_name = 'SERVER_001'
+
+
+
 
 
 import argparse
@@ -141,8 +143,9 @@ rmsg = recv_msg(conn)
 epochs = rmsg['epoch']
 num_batch = rmsg['num_batch']
 lr = rmsg['lr']
+cd_method = rmsg['cd_method']
 architecture_choice = rmsg['architecture_choice']
-logger.info(f"received epoch: {rmsg['epoch']}, num_batch: {rmsg['num_batch']}, learning rate: {rmsg['lr']}, architecture_choice: {rmsg['architecture_choice']}")
+logger.info(f"received epoch: {rmsg['epoch']}, num_batch: {rmsg['num_batch']}, learning rate: {rmsg['lr']}, architecture_choice: {rmsg['architecture_choice']}, cd_method: {rmsg['cd_method']}")
 
 
 server_model = FusionNet_server_middle(architecture_choice=architecture_choice).to(device)
@@ -188,8 +191,8 @@ for epc in range(epochs):
 
         epoch_compresson_decompression_start_time = time.time()
         x_clic_cpu, x_derm_cpu = rmsg['x_clic'], rmsg['x_derm']
-        x_clic_cpu = torch.from_numpy(np.frombuffer(zlib.decompress(x_clic_cpu), dtype=np.float32).reshape(rmsg['x_clic_shape'])).requires_grad_(True) 
-        x_derm_cpu = torch.from_numpy(np.frombuffer(zlib.decompress(x_derm_cpu), dtype=np.float32).reshape(rmsg['x_derm_shape'])).requires_grad_(True)
+        x_clic_cpu = torch.from_numpy(np.frombuffer(decompress(x_clic_cpu, cd_method=cd_method), dtype=np.float32).reshape(rmsg['x_clic_shape'])).requires_grad_(True) 
+        x_derm_cpu = torch.from_numpy(np.frombuffer(decompress(x_derm_cpu, cd_method=cd_method), dtype=np.float32).reshape(rmsg['x_derm_shape'])).requires_grad_(True)
         x_clic = x_clic_cpu.to(device)
         x_derm = x_derm_cpu.to(device)
         epoch_compresson_decompression_time += time.time() - epoch_compresson_decompression_start_time
@@ -204,11 +207,11 @@ for epc in range(epochs):
         x_derm_server = x_derm_server_gpu.cpu().clone().detach()
         x_fusion_server = x_fusion_server_gpu.cpu().clone().detach()
         msg = {
-            'x_clic_server' : zlib.compress(x_clic_server.numpy()),
+            'x_clic_server' : compress(x_clic_server.numpy(), cd_method=cd_method),
             'x_clic_server_shape' : x_clic_server.shape,
-            'x_derm_server' : zlib.compress(x_derm_server.numpy()),
+            'x_derm_server' : compress(x_derm_server.numpy(), cd_method=cd_method),
             'x_derm_server_shape' : x_derm_server.shape,
-            'x_fusion_server' : zlib.compress(x_fusion_server.numpy()),
+            'x_fusion_server' : compress(x_fusion_server.numpy(), cd_method=cd_method),
             'x_fusion_server_shape' : x_fusion_server.shape,
         }
         epoch_compresson_decompression_time += time.time() - epoch_compresson_decompression_start_time
@@ -221,9 +224,9 @@ for epc in range(epochs):
         epoch_size_server_gradient += size_server_gradient
 
         epoch_compresson_decompression_start_time = time.time()
-        x_clic_server_grad = torch.from_numpy(np.frombuffer(zlib.decompress(rmsg['x_clic_server_grad']), dtype=np.float32).reshape(rmsg['x_clic_server_grad_shape'])).to(device)
-        x_derm_server_grad = torch.from_numpy(np.frombuffer(zlib.decompress(rmsg['x_derm_server_grad']), dtype=np.float32).reshape(rmsg['x_derm_server_grad_shape'])).to(device)
-        # x_fusion_server_grad = torch.from_numpy(np.frombuffer(zlib.decompress(rmsg['x_fusion_server_grad']), dtype=np.float32).reshape(rmsg['x_fusion_server_grad_shape'])).to(device)
+        x_clic_server_grad = torch.from_numpy(np.frombuffer(decompress(rmsg['x_clic_server_grad'], cd_method=cd_method), dtype=np.float32).reshape(rmsg['x_clic_server_grad_shape'])).to(device)
+        x_derm_server_grad = torch.from_numpy(np.frombuffer(decompress(rmsg['x_derm_server_grad'], cd_method=cd_method), dtype=np.float32).reshape(rmsg['x_derm_server_grad_shape'])).to(device)
+        # x_fusion_server_grad = torch.from_numpy(np.frombuffer(decompress(rmsg['x_fusion_server_grad']), dtype=np.float32).reshape(rmsg['x_fusion_server_grad_shape'])).to(device)
         epoch_compresson_decompression_time += time.time() - epoch_compresson_decompression_start_time
     
 
@@ -239,9 +242,9 @@ for epc in range(epochs):
 
         epoch_compresson_decompression_start_time = time.time()
         msg = {
-            "x_clic_grad": zlib.compress(x_clic_cpu.grad.clone().detach().numpy()),
+            "x_clic_grad": compress(x_clic_cpu.grad.clone().detach().numpy(), cd_method=cd_method),
             "x_clic_grad_shape": x_clic_cpu.grad.shape,
-            "x_derm_grad": zlib.compress(x_derm_cpu.grad.clone().detach().numpy()),
+            "x_derm_grad": compress(x_derm_cpu.grad.clone().detach().numpy(), cd_method=cd_method),
             "x_derm_grad_shape": x_derm_cpu.grad.shape,
         }
         epoch_compresson_decompression_time += time.time() - epoch_compresson_decompression_start_time
@@ -264,7 +267,7 @@ for epc in range(epochs):
         if('num_batches_tracked' in k):
             continue
         v = v.cpu().clone().detach().numpy()
-        _server_model[k] = (zlib.compress(v), v.shape)
+        _server_model[k] = (compress(v, cd_method=cd_method), v.shape)
     msg = {
         "server_model_state_dict": _server_model,
         "server_training_time": epoch_training_time
