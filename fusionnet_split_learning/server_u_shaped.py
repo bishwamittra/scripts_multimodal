@@ -1,7 +1,7 @@
 
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score
 from tqdm import tqdm
-from utils import get_logger
+from utils import get_logger, compress, decompress
 import time
 import torch.optim as optim
 import torch.nn.functional as F
@@ -134,15 +134,16 @@ else:
     send_msg(conn, {"initial_msg": "Greetings from Server", "server_name" : server_name})
     rmsg = recv_msg(conn) 
     print(rmsg['initial_msg'])
-    
 
+    
 
 rmsg = recv_msg(conn)
 epochs = rmsg['epoch']
 num_batch = rmsg['num_batch']
 lr = rmsg['lr']
+cd_method = rmsg['cd_method']
 architecture_choice = rmsg['architecture_choice']
-logger.info(f"received epoch: {rmsg['epoch']}, num_batch: {rmsg['num_batch']}, learning rate: {rmsg['lr']}, architecture_choice: {rmsg['architecture_choice']}")
+logger.info(f"received epoch: {rmsg['epoch']}, num_batch: {rmsg['num_batch']}, learning rate: {rmsg['lr']}, architecture_choice: {rmsg['architecture_choice']}, cd_method: {rmsg['cd_method']}")
 
 
 server_model = FusionNet_server_middle(architecture_choice=architecture_choice).to(device)
@@ -169,6 +170,7 @@ server_model.set_mode('train')
 for epc in range(epochs):
     sync_time(conn, logger)
     epoch_start_time = time.time()
+    epoch_compression_decompression_time = 0
     epoch_training_time = 0
     epoch_size_client_head_output = 0
     epoch_size_server_gradient = 0
@@ -185,47 +187,66 @@ for epc in range(epochs):
         epoch_size_client_head_output += size_client_head_output
 
 
-        # forward propagation
-        batch_training_start_time = time.time()
-        # feature
+        epoch_compression_decompression_start_time = time.time()
         x_clic_cpu, x_derm_cpu = rmsg['x_clic'], rmsg['x_derm']
+        x_clic_cpu = torch.from_numpy(np.frombuffer(decompress(x_clic_cpu, cd_method=cd_method), dtype=np.float32).reshape(rmsg['x_clic_shape'])).requires_grad_(True) 
+        x_derm_cpu = torch.from_numpy(np.frombuffer(decompress(x_derm_cpu, cd_method=cd_method), dtype=np.float32).reshape(rmsg['x_derm_shape'])).requires_grad_(True)
         x_clic = x_clic_cpu.to(device)
         x_derm = x_derm_cpu.to(device)
+        epoch_compression_decompression_time += time.time() - epoch_compression_decompression_start_time
+
+        # forward propagation
+        batch_training_start_time = time.time()
         x_clic_server_gpu, x_derm_server_gpu, x_fusion_server_gpu = server_model((x_clic, x_derm))
-        x_clic_server = x_clic_server_gpu.cpu().clone().detach().requires_grad_(True)
-        x_derm_server = x_derm_server_gpu.cpu().clone().detach().requires_grad_(True)
-        x_fusion_server = x_fusion_server_gpu.cpu().clone().detach().requires_grad_(True)
-        msg = {
-            'x_clic_server' : x_clic_server,
-            'x_derm_server' : x_derm_server,
-            'x_fusion_server' : x_fusion_server
-        }
         epoch_training_time += time.time() - batch_training_start_time
 
-
+        epoch_compression_decompression_start_time = time.time()
+        x_clic_server = x_clic_server_gpu.cpu().clone().detach()
+        x_derm_server = x_derm_server_gpu.cpu().clone().detach()
+        x_fusion_server = x_fusion_server_gpu.cpu().clone().detach()
+        msg = {
+            'x_clic_server' : compress(x_clic_server.numpy(), cd_method=cd_method),
+            'x_clic_server_shape' : x_clic_server.shape,
+            'x_derm_server' : compress(x_derm_server.numpy(), cd_method=cd_method),
+            'x_derm_server_shape' : x_derm_server.shape,
+            'x_fusion_server' : compress(x_fusion_server.numpy(), cd_method=cd_method),
+            'x_fusion_server_shape' : x_fusion_server.shape,
+        }
+        epoch_compression_decompression_time += time.time() - epoch_compression_decompression_start_time
+        
+        
         send_msg(conn, msg) # send server output to client
         size_server_gradient = received_msg_len
         rmsg = recv_msg(conn) # receive gradient from client
         size_server_gradient = received_msg_len - size_server_gradient
         epoch_size_server_gradient += size_server_gradient
 
-        
+        epoch_compression_decompression_start_time = time.time()
+        x_clic_server_grad = torch.from_numpy(np.frombuffer(decompress(rmsg['x_clic_server_grad'], cd_method=cd_method), dtype=np.float32).reshape(rmsg['x_clic_server_grad_shape'])).to(device)
+        x_derm_server_grad = torch.from_numpy(np.frombuffer(decompress(rmsg['x_derm_server_grad'], cd_method=cd_method), dtype=np.float32).reshape(rmsg['x_derm_server_grad_shape'])).to(device)
+        # x_fusion_server_grad = torch.from_numpy(np.frombuffer(decompress(rmsg['x_fusion_server_grad']), dtype=np.float32).reshape(rmsg['x_fusion_server_grad_shape'])).to(device)
+        epoch_compression_decompression_time += time.time() - epoch_compression_decompression_start_time
     
 
         # backward propagation
         batch_training_start_time = time.time()
-        x_clic_server_gpu.backward(rmsg['x_clic_server_grad'].to(device))
-        x_derm_server_gpu.backward(rmsg['x_derm_server_grad'].to(device))
-        """
-            Interesting error: Trying to backward through the graph a second time
-        """
+        x_clic_server_gpu.backward(x_clic_server_grad.to(device))
+        x_derm_server_gpu.backward(x_derm_server_grad.to(device))
+        epoch_training_time += time.time() - batch_training_start_time
+        
+        # Interesting error: Trying to backward through the graph a second time
         # x_fusion_server_gpu.backward(rmsg['x_fusion_server_grad'].to(device))
         # send gradient to client
+
+        epoch_compression_decompression_start_time = time.time()
         msg = {
-            "x_clic_grad": x_clic_cpu.grad.clone().detach(),
-            "x_derm_grad": x_derm_cpu.grad.clone().detach(),
+            "x_clic_grad": compress(x_clic_cpu.grad.clone().detach().numpy(), cd_method=cd_method),
+            "x_clic_grad_shape": x_clic_cpu.grad.shape,
+            "x_derm_grad": compress(x_derm_cpu.grad.clone().detach().numpy(), cd_method=cd_method),
+            "x_derm_grad_shape": x_derm_cpu.grad.shape,
         }
-        epoch_training_time += time.time() - batch_training_start_time
+        epoch_compression_decompression_time += time.time() - epoch_compression_decompression_start_time
+        
         send_msg(conn, msg)
 
         batch_training_start_time = time.time()
@@ -238,12 +259,18 @@ for epc in range(epochs):
     total_training_time += epoch_training_time
 
     # for validation and test, send server model to client
-    server_encode_start_time = time.time()
+    epoch_compression_decompression_start_time = time.time()
+    _server_model = {}
+    for k, v in server_model.state_dict().items():
+        if('num_batches_tracked' in k):
+            continue
+        v = v.cpu().clone().detach().numpy()
+        _server_model[k] = (compress(v, cd_method=cd_method), v.shape)
     msg = {
-        "server model": {k: v.cpu() for k, v in server_model.state_dict().items()},
-        "server training time": epoch_training_time
+        "server_model_state_dict": _server_model,
+        "server_training_time": epoch_training_time
     }
-    server_encode_time = time.time() - server_encode_start_time
+    epoch_compression_decompression_time += time.time() - epoch_compression_decompression_start_time
 
     send_msg(conn, msg) # send model to client.
     
@@ -274,13 +301,16 @@ for epc in range(epochs):
     logger.info(f"Epoch: client to server com. time: {round(epoch_communication_time_client_to_server, 2)}") 
     logger.info(f"Epoch: server to client com. time: {round(epoch_communication_time_server_to_client, 2)}")
     total_communication_time_server_to_client += epoch_communication_time_server_to_client
-    send_msg(conn, {'client_to_server_communication_time': epoch_communication_time_client_to_server})
+    send_msg(conn, 
+             {'client_to_server_communication_time': epoch_communication_time_client_to_server,
+              'server_compression_decompression_time': epoch_compression_decompression_time,})
     
     
     logger.info(f"Epoch: training time server: {round(epoch_training_time, 2)}")
     logger.info(f"Epoch: validation time: {round(validation_time, 2)}")
     logger.info(f"Epoch: test time: {round(test_time, 2)}")
-    logger.info(f"Epoch: server encode time: {round(server_encode_time, 2)}")
+    # logger.info(f"Epoch: server encode time: {round(server_encode_time, 2)}")
+    logger.info(f"Epoch: server compression_decompression time: {round(epoch_compression_decompression_time, 2)}")
     logger.info(f"Epoch: total time: {round(time.time() - epoch_start_time, 2)}")
     total_communication_time_client_to_server += epoch_communication_time_client_to_server
 
