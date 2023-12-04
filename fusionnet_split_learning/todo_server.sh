@@ -1,4 +1,4 @@
-client_start=False
+client_start=True
 
 server_seed="42"
 

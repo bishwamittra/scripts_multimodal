@@ -32,7 +32,7 @@ class Swish_Module(nn.Module):
 
 class FusionNet(nn.Module):
 
-    def __init__(self, class_list):
+    def __init__(self, class_list, model_name='resnet50'):
         super(FusionNet, self).__init__()
         self.num_label = class_list[0]
         self.num_pn = class_list[1]
@@ -45,10 +45,14 @@ class FusionNet(nn.Module):
         self.dropout = nn.Dropout(0.3)
 
         # from pretrained resnet50
-        model_clinic = torchvision.models.resnet50(pretrained=True)
-        model_derm = torchvision.models.resnet50(pretrained=True)
-        # model_clinic = torchvision.models.resnet101(pretrained=True)
-        # model_derm = torchvision.models.resnet101(pretrained=True)
+        if(model_name == 'resnet50'):
+            model_clinic = torchvision.models.resnet50(pretrained=True)
+            model_derm = torchvision.models.resnet50(pretrained=True)
+        elif(model_name == 'resnet101'):
+            model_clinic = torchvision.models.resnet101(pretrained=True)
+            model_derm = torchvision.models.resnet101(pretrained=True)
+        else:
+            raise NotImplementedError
 
         # define the clinic model
         self.conv1_cli = model_clinic.conv1

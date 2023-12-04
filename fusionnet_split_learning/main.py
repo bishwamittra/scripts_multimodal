@@ -30,7 +30,7 @@ args = parser.parse_args()
 logger, exp_seq, save_path = get_logger(save_root=args.save_root, filename_prefix="fusion_net_non_split")
 logger.info(f"-------------------------Session: Exp {exp_seq}")
 
-assert args.architecture_choice == 0
+assert args.architecture_choice in [0, 5]
 seed = args.seed
 random.seed(seed)
 np.random.seed(seed)
@@ -52,7 +52,10 @@ if(args.device == 'cuda'):
 else:
     device = args.device
 shape = (224, 224)
-model = FusionNet(class_list).to(device)
+if(args.architecture_choice == 0):
+    model = FusionNet(class_list, model_name='resnet50').to(device)
+elif(args.architecture_choice == 5):
+    model = FusionNet(class_list, model_name='resnet101').to(device)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 
@@ -201,7 +204,7 @@ for epoch in range(epochs):
     entry['epoch'] = epoch
     entry['total_epochs'] = epochs
     entry['learning_rate'] = lr
-    entry['architecture_choice'] = 0
+    entry['architecture_choice'] = args.architecture_choice
 
     entry['batch_size'] = batch_size
     entry['len_train_dataset'] = len(train_dataloader.dataset)
