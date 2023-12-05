@@ -8,9 +8,9 @@ else
     server_wait_time="60"
 fi
 
-for architecture_choice in {1..4}
+for architecture_choice in 2 1
 do
-    for cd_method in "no_compression" "zstd"
+    for cd_method in "zstd" "no_compression"
     do
         for i in {1..3}
         do
