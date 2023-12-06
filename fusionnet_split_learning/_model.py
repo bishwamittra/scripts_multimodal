@@ -53,6 +53,16 @@ class FusionNet(nn.Module):
             model_derm = torchvision.models.resnet101(pretrained=True)
         else:
             raise NotImplementedError
+        
+        # if(model_name == 'resnet50'):
+        #     model_clinic = torchvision.models.resnet50(pretrained=False)
+        #     model_derm = torchvision.models.resnet50(pretrained=False)
+        # elif(model_name == 'resnet101'):
+        #     model_clinic = torchvision.models.resnet101(pretrained=False)
+        #     model_derm = torchvision.models.resnet101(pretrained=False)
+        # else:
+        #     raise NotImplementedError
+
 
         # define the clinic model
         self.conv1_cli = model_clinic.conv1
