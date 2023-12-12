@@ -375,6 +375,10 @@ class FusionNet_client_last(nn.Module):
     def forward(self, x):
         (x_clic, x_derm, x_fusion) = x
 
+        if(self.architecture_choice > 4):
+            self.architecture_choice -= 5
+
+
         if(self.architecture_choice in [1, 2, 3, 4]):
 
             # passed through the clinic model (pretained resnet50)
