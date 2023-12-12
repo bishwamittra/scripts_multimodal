@@ -36,9 +36,16 @@ class FusionNet_client_first(nn.Module):
         super(FusionNet_client_first, self).__init__()
 
         self.architecture_choice = architecture_choice
+
         # from pretrained resnet50
-        model_clinic = torchvision.models.resnet50(pretrained=True)
-        model_derm = torchvision.models.resnet50(pretrained=True)
+        if(self.architecture_choice <= 4):
+            model_clinic = torchvision.models.resnet50(pretrained=True)
+            model_derm = torchvision.models.resnet50(pretrained=True)
+        else:
+            model_clinic = torchvision.models.resnet101(pretrained=True)
+            model_derm = torchvision.models.resnet101(pretrained=True)
+            self.architecture_choice -= 5
+        
 
         if(self.architecture_choice in [1, 2, 3, 4]):
             # self.num_label = class_list[0]

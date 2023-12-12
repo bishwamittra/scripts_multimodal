@@ -8,7 +8,7 @@ else
     server_wait_time="60"
 fi
 
-for architecture_choice in 2 1
+for architecture_choice in 6
 do
     for cd_method in "zstd" "no_compression"
     do
