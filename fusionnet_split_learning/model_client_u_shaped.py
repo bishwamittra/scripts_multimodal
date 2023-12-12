@@ -267,6 +267,11 @@ class FusionNet_client_last(nn.Module):
         super(FusionNet_client_last, self).__init__()
 
         self.architecture_choice = architecture_choice
+
+        # from pretrained resnet50
+        if(self.architecture_choice > 4):
+            self.architecture_choice -= 5
+
         if(self.architecture_choice in [1, 2, 3, 4]):
             self.architecture_choice = architecture_choice
             self.num_label = class_list[0]
