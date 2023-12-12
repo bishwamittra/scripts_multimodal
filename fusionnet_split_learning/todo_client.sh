@@ -1,7 +1,7 @@
 client_start=True
 
 client_seed="42"
-epoch="3"
+epoch="100"
 
 if [ "$client_start" = True ] ; then
     client_wait_time="60"
@@ -9,7 +9,7 @@ else
     client_wait_time="100"
 fi
 
-for architecture_choice in 6
+for architecture_choice in 6 1
 do
     for cd_method in "zstd" "no_compression"
     do
